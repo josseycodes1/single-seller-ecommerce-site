@@ -10,6 +10,9 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        josseypink1: "#db2777",
+        josseypink2: "#FC46AA",
+        josseypink3: "#fce7f3",
       },
       gridTemplateColumns:{
         'auto': 'repeat(auto-fit, minmax(200px, 1fr))'
