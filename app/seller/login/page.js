@@ -16,7 +16,7 @@ export default function SellerLogin() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if there's a success message from registration
+    //check if there's a success message from registration
     const urlParams = new URLSearchParams(window.location.search);
     const successMessage = urlParams.get('message');
     if (successMessage) {
@@ -41,7 +41,7 @@ export default function SellerLogin() {
     setError('');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/seller/register/`, {
+      const response = await fetch(`${API_BASE_URL}/api/token/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -52,9 +52,9 @@ export default function SellerLogin() {
       const data = await response.json();
 
       if (response.ok) {
-        // Check if user is a seller
+        //check if user is a seller
         if (data.is_seller) {
-          // Save token and user data to localStorage
+          //save token and user data to localStorage
           localStorage.setItem('access_token', data.access);
           localStorage.setItem('user_data', JSON.stringify({
             email: data.email,
@@ -62,7 +62,7 @@ export default function SellerLogin() {
             is_seller: data.is_seller
           }));
           
-          // Redirect to seller dashboard
+          //redirect to seller dashboard
           router.push('/seller');
         } else {
           setError('This account is not registered as a seller.');
@@ -79,7 +79,7 @@ export default function SellerLogin() {
 
   return (
     <div className="min-h-screen flex bg-white">
-      {/* Left side - Form */}
+      {/* left side form */}
       <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-md">
           <div className="text-center mb-8">
@@ -205,7 +205,7 @@ export default function SellerLogin() {
         </div>
       </div>
 
-      {/* Right side - Decorative */}
+      {/* right side */}
       <div className="hidden lg:block relative w-1/2">
         <div className="absolute inset-0 bg-gradient-to-br from-[#FC46AA] to-[#F699CD] opacity-90"></div>
         <div className="absolute inset-0 flex items-center justify-center p-12">
