@@ -1,6 +1,7 @@
 'use client'
 import Navbar from '@/components/seller/Navbar'
 import Sidebar from '@/components/seller/Sidebar'
+import Footer from '@/components/seller/Footer'
 import React from 'react'
 
 const Layout = ({ children }) => {
@@ -11,6 +12,7 @@ const Layout = ({ children }) => {
         <Sidebar />
         {children}
       </div>
+      <Footer />
     </div>
   )
 }
