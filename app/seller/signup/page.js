@@ -39,16 +39,20 @@ export default function SellerSignUp() {
     setLoading(true);
     setError('');
 
-    //validate passwords match
-    if (formData.password !== formData.confirmPassword) {
+    const password = formData.password.trim();
+    const confirmPassword = formData.confirmPassword.trim();
+
+    // validate passwords match
+    if (password !== confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
       return;
     }
 
-    //validate password strength
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long');
+    // validate password strength (at least 8 chars, with letters & numbers)
+    const strongPassword = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
+    if (!strongPassword.test(password)) {
+      setError('Password must be at least 8 characters and contain letters and numbers');
       setLoading(false);
       return;
     }
@@ -56,15 +60,13 @@ export default function SellerSignUp() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/register/seller/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          business_name: formData.business_name
+          email: formData.email.trim(),
+          password: password,
+          first_name: formData.first_name.trim(),
+          last_name: formData.last_name.trim(),
+          business_name: formData.business_name.trim()
         }),
       });
 
@@ -73,20 +75,18 @@ export default function SellerSignUp() {
       if (response.ok) {
         router.push('/seller/login?message=Registration successful. Please login.');
       } else {
-        // Show field-specific error if available
         if (data.email) setError(data.email[0]);
         else if (data.password) setError(data.password[0]);
         else if (data.business_name) setError(data.business_name[0]);
         else setError('Registration failed. Please check your details.');
       }
-
-
     } catch (error) {
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex bg-white">
