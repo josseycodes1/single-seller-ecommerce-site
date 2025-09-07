@@ -41,7 +41,7 @@ export default function SellerLogin() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/token/', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/seller/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

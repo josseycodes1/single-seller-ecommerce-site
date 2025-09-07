@@ -54,7 +54,7 @@ export default function SellerSignUp() {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/seller/register/', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/seller/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

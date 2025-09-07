@@ -26,7 +26,7 @@ const Navbar = () => {
           Contact
         </Link>
 
-        {isSeller && <button onClick={() => router.push('/seller')} className="text-xs bg-josseypink2 hover:bg-josseypink1 text-white border px-4 py-1.5 rounded-full">Seller Dashboard</button>}
+        {isSeller && <button onClick={() => router.push('/sellerdashboard')} className="text-xs bg-josseypink2 hover:bg-josseypink1 text-white border px-4 py-1.5 rounded-full">Seller Dashboard</button>}
 
       </div>
 
