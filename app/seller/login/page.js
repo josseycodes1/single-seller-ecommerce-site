@@ -41,7 +41,7 @@ export default function SellerLogin() {
     setError('');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/token/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/token/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
