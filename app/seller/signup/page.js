@@ -15,7 +15,7 @@ export default function SellerSignUp() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState([]); // array for multiple errors
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -37,22 +37,36 @@ export default function SellerSignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setErrors([]);
 
-    const password = formData.password.trim();
-    const confirmPassword = formData.confirmPassword.trim();
+    const { email, password, confirmPassword, first_name, last_name, business_name } = formData;
+    const newErrors = [];
 
-    // validate passwords match
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
-      return;
+    // required fields
+    if (!first_name.trim()) newErrors.push("First name is required.");
+    if (!last_name.trim()) newErrors.push("Last name is required.");
+    if (!business_name.trim()) newErrors.push("Business name is required.");
+    if (!email.trim()) newErrors.push("Email is required.");
+
+    // email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email && !emailRegex.test(email.trim())) {
+      newErrors.push("Please enter a valid email address.");
     }
 
-    // validate password strength (at least 8 chars, with letters & numbers)
+    // password match
+    if (password.trim() !== confirmPassword.trim()) {
+      newErrors.push("Passwords do not match.");
+    }
+
+    // password strength
     const strongPassword = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
-    if (!strongPassword.test(password)) {
-      setError('Password must be at least 8 characters and contain letters and numbers');
+    if (password && !strongPassword.test(password.trim())) {
+      newErrors.push("Password must be at least 8 characters and contain letters and numbers.");
+    }
+
+    if (newErrors.length > 0) {
+      setErrors(newErrors);
       setLoading(false);
       return;
     }
@@ -62,11 +76,11 @@ export default function SellerSignUp() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: formData.email.trim(),
-          password: password,
-          first_name: formData.first_name.trim(),
-          last_name: formData.last_name.trim(),
-          business_name: formData.business_name.trim()
+          email: email.trim(),
+          password: password.trim(),
+          first_name: first_name.trim(),
+          last_name: last_name.trim(),
+          business_name: business_name.trim()
         }),
       });
 
@@ -75,18 +89,19 @@ export default function SellerSignUp() {
       if (response.ok) {
         router.push('/seller/login?message=Registration successful. Please login.');
       } else {
-        if (data.email) setError(data.email[0]);
-        else if (data.password) setError(data.password[0]);
-        else if (data.business_name) setError(data.business_name[0]);
-        else setError('Registration failed. Please check your details.');
+        if (typeof data === "object") {
+          const messages = Object.values(data).flat();
+          setErrors(messages.length ? messages : ["Registration failed. Please check your details."]);
+        } else {
+          setErrors(["Registration failed. Please check your details."]);
+        }
       }
     } catch (error) {
-      setError('Network error. Please try again.');
+      setErrors(["Network error. Please try again."]);
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="min-h-screen flex bg-white">
@@ -102,9 +117,13 @@ export default function SellerSignUp() {
             </p>
           </div>
 
-          {error && (
+          {errors.length > 0 && (
             <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
-              {error}
+              <ul className="list-disc list-inside space-y-1">
+                {errors.map((err, idx) => (
+                  <li key={idx}>{err}</li>
+                ))}
+              </ul>
             </div>
           )}
 
