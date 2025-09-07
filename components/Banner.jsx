@@ -9,8 +9,8 @@ const Banner = () => {
         className="hidden md:block max-w-80"
         src={"/diffuser3.png"}
         alt="md_controller_image"
-        width={200}   
-        height={200}
+        width={900}   
+        height={900}
       />
       <div className="flex flex-col items-center justify-center text-center space-y-2 px-4 md:px-0">
         <h2 className="text-white text-2xl md:text-3xl font-semibold max-w-[290px]">
