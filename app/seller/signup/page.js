@@ -73,8 +73,14 @@ export default function SellerSignUp() {
       if (response.ok) {
         router.push('/seller/login?message=Registration successful. Please login.');
       } else {
-        setError(data.message || 'Registration failed. Please try again.');
+        // Show field-specific error if available
+        if (data.email) setError(data.email[0]);
+        else if (data.password) setError(data.password[0]);
+        else if (data.business_name) setError(data.business_name[0]);
+        else setError('Registration failed. Please check your details.');
       }
+
+
     } catch (error) {
       setError('Network error. Please try again.');
     } finally {
