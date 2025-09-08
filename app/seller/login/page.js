@@ -195,14 +195,14 @@ export default function SellerLogin() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          {/* <div className="mt-6 text-center">
             <p className="text-gray-600">
               Don't have an account?{' '}
               <Link href="/seller/signup" className="text-[#FC46AA] hover:text-[#F699CD] font-medium transition-colors">
                 Sign up here
               </Link>
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
 
