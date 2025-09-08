@@ -295,21 +295,7 @@ function VerifyForgotPasswordContent() {
               </Link>
             </p>
           </div>
-
-          <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            Didn't receive the code?{" "}
-            <button
-              type="button"
-              onClick={handleResendCode}
-              disabled={loading}
-              className="text-[#FC46AA] hover:text-[#F699CD] font-medium transition-colors disabled:opacity-50"
-            >
-              Resend code
-            </button>
-          </p>
-        </div>
-
+          
         </div>
       </div>
 
