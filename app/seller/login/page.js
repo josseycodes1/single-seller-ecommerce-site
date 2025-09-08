@@ -35,47 +35,55 @@ export default function SellerLogin() {
     setShowPassword(!showPassword);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      setError('');
 
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/token/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/token/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
+        
+        // ADD THESE DEBUG LINES
+        console.log('Full login response:', data);
+        console.log('Is seller flag:', data.is_seller);
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
 
-      if (response.ok) {
-        //check if user is a seller
-        if (data.is_seller) {
-          //save token and user data to localStorage
-          localStorage.setItem('access_token', data.access);
-          localStorage.setItem('user_data', JSON.stringify({
-            email: data.email,
-            business_name: data.business_name,
-            is_seller: data.is_seller
-          }));
-          
-          //redirect to seller dashboard
-          router.push('/seller');
+        if (response.ok) {
+          // Check if user is a seller
+          if (data.is_seller) {
+            // Save token and user data to localStorage
+            localStorage.setItem('access_token', data.access);
+            localStorage.setItem('user_data', JSON.stringify({
+              email: data.email,
+              business_name: data.business_name,
+              is_seller: data.is_seller
+            }));
+            
+            // Redirect to seller dashboard
+            router.push('/seller');
+          } else {
+            setError('This account is not registered as a seller.');
+            console.log('User is not recognized as seller in response');
+          }
         } else {
-          setError('This account is not registered as a seller.');
+          setError(data.detail || 'Login failed. Please check your credentials.');
         }
-      } else {
-        setError(data.detail || 'Login failed. Please check your credentials.');
+      } catch (error) {
+        setError('Network error. Please try again.');
+        console.error('Login error:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      setError('Network error. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
   return (
     <div className="min-h-screen flex bg-white">
