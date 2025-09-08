@@ -170,7 +170,7 @@ export default function SellerLogin() {
               </div>
 
               <div className="text-sm">
-                <a href="/forgot-password" className="text-[#FC46AA] hover:text-[#F699CD]">
+                <a href="/seller/forgot-password" className="text-[#FC46AA] hover:text-[#F699CD]">
                   Forgot your password?
                 </a>
               </div>
