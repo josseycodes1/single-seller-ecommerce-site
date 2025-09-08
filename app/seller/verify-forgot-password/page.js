@@ -3,8 +3,6 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-
-// Create a separate component for the main content that uses useSearchParams
 function VerifyForgotPasswordContent() {
   const [formData, setFormData] = useState({
     email: "",
@@ -107,6 +105,35 @@ function VerifyForgotPasswordContent() {
         }, 2000);
       } else {
         setErrors([data.message || "Failed to reset password. Please check your code and try again."]);
+      }
+    } catch (error) {
+      setErrors(["Network error. Please try again."]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    const handleResendCode = async () => {
+    setLoading(true);
+    setErrors([]);
+    setMessage("");
+    
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/password-reset/resend/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: formData.email.trim() }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage("New verification code sent to your email.");
+      } else {
+        setErrors([data.message || "Failed to resend code. Please try again."]);
       }
     } catch (error) {
       setErrors(["Network error. Please try again."]);
@@ -268,6 +295,21 @@ function VerifyForgotPasswordContent() {
               </Link>
             </p>
           </div>
+
+          <div className="mt-6 text-center">
+          <p className="text-gray-600">
+            Didn't receive the code?{" "}
+            <button
+              type="button"
+              onClick={handleResendCode}
+              disabled={loading}
+              className="text-[#FC46AA] hover:text-[#F699CD] font-medium transition-colors disabled:opacity-50"
+            >
+              Resend code
+            </button>
+          </p>
+        </div>
+
         </div>
       </div>
 
