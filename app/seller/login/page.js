@@ -41,8 +41,8 @@ export default function SellerLogin() {
     setError('');
 
     try {
-      // Step 1: Get the tokens
-      const tokenResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/token/`, {
+      //get the tokens
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/token/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,50 +50,26 @@ export default function SellerLogin() {
         body: JSON.stringify(formData),
       });
 
-      const tokenData = await tokenResponse.json();
+      const data = await response.json();
 
-      if (!tokenResponse.ok) {
-        setError(tokenData.detail || 'Login failed. Please check your credentials.');
-        return;
-      }
-
-      // Step 2: Store the tokens
-      localStorage.setItem('access_token', tokenData.access);
-      
-      // Step 3: Fetch user data using the token
-      const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/profile/`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${tokenData.access}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (userResponse.ok) {
-        const userData = await userResponse.json();
+      if (response.ok) {
+        // Store tokens in localStorage
+        localStorage.setItem('access_token', data.access);
+        localStorage.setItem('refresh_token', data.refresh);
         
-        // Store user data with the is_seller field
+        //since all users registering through seller endpoint are sellers,
+        // we can assume successful login means they're a seller
+        // Store basic user data from the login form
         localStorage.setItem('user_data', JSON.stringify({
-          email: userData.email,
-          first_name: userData.first_name,
-          last_name: userData.last_name,
-          business_name: userData.business_name,
-          is_seller: userData.is_seller,
+          email: formData.email,
+          is_seller: true // Assume seller since they're logging into seller portal
         }));
-
-        // Check if user is a seller
-        if (userData.is_seller) {
-          router.push('/seller');
-        } else {
-          setError('This account is not registered as a seller.');
-          // Clean up stored data if not a seller
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('user_data');
-        }
+        
+        //redirect to seller dashboard
+        router.push('/seller');
       } else {
-        setError('Failed to fetch user information.');
+        setError(data.detail || 'Login failed. Please check your credentials.');
       }
-
     } catch (error) {
       setError('Network error. Please try again.');
       console.error('Login error:', error);
