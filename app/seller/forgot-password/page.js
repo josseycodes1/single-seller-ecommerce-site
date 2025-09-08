@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,7 +29,11 @@ export default function ForgotPassword() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage("Password reset code sent to your email");
+        setMessage("Password reset code sent to your email. Redirecting...");
+        // Redirect to verification page after 2 seconds
+        setTimeout(() => {
+          router.push(`/seller/verify-forgot-password?email=${encodeURIComponent(email.trim())}`);
+        }, 2000);
       } else {
         setError(data.message || "Failed to send reset code. Please try again.");
       }
