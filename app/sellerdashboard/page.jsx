@@ -170,7 +170,7 @@ const AddProduct = () => {
               onClick={logout}
               className="px-4 py-2 bg-josseypink2 text-white text-sm font-medium rounded-md hover:bg-josseypink1 transition-colors"
             >
-              View Website
+              Log Out
             </button>
           </div>
         </div>
