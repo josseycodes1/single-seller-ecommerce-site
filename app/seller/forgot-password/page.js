@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -93,27 +92,6 @@ export default function ForgotPassword() {
               {loading ? "Sending Code..." : "Send Reset Code"}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              Remember your password?{" "}
-              <Link
-                href="/seller/login"
-                className="text-[#FC46AA] hover:text-[#F699CD] font-medium transition-colors"
-              >
-                Sign in here
-              </Link>
-            </p>
-          </div>
-
-          <div className="mt-8 border-t border-gray-200 pt-6">
-            <p className="text-xs text-gray-500 text-center">
-              Need help?{" "}
-              <a href="#" className="text-[#FC46AA] hover:text-[#F699CD]">
-                Contact our support team
-              </a>
-            </p>
-          </div>
         </div>
       </div>
 

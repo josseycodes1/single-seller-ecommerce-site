@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function VerifyForgotPassword() {
+// Create a separate component for the main content that uses useSearchParams
+function VerifyForgotPasswordContent() {
   const [formData, setFormData] = useState({
     email: "",
     code: "",
@@ -206,7 +207,7 @@ export default function VerifyForgotPassword() {
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500"
                   onClick={togglePasswordVisibility}
                   disabled={loading}
                 >
@@ -238,7 +239,7 @@ export default function VerifyForgotPassword() {
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500"
                   onClick={toggleConfirmPasswordVisibility}
                   disabled={loading}
                 >
@@ -260,7 +261,7 @@ export default function VerifyForgotPassword() {
             <p className="text-gray-600">
               Didn't receive the code?{" "}
               <Link
-                href="/forgot-password"
+                href="/seller/forgot-password"
                 className="text-[#FC46AA] hover:text-[#F699CD] font-medium transition-colors"
               >
                 Resend code
@@ -303,5 +304,20 @@ export default function VerifyForgotPassword() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyForgotPassword() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FC46AA] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <VerifyForgotPasswordContent />
+    </Suspense>
   );
 }
