@@ -19,7 +19,7 @@ function VerifyForgotPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // Pre-fill email from query params if available
+  //pre-fill email from query params if available
   useEffect(() => {
     const emailParam = searchParams.get('email');
     if (emailParam && !formData.email) {
@@ -45,24 +45,24 @@ function VerifyForgotPasswordContent() {
   const validateForm = () => {
     const newErrors = [];
     
-    // Email validation
+    //email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim() || !emailRegex.test(formData.email.trim())) {
       newErrors.push("Please enter a valid email address.");
     }
     
-    // Code validation
+    //code validation
     if (!formData.code.trim()) {
       newErrors.push("Verification code is required.");
     }
     
-    // Password validation
+    //password validation
     const strongPassword = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
     if (!formData.new_password.trim() || !strongPassword.test(formData.new_password.trim())) {
       newErrors.push("Password must be at least 8 characters and contain letters and numbers.");
     }
     
-    // Confirm password validation
+    //confirm password validation
     if (formData.new_password !== formData.confirm_password) {
       newErrors.push("Passwords do not match.");
     }
@@ -285,16 +285,18 @@ function VerifyForgotPasswordContent() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              Didn't receive the code?{" "}
-              <Link
-                href="/seller/forgot-password"
-                className="text-[#FC46AA] hover:text-[#F699CD] font-medium transition-colors"
-              >
-                Resend code
-              </Link>
-            </p>
-          </div>
+          <p className="text-gray-600">
+            Didn't receive the code?{" "}
+            <button
+              type="button"
+              onClick={handleResendCode}
+              disabled={loading}
+              className="text-[#FC46AA] hover:text-[#F699CD] font-medium transition-colors disabled:opacity-50"
+            >
+              Resend code
+            </button>
+          </p>
+        </div>
           
         </div>
       </div>
