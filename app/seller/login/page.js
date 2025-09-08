@@ -66,7 +66,7 @@ export default function SellerLogin() {
         }));
         
         //redirect to seller dashboard
-        router.push('/seller');
+        router.push('/sellerdashboard');
       } else {
         setError(data.detail || 'Login failed. Please check your credentials.');
       }

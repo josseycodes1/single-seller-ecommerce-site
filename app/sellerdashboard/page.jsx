@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 
-// Auth utility functions
+//auth utility functions
 const isAuthenticated = () => {
   if (typeof window === 'undefined') return false;
   const token = localStorage.getItem('access_token');
@@ -24,7 +24,7 @@ const logout = () => {
 
 const AddProduct = () => {
   const [files, setFiles] = useState([]);
-  const [imageUrls, setImageUrls] = useState([]); // For Cloudinary URLs
+  const [imageUrls, setImageUrls] = useState([]);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Earphone');
@@ -36,7 +36,7 @@ const AddProduct = () => {
   
   const router = useRouter();
 
-  // Check authentication on component mount
+  //check authentication on component mount
   useEffect(() => {
     if (!isAuthenticated()) {
       router.push('/seller/login');
@@ -48,7 +48,7 @@ const AddProduct = () => {
     }
   }, [router]);
 
-  // Upload images to Cloudinary first
+  //upload images to Cloudinary first
   const uploadToCloudinary = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -61,7 +61,7 @@ const AddProduct = () => {
       });
       
       const data = await response.json();
-      return data.secure_url; // Return the Cloudinary URL
+      return data.secure_url; //return the Cloudinary URL
     } catch (error) {
       console.error('Error uploading to Cloudinary:', error);
       throw error;
@@ -76,7 +76,7 @@ const AddProduct = () => {
     try {
       const token = getAuthToken();
       
-      // Upload all images to Cloudinary first
+      //upload all images to Cloudinary first
       const uploadedImageUrls = [];
       for (const file of files) {
         if (file) {
@@ -88,17 +88,17 @@ const AddProduct = () => {
       setImageUrls(uploadedImageUrls);
       setUploading(false);
 
-      // Now send product data to your Django backend with Cloudinary URLs
+      //now send product data to your Django backend with Cloudinary URLs
       const productData = {
         name: name,
         description: description,
         category: category,
         price: parseFloat(price),
         offer_price: offerPrice ? parseFloat(offerPrice) : null,
-        image_urls: uploadedImageUrls, // Send array of Cloudinary URLs
+        image_urls: uploadedImageUrls, //send array of Cloudinary URLs
       };
 
-      const response = await fetch('http://localhost:8000/api/products/', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -111,7 +111,7 @@ const AddProduct = () => {
 
       if (response.ok) {
         alert('Product added successfully!');
-        // Reset form
+        //reset form
         setName('');
         setDescription('');
         setPrice('');
@@ -140,7 +140,7 @@ const AddProduct = () => {
     setImageUrls(updatedUrls);
   };
 
-  // Redirect to login if not authenticated
+  //redirect to login if not authenticated
   if (!isAuthenticated()) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -168,9 +168,9 @@ const AddProduct = () => {
             </div>
             <button 
               onClick={logout}
-              className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
+              className="px-4 py-2 bg-josseypink2 text-white text-sm font-medium rounded-md hover:bg-josseypink1 transition-colors"
             >
-              Logout
+              View Website
             </button>
           </div>
         </div>
@@ -217,7 +217,7 @@ const AddProduct = () => {
                       <button
                         type="button"
                         onClick={() => removeImage(index)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                        className="absolute -top-2 -right-2 bg-josseypink2 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
                         disabled={uploading}
                       >
                         ×
