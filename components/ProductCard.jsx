@@ -115,6 +115,23 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
     setImageErrors(prev => ({ ...prev, [imageType]: true }))
   }
 
+  // Function to check if URL is from Cloudinary
+  const isCloudinaryUrl = (url) => {
+    return url && url.includes('cloudinary.com')
+  }
+
+  // Function to get optimized Cloudinary URL
+  const getOptimizedCloudinaryUrl = (url, width = 400, height = 400) => {
+    if (!url || !isCloudinaryUrl(url)) return url
+    
+    // Cloudinary URL optimization parameters
+    // You can adjust these based on your needs
+    const optimizationParams = `c_fill,w_${width},h_${height},q_auto,f_auto`
+    
+    // Insert optimization parameters into the Cloudinary URL
+    return url.replace('/upload/', `/upload/${optimizationParams}/`)
+  }
+
   return (
     <div
       onClick={() => {
@@ -134,24 +151,26 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
         {/* Main image - only show if available */}
         {mainImage && !imageErrors.main && (
           <Image
-            src={mainImage}
+            src={getOptimizedCloudinaryUrl(mainImage)}
             alt={productName}
             className={`absolute inset-0 object-cover w-full h-full transition-opacity duration-300 ${hovered ? 'opacity-0' : 'opacity-100'}`}
             width={200}
             height={200}
             onError={() => handleImageError('main')}
+            unoptimized={!isCloudinaryUrl(mainImage)} // Only optimize Cloudinary images
           />
         )}
 
         {/* Hover image - only show if available and different from main */}
         {hoverImage && hoverImage !== mainImage && !imageErrors.hover && (
           <Image
-            src={hoverImage}
+            src={getOptimizedCloudinaryUrl(hoverImage)}
             alt={`${productName} hover`}
             className={`absolute inset-0 object-cover w-full h-full transition-opacity duration-300 ${hovered ? 'opacity-100' : 'opacity-0'}`}
             width={200}
             height={200}
             onError={() => handleImageError('hover')}
+            unoptimized={!isCloudinaryUrl(hoverImage)} // Only optimize Cloudinary images
           />
         )}
 
