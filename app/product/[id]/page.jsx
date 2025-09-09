@@ -46,7 +46,9 @@ const Product = () => {
         try {
             setLoading(true);
             const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
-            const url = `${base}/products/${id}/`;
+            const url = `${base}/api/products/${id}/`; // FIXED: Added /api/ prefix
+            
+            console.log('Fetching product from:', url); // Debug log
             
             const response = await fetch(url);
             
@@ -55,6 +57,7 @@ const Product = () => {
             }
             
             const data = await response.json();
+            console.log('Product data received:', data); // Debug log
             setProductData(data);
             
             // Set the first image as main image
@@ -79,7 +82,7 @@ const Product = () => {
     const fetchRelatedProducts = async (categoryId) => {
         try {
             const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
-            const url = `${base}/products/?category=${categoryId}&limit=5`;
+            const url = `${base}/api/products/?category=${categoryId}&limit=5`; // FIXED: Added /api/ prefix
             
             const response = await fetch(url);
             
@@ -114,6 +117,11 @@ const Product = () => {
                         <p className="text-gray-600 mb-6">
                             {error || "The product you're looking for doesn't exist."}
                         </p>
+                        <div className="mb-4">
+                            <p className="text-sm text-gray-500">
+                                Requested URL: {process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/{id}/
+                            </p>
+                        </div>
                         <button 
                             onClick={() => router.push('/')}
                             className="px-6 py-2 bg-josseypink2 text-white rounded hover:bg-josseypink1 transition"
