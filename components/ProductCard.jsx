@@ -9,14 +9,66 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
   const [loading, setLoading] = useState(!initialProduct && !!propProductId)
   const [error, setError] = useState(null)
   const [hovered, setHovered] = useState(false)
-
-  // image fallback
-  const placeholder = assets?.diffuser5 || '/diffuser5.png'
+  const [imageErrors, setImageErrors] = useState({})
 
   // Fetch product from backend if we weren't given it via props
   useEffect(() => {
-    // ... (same fetch logic as before)
+    let controller = new AbortController()
+    const signal = controller.signal
+
+    // if initial product passed, use it and skip fetch
+    if (initialProduct) {
+      setProduct(initialProduct)
+      setLoading(false)
+      setError(null)
+      return () => controller.abort()
+    }
+
+    if (!propProductId) {
+      setLoading(false)
+      setError(null)
+      return () => controller.abort()
+    }
+
+    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '')
+    const url = `${base}/products/${propProductId}/`
+
+    setLoading(true)
+    setError(null)
+
+    fetch(url, { method: 'GET', signal })
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text().catch(() => '')
+          throw new Error(`Failed to load product (${res.status}) ${text}`)
+        }
+        return res.json()
+      })
+      .then((data) => {
+        setProduct(data)
+      })
+      .catch((err) => {
+        if (err.name === 'AbortError') return
+        console.error('Product fetch error:', err)
+        setError(err.message || 'Failed to load product')
+      })
+      .finally(() => setLoading(false))
+
+    return () => controller.abort()
   }, [initialProduct, propProductId])
+
+  // Safely parse numeric values with fallbacks
+  const parseRating = (value) => {
+    if (value === null || value === undefined) return 4.5
+    const num = typeof value === 'string' ? parseFloat(value) : Number(value)
+    return isNaN(num) ? 4.5 : num
+  }
+
+  const parsePrice = (value) => {
+    if (value === null || value === undefined) return 0
+    const num = typeof value === 'string' ? parseFloat(value) : Number(value)
+    return isNaN(num) ? 0 : num
+  }
 
   // simple loader / skeleton
   if (loading) {
@@ -42,23 +94,26 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
     return null // nothing to render
   }
 
-  // Now images are simple URLs from the backend
+  // Get image URLs from backend response
   const productImages = product.images?.map(img => img.image_url).filter(Boolean) || []
-  const mainImage = productImages[0] || placeholder
+  const mainImage = productImages[0] || null
   const hoverImage = productImages[1] || mainImage
 
   const productName = product.name || 'Unnamed Product'
   const productDescription = product.description || 'No description available'
-  const productRating = product.avg_rating || product.rating || 4.5
-  const productPrice = parseFloat(product.offer_price || product.price || 0) || 0
-  const originalPrice = product.price ? parseFloat(product.price) : null
+  
+  // Safely parse rating and prices
+  const productRating = parseRating(product.avg_rating || product.rating)
+  const productPrice = parsePrice(product.offer_price || product.price)
+  const originalPrice = product.price ? parsePrice(product.price) : null
 
   const idFromProduct = product.id || product._id || propProductId
   const hasValidId = !!idFromProduct
 
-  // image error fallbacks
-  const [mainImgError, setMainImgError] = useState(false)
-  const [hoverImgError, setHoverImgError] = useState(false)
+  // Handle image errors
+  const handleImageError = (imageType) => {
+    setImageErrors(prev => ({ ...prev, [imageType]: true }))
+  }
 
   return (
     <div
@@ -76,32 +131,43 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {/* Main image */}
-        <Image
-          src={mainImgError ? placeholder : mainImage}
-          alt={productName}
-          className={`absolute inset-0 object-cover w-full h-full transition-opacity duration-300 ${hovered ? 'opacity-0' : 'opacity-100'}`}
-          width={200}
-          height={200}
-          onError={() => setMainImgError(true)}
-        />
+        {/* Main image - only show if available */}
+        {mainImage && !imageErrors.main && (
+          <Image
+            src={mainImage}
+            alt={productName}
+            className={`absolute inset-0 object-cover w-full h-full transition-opacity duration-300 ${hovered ? 'opacity-0' : 'opacity-100'}`}
+            width={200}
+            height={200}
+            onError={() => handleImageError('main')}
+          />
+        )}
 
-        {/* Hover image */}
-        <Image
-          src={hoverImgError ? placeholder : hoverImage}
-          alt={`${productName} hover`}
-          className={`absolute inset-0 object-cover w-full h-full transition-opacity duration-300 ${hovered ? 'opacity-100' : 'opacity-0'}`}
-          width={200}
-          height={200}
-          onError={() => setHoverImgError(true)}
-        />
+        {/* Hover image - only show if available and different from main */}
+        {hoverImage && hoverImage !== mainImage && !imageErrors.hover && (
+          <Image
+            src={hoverImage}
+            alt={`${productName} hover`}
+            className={`absolute inset-0 object-cover w-full h-full transition-opacity duration-300 ${hovered ? 'opacity-100' : 'opacity-0'}`}
+            width={200}
+            height={200}
+            onError={() => handleImageError('hover')}
+          />
+        )}
+
+        {/* Fallback if no images available */}
+        {(!mainImage || imageErrors.main) && (
+          <div className="flex items-center justify-center w-full h-full bg-gray-100">
+            <span className="text-gray-400 text-sm">No image available</span>
+          </div>
+        )}
 
         {/* Wishlist button */}
         <button
           className="absolute top-2 right-2 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors z-10"
           onClick={(e) => {
             e.stopPropagation()
-            // wishlist logic
+            // wishlist logic (implement in parent/context)
           }}
         >
           <Image className="h-3 w-3" src={assets.heart_icon} alt="Add to wishlist" width={12} height={12} />
@@ -147,7 +213,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
         <button
           onClick={(e) => {
             e.stopPropagation()
-            // Add to cart logic
+            // Add to cart logic (implement in parent/context)
             console.log('Add to cart:', idFromProduct)
           }}
           className="max-sm:hidden px-4 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200"
