@@ -4,11 +4,11 @@ import { useRouter } from "next/navigation";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 
+// Auth utility functions
 const isAuthenticated = () => {
   if (typeof window === 'undefined') return false;
   const token = localStorage.getItem('access_token');
-  const userData = localStorage.getItem('user_data');
-  return !!(token && userData);
+  return !!token;
 };
 
 const getAuthToken = () => {
@@ -32,24 +32,20 @@ const AddProduct = () => {
   const [isFeatured, setIsFeatured] = useState(false);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
-  const [userData, setUserData] = useState(null);
+  const [error, setError] = useState('');
   
   const router = useRouter();
 
-
+  // Check authentication on component mount
   useEffect(() => {
     if (!isAuthenticated()) {
       router.push('/seller/login');
     } else {
-      const userDataStr = localStorage.getItem('user_data');
-      if (userDataStr) {
-        setUserData(JSON.parse(userDataStr));
-      }
       fetchCategories();
     }
   }, [router]);
 
-
+  // Fetch categories from backend
   const fetchCategories = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/categories/`);
@@ -57,7 +53,7 @@ const AddProduct = () => {
         const data = await response.json();
         setCategories(data);
         if (data.length > 0) {
-          setCategory(data[0].id); 
+          setCategory(data[0].id); // Set first category as default
         }
       }
     } catch (error) {
@@ -68,26 +64,32 @@ const AddProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     try {
       const token = getAuthToken();
       
-     
+      if (!token) {
+        setError('Authentication token missing. Please login again.');
+        return;
+      }
+      
+      // Create FormData for the request
       const formData = new FormData();
       
-      
+      // Add product data
       formData.append('name', name);
       formData.append('description', description);
       formData.append('category', category);
       formData.append('price', price);
-      formData.append('stock', stock);
-      formData.append('rating', rating);
-      formData.append('is_featured', isFeatured);
+      formData.append('stock', stock || '0');
+      formData.append('rating', rating || '0');
+      formData.append('is_featured', isFeatured.toString());
       
-      
+      // Add images
       files.forEach((file, index) => {
         if (file) {
-          formData.append(`images`, file); 
+          formData.append('images', file);
         }
       });
 
@@ -95,7 +97,6 @@ const AddProduct = () => {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          
         },
         body: formData,
       });
@@ -104,7 +105,7 @@ const AddProduct = () => {
 
       if (response.ok) {
         alert('Product added successfully!');
-       
+        // Reset form
         setName('');
         setDescription('');
         setPrice('');
@@ -113,11 +114,16 @@ const AddProduct = () => {
         setIsFeatured(false);
         setFiles([]);
       } else {
-        alert(`Failed to add product: ${responseData.message || JSON.stringify(responseData)}`);
+        if (response.status === 401 || response.status === 403) {
+          setError('Authentication failed. Please login again.');
+          logout();
+        } else {
+          setError(`Failed to add product: ${responseData.detail || JSON.stringify(responseData)}`);
+        }
       }
     } catch (error) {
-      alert('Error adding product. Please try again.');
       console.error('Error:', error);
+      setError('Error adding product. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -135,7 +141,7 @@ const AddProduct = () => {
     setFiles(updatedFiles);
   };
 
-  
+  // Redirect to login if not authenticated
   if (!isAuthenticated()) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -155,11 +161,7 @@ const AddProduct = () => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Seller Dashboard</h1>
-              {userData && (
-                <p className="text-sm text-gray-600">
-                  Welcome, {userData.business_name || userData.email}
-                </p>
-              )}
+              <p className="text-sm text-gray-600">Add New Product</p>
             </div>
             <button 
               onClick={logout}
@@ -175,6 +177,20 @@ const AddProduct = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-6">Add New Product</h2>
+          
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {error}
+              {error.includes('Authentication') && (
+                <button 
+                  onClick={logout}
+                  className="ml-4 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                >
+                  Login Again
+                </button>
+              )}
+            </div>
+          )}
           
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Product Images */}
