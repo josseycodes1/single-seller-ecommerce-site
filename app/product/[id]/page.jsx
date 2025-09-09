@@ -20,35 +20,35 @@ const Product = () => {
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [imageErrors, setImageErrors] = useState({});
 
-    // Function to check if URL is from Cloudinary
+    
     const isCloudinaryUrl = (url) => {
         return url && url.includes('cloudinary.com');
     }
 
-    // Function to get optimized Cloudinary URL
+    
     const getOptimizedCloudinaryUrl = (url, width = 400, height = 400) => {
         if (!url || !isCloudinaryUrl(url)) return url
         
-        // Cloudinary URL optimization parameters
+        
         const optimizationParams = `c_fill,w_${width},h_${height},q_auto,f_auto`
         
-        // Insert optimization parameters into the Cloudinary URL
+       
         return url.replace('/upload/', `/upload/${optimizationParams}/`)
     }
 
-    // Handle image errors
+   
     const handleImageError = (imageType) => {
         setImageErrors(prev => ({ ...prev, [imageType]: true }));
     }
 
-    // Fetch product data from API
+    
     const fetchProductData = async () => {
         try {
             setLoading(true);
             const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
-            const url = `${base}/api/products/${id}/`; // FIXED: Added /api/ prefix
+            const url = `${base}/api/products/${id}/`; 
             
-            console.log('Fetching product from:', url); // Debug log
+            console.log('Fetching product from:', url); 
             
             const response = await fetch(url);
             
@@ -57,15 +57,15 @@ const Product = () => {
             }
             
             const data = await response.json();
-            console.log('Product data received:', data); // Debug log
+            console.log('Product data received:', data); 
             setProductData(data);
             
-            // Set the first image as main image
+            
             if (data.images && data.images.length > 0) {
                 setMainImage(data.images[0].image_url);
             }
             
-            // Fetch related products (same category)
+            
             if (data.category) {
                 fetchRelatedProducts(data.category);
             }
@@ -78,7 +78,7 @@ const Product = () => {
         }
     };
 
-    // Fetch related products
+   
     const fetchRelatedProducts = async (categoryId) => {
         try {
             const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
@@ -135,7 +135,7 @@ const Product = () => {
         );
     }
 
-    // Safely parse numeric values
+    
     const parsePrice = (value) => {
         if (value === null || value === undefined) return 0;
         const num = typeof value === 'string' ? parseFloat(value) : Number(value);
@@ -145,7 +145,7 @@ const Product = () => {
     const productPrice = parsePrice(productData.offer_price || productData.price);
     const originalPrice = productData.price ? parsePrice(productData.price) : null;
 
-    // Get image URLs
+    
     const productImages = productData.images?.map(img => img.image_url).filter(Boolean) || [];
 
     return (

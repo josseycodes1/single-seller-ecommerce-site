@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 
-//auth utility functions
 const isAuthenticated = () => {
   if (typeof window === 'undefined') return false;
   const token = localStorage.getItem('access_token');
@@ -24,19 +23,20 @@ const logout = () => {
 
 const AddProduct = () => {
   const [files, setFiles] = useState([]);
-  const [imageUrls, setImageUrls] = useState([]);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('Earphone');
+  const [category, setCategory] = useState('');
   const [price, setPrice] = useState('');
-  const [offerPrice, setOfferPrice] = useState('');
+  const [stock, setStock] = useState('');
+  const [rating, setRating] = useState('');
+  const [isFeatured, setIsFeatured] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [userData, setUserData] = useState(null);
   
   const router = useRouter();
 
-  //check authentication on component mount
+
   useEffect(() => {
     if (!isAuthenticated()) {
       router.push('/seller/login');
@@ -45,102 +45,97 @@ const AddProduct = () => {
       if (userDataStr) {
         setUserData(JSON.parse(userDataStr));
       }
+      fetchCategories();
     }
   }, [router]);
 
-  //upload images to Cloudinary first
-  const uploadToCloudinary = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'your_upload_preset_here'); // You need to set this up in Cloudinary
-    
+
+  const fetchCategories = async () => {
     try {
-      const response = await fetch('https://api.cloudinary.com/v1_1/your_cloud_name/image/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      const data = await response.json();
-      return data.secure_url; //return the Cloudinary URL
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/categories/`);
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data);
+        if (data.length > 0) {
+          setCategory(data[0].id); 
+        }
+      }
     } catch (error) {
-      console.error('Error uploading to Cloudinary:', error);
-      throw error;
+      console.error('Error fetching categories:', error);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setUploading(true);
 
     try {
       const token = getAuthToken();
       
-      //upload all images to Cloudinary first
-      const uploadedImageUrls = [];
-      for (const file of files) {
+     
+      const formData = new FormData();
+      
+      
+      formData.append('name', name);
+      formData.append('description', description);
+      formData.append('category', category);
+      formData.append('price', price);
+      formData.append('stock', stock);
+      formData.append('rating', rating);
+      formData.append('is_featured', isFeatured);
+      
+      
+      files.forEach((file, index) => {
         if (file) {
-          const imageUrl = await uploadToCloudinary(file);
-          uploadedImageUrls.push(imageUrl);
+          formData.append(`images`, file); 
         }
-      }
-
-      setImageUrls(uploadedImageUrls);
-      setUploading(false);
-
-      //now send product data to your Django backend with Cloudinary URLs
-      const productData = {
-        name: name,
-        description: description,
-        category: category,
-        price: parseFloat(price),
-        offer_price: offerPrice ? parseFloat(offerPrice) : null,
-        image_urls: uploadedImageUrls, //send array of Cloudinary URLs
-      };
+      });
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          
         },
-        body: JSON.stringify(productData),
+        body: formData,
       });
 
       const responseData = await response.json();
 
       if (response.ok) {
         alert('Product added successfully!');
-        //reset form
+       
         setName('');
         setDescription('');
         setPrice('');
-        setOfferPrice('');
+        setStock('');
+        setRating('');
+        setIsFeatured(false);
         setFiles([]);
-        setImageUrls([]);
       } else {
-        alert(`Failed to add product: ${responseData.message || 'Unknown error'}`);
+        alert(`Failed to add product: ${responseData.message || JSON.stringify(responseData)}`);
       }
     } catch (error) {
       alert('Error adding product. Please try again.');
       console.error('Error:', error);
     } finally {
       setLoading(false);
-      setUploading(false);
     }
+  };
+
+  const handleFileChange = (index, file) => {
+    const updatedFiles = [...files];
+    updatedFiles[index] = file;
+    setFiles(updatedFiles);
   };
 
   const removeImage = (index) => {
     const updatedFiles = [...files];
     updatedFiles[index] = null;
     setFiles(updatedFiles);
-    
-    const updatedUrls = [...imageUrls];
-    updatedUrls[index] = null;
-    setImageUrls(updatedUrls);
   };
 
-  //redirect to login if not authenticated
+  
   if (!isAuthenticated()) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -185,7 +180,7 @@ const AddProduct = () => {
             {/* Product Images */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Product Images
+                Product Images (Up to 4)
               </label>
               <div className="flex flex-wrap gap-4">
                 {[...Array(4)].map((_, index) => (
@@ -194,31 +189,39 @@ const AddProduct = () => {
                       <input 
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
-                            const updatedFiles = [...files];
-                            updatedFiles[index] = e.target.files[0];
-                            setFiles(updatedFiles);
+                            handleFileChange(index, e.target.files[0]);
                           }
                         }} 
                         type="file" 
                         id={`image${index}`} 
                         className="hidden" 
                         accept="image/*"
-                        disabled={uploading}
+                        disabled={loading}
                       />
-                      <Image
-                        className="w-24 h-24 object-cover border-2 border-dashed border-gray-300 rounded-lg hover:border-[#FC46AA] transition-colors"
-                        src={files[index] ? URL.createObjectURL(files[index]) : assets.upload_area}
-                        alt={`Preview ${index + 1}`}
-                        width={96}
-                        height={96}
-                      />
+                      <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg hover:border-[#FC46AA] transition-colors flex items-center justify-center overflow-hidden">
+                        {files[index] ? (
+                          <img
+                            src={URL.createObjectURL(files[index])}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Image
+                            src={assets.upload_area}
+                            alt="Upload area"
+                            width={48}
+                            height={48}
+                            className="opacity-50"
+                          />
+                        )}
+                      </div>
                     </label>
-                    {(files[index] || imageUrls[index]) && (
+                    {files[index] && (
                       <button
                         type="button"
                         onClick={() => removeImage(index)}
-                        className="absolute -top-2 -right-2 bg-josseypink2 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                        disabled={uploading}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                        disabled={loading}
                       >
                         ×
                       </button>
@@ -226,19 +229,12 @@ const AddProduct = () => {
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-2">Upload up to 4 images</p>
-              {uploading && (
-                <div className="mt-2 flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#FC46AA] mr-2"></div>
-                  <span className="text-sm text-gray-600">Uploading images to Cloudinary...</span>
-                </div>
-              )}
             </div>
 
             {/* Product Name */}
             <div>
               <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-2">
-                Product Name
+                Product Name *
               </label>
               <input
                 id="product-name"
@@ -248,14 +244,14 @@ const AddProduct = () => {
                 onChange={(e) => setName(e.target.value)}
                 value={name}
                 required
-                disabled={loading || uploading}
+                disabled={loading}
               />
             </div>
 
             {/* Product Description */}
             <div>
               <label htmlFor="product-description" className="block text-sm font-medium text-gray-700 mb-2">
-                Product Description
+                Product Description *
               </label>
               <textarea
                 id="product-description"
@@ -265,38 +261,38 @@ const AddProduct = () => {
                 onChange={(e) => setDescription(e.target.value)}
                 value={description}
                 required
-                disabled={loading || uploading}
+                disabled={loading}
               />
             </div>
 
-            {/* Category and Pricing */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Category, Price, Stock, Rating */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Category */}
               <div>
                 <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-                  Category
+                  Category *
                 </label>
                 <select
                   id="category"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
                   onChange={(e) => setCategory(e.target.value)}
                   value={category}
-                  disabled={loading || uploading}
+                  required
+                  disabled={loading || categories.length === 0}
                 >
-                  <option value="Earphone">Earphone</option>
-                  <option value="Headphone">Headphone</option>
-                  <option value="Watch">Watch</option>
-                  <option value="Smartphone">Smartphone</option>
-                  <option value="Laptop">Laptop</option>
-                  <option value="Camera">Camera</option>
-                  <option value="Accessories">Accessories</option>
+                  <option value="">Select Category</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               {/* Product Price */}
               <div>
                 <label htmlFor="product-price" className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Price ($)
+                  Price *
                 </label>
                 <input
                   id="product-price"
@@ -308,34 +304,68 @@ const AddProduct = () => {
                   onChange={(e) => setPrice(e.target.value)}
                   value={price}
                   required
-                  disabled={loading || uploading}
+                  disabled={loading}
                 />
               </div>
 
-              {/* Offer Price */}
+              {/* Stock */}
               <div>
-                <label htmlFor="offer-price" className="block text-sm font-medium text-gray-700 mb-2">
-                  Offer Price ($) <span className="text-gray-400">(Optional)</span>
+                <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">
+                  Stock *
                 </label>
                 <input
-                  id="offer-price"
+                  id="stock"
                   type="number"
-                  placeholder="0.00"
+                  placeholder="0"
                   min="0"
-                  step="0.01"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
-                  onChange={(e) => setOfferPrice(e.target.value)}
-                  value={offerPrice}
-                  disabled={loading || uploading}
+                  onChange={(e) => setStock(e.target.value)}
+                  value={stock}
+                  required
+                  disabled={loading}
                 />
               </div>
+
+              {/* Rating */}
+              <div>
+                <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-2">
+                  Rating
+                </label>
+                <input
+                  id="rating"
+                  type="number"
+                  placeholder="0.0"
+                  min="0"
+                  max="10"
+                  step="0.1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
+                  onChange={(e) => setRating(e.target.value)}
+                  value={rating}
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            {/* Featured Product Checkbox */}
+            <div className="flex items-center">
+              <input
+                id="is-featured"
+                type="checkbox"
+                className="h-4 w-4 text-[#FC46AA] focus:ring-[#FC46AA] border-gray-300 rounded"
+                onChange={(e) => setIsFeatured(e.target.checked)}
+                checked={isFeatured}
+                disabled={loading}
+              />
+              <label htmlFor="is-featured" className="ml-2 block text-sm text-gray-900">
+                Feature this product
+              </label>
             </div>
 
             {/* Submit Button */}
             <div className="pt-4">
               <button 
                 type="submit" 
-                disabled={loading || uploading}
+                disabled={loading}
                 className="px-6 py-3 bg-[#FC46AA] text-white font-medium rounded-md hover:bg-[#F699CD] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
@@ -346,8 +376,6 @@ const AddProduct = () => {
                     </svg>
                     Adding Product...
                   </span>
-                ) : uploading ? (
-                  'Uploading Images...'
                 ) : (
                   'ADD PRODUCT'
                 )}
