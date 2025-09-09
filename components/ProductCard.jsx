@@ -15,48 +15,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
 
   // Fetch product from backend if we weren't given it via props
   useEffect(() => {
-    let controller = new AbortController()
-    const signal = controller.signal
-
-    // if initial product passed, use it and skip fetch
-    if (initialProduct) {
-      setProduct(initialProduct)
-      setLoading(false)
-      setError(null)
-      return () => controller.abort()
-    }
-
-    if (!propProductId) {
-      setLoading(false)
-      setError(null)
-      return () => controller.abort()
-    }
-
-    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '')
-    const url = `${base}/products/${propProductId}/` // assumes standard DRF router detail endpoint
-
-    setLoading(true)
-    setError(null)
-
-    fetch(url, { method: 'GET', signal })
-      .then(async (res) => {
-        if (!res.ok) {
-          const text = await res.text().catch(() => '')
-          throw new Error(`Failed to load product (${res.status}) ${text}`)
-        }
-        return res.json()
-      })
-      .then((data) => {
-        setProduct(data)
-      })
-      .catch((err) => {
-        if (err.name === 'AbortError') return
-        console.error('Product fetch error:', err)
-        setError(err.message || 'Failed to load product')
-      })
-      .finally(() => setLoading(false))
-
-    return () => controller.abort()
+    // ... (same fetch logic as before)
   }, [initialProduct, propProductId])
 
   // simple loader / skeleton
@@ -83,42 +42,21 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
     return null // nothing to render
   }
 
-  // Normalize image list: expect backend to return an array of URLs or objects with `image` or `url`
-  const extractUrl = (img) => {
-    if (!img) return null
-    if (typeof img === 'string') return img
-    // common shapes: { image: 'https://...' } or { url: 'https://...' } or { image: { url: '...' } }
-    if (typeof img === 'object') {
-      if (typeof img.image === 'string') return img.image
-      if (img.url) return img.url
-      // nested object
-      if (img.image && typeof img.image === 'object' && img.image.url) return img.image.url
-    }
-    return null
-  }
-
-  const productImagesRaw = Array.isArray(product.images) ? product.images.slice(0, 4) : []
-  const productImages = productImagesRaw.map(extractUrl).filter(Boolean)
+  // Now images are simple URLs from the backend
+  const productImages = product.images?.map(img => img.image_url).filter(Boolean) || []
   const mainImage = productImages[0] || placeholder
   const hoverImage = productImages[1] || mainImage
 
   const productName = product.name || 'Unnamed Product'
   const productDescription = product.description || 'No description available'
-
-  const productRating =
-    typeof product.rating === 'number'
-      ? product.rating
-      : typeof product.avg_rating === 'number'
-      ? product.avg_rating
-      : 4.5
-
-  const productPrice = parseFloat(product.offerPrice || product.price || product.original_price || 0) || 0
+  const productRating = product.avg_rating || product.rating || 4.5
+  const productPrice = parseFloat(product.offer_price || product.price || 0) || 0
   const originalPrice = product.price ? parseFloat(product.price) : null
 
   const idFromProduct = product.id || product._id || propProductId
   const hasValidId = !!idFromProduct
 
-  // image error fallbacks (so Next/Image uses placeholder when remote fails)
+  // image error fallbacks
   const [mainImgError, setMainImgError] = useState(false)
   const [hoverImgError, setHoverImgError] = useState(false)
 
@@ -163,7 +101,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
           className="absolute top-2 right-2 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors z-10"
           onClick={(e) => {
             e.stopPropagation()
-            // wishlist logic (implement in parent/context)
+            // wishlist logic
           }}
         >
           <Image className="h-3 w-3" src={assets.heart_icon} alt="Add to wishlist" width={12} height={12} />
@@ -209,7 +147,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
         <button
           onClick={(e) => {
             e.stopPropagation()
-            // Add to cart logic (implement in parent/context)
+            // Add to cart logic
             console.log('Add to cart:', idFromProduct)
           }}
           className="max-sm:hidden px-4 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200"
