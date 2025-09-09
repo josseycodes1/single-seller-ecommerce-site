@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 
-
+// Auth utility functions
 const isAuthenticated = () => {
   if (typeof window === 'undefined') return false;
   const token = localStorage.getItem('access_token');
@@ -33,10 +33,11 @@ const AddProduct = () => {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState('');
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   
   const router = useRouter();
 
- 
+  // Check authentication on component mount
   useEffect(() => {
     if (!isAuthenticated()) {
       router.push('/seller/login');
@@ -45,19 +46,36 @@ const AddProduct = () => {
     }
   }, [router]);
 
-  
+  // Fetch categories from backend
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/categories/`);
+      setCategoriesLoading(true);
+      const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
+      const url = `${base}/api/categories/`;
+      
+      console.log('Fetching categories from:', url);
+      
+      const response = await fetch(url);
+      
+      console.log('Categories response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Categories data received:', data);
+        
         setCategories(data);
         if (data.length > 0) {
-          setCategory(data[0].id); 
+          setCategory(data[0].id); // Set first category as default
         }
+      } else {
+        console.error('Failed to fetch categories:', response.status, response.statusText);
+        setError('Failed to load categories. Please refresh the page.');
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
+      setError('Error loading categories. Please check your connection.');
+    } finally {
+      setCategoriesLoading(false);
     }
   };
 
@@ -74,10 +92,10 @@ const AddProduct = () => {
         return;
       }
       
-     
+      // Create FormData for the request
       const formData = new FormData();
       
-     
+      // Add product data
       formData.append('name', name);
       formData.append('description', description);
       formData.append('category', category);
@@ -86,35 +104,26 @@ const AddProduct = () => {
       formData.append('rating', rating || '0');
       formData.append('is_featured', isFeatured.toString());
       
-      
+      // Add images
       files.forEach((file, index) => {
         if (file) {
-          
-          formData.append('images', file); 
-         
+          formData.append('images', file);
         }
-      });
-
-      console.log('Submitting form with:', {
-        name, description, category, price, stock, rating, isFeatured,
-        fileCount: files.filter(Boolean).length
       });
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          
         },
         body: formData,
       });
 
       const responseData = await response.json();
-      console.log('API Response:', response.status, responseData);
 
       if (response.ok) {
         alert('Product added successfully!');
-        
+        // Reset form
         setName('');
         setDescription('');
         setPrice('');
@@ -127,11 +136,7 @@ const AddProduct = () => {
           setError('Authentication failed. Please login again.');
           logout();
         } else {
-          
-          const errorMsg = responseData.detail || 
-                          responseData.message || 
-                          (responseData.images ? responseData.images.join(', ') : 'Unknown error');
-          setError(`Failed to add product: ${errorMsg}`);
+          setError(`Failed to add product: ${responseData.detail || JSON.stringify(responseData)}`);
         }
       }
     } catch (error) {
@@ -154,7 +159,7 @@ const AddProduct = () => {
     setFiles(updatedFiles);
   };
 
-
+  // Redirect to login if not authenticated
   if (!isAuthenticated()) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -226,7 +231,6 @@ const AddProduct = () => {
                         className="hidden" 
                         accept="image/*"
                         disabled={loading}
-                        required={index === 0 && files.filter(Boolean).length === 0} // Require at least one image
                       />
                       <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg hover:border-[#FC46AA] transition-colors flex items-center justify-center overflow-hidden">
                         {files[index] ? (
@@ -303,21 +307,31 @@ const AddProduct = () => {
                 <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
                   Category *
                 </label>
-                <select
-                  id="category"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
-                  onChange={(e) => setCategory(e.target.value)}
-                  value={category}
-                  required
-                  disabled={loading || categories.length === 0}
-                >
-                  <option value="">Select Category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
+                {categoriesLoading ? (
+                  <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
+                    <div className="animate-pulse h-4 bg-gray-300 rounded"></div>
+                  </div>
+                ) : categories.length === 0 ? (
+                  <div className="text-red-500 text-sm">
+                    No categories available. Please add categories first.
+                  </div>
+                ) : (
+                  <select
+                    id="category"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
+                    onChange={(e) => setCategory(e.target.value)}
+                    value={category}
+                    required
+                    disabled={loading}
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               {/* Product Price */}
@@ -396,7 +410,7 @@ const AddProduct = () => {
             <div className="pt-4">
               <button 
                 type="submit" 
-                disabled={loading}
+                disabled={loading || categories.length === 0}
                 className="px-6 py-3 bg-[#FC46AA] text-white font-medium rounded-md hover:bg-[#F699CD] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
@@ -411,6 +425,11 @@ const AddProduct = () => {
                   'ADD PRODUCT'
                 )}
               </button>
+              {categories.length === 0 && (
+                <p className="text-red-500 text-sm mt-2">
+                  Cannot add product: No categories available. Please add categories first.
+                </p>
+              )}
             </div>
           </form>
         </div>
