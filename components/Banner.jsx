@@ -77,9 +77,9 @@ const Banner = () => {
         />
       ) : null}
       
-      {/* Center content */}
-      <div className="flex flex-col items-center justify-center text-center space-y-2 px-4 md:px-0">
-        <h2 className="text-white text-2xl md:text-3xl font-semibold max-w-[290px]">
+      {/* Center content - properly centered */}
+      <div className="flex flex-col items-center justify-center text-center space-y-4 px-4 md:px-0 mx-auto">
+        <h2 className="text-white text-2xl md:text-3xl font-semibold max-w-[290px] md:max-w-none">
           {banner?.title || "Level Up Your Scent Experience"}
         </h2>
         <p className="max-w-[343px] font-medium text-white">
@@ -90,10 +90,10 @@ const Banner = () => {
           <p className="text-white font-semibold">{banner.discount_text}</p>
         )}
         
-        <button className="group flex items-center justify-center gap-1 px-12 py-2.5 bg-white rounded text-josseypink1">
+        <button className="group flex items-center justify-center gap-1 px-12 py-2.5 bg-white rounded text-josseypink1 hover:bg-gray-100 transition-colors">
           {banner?.button_text || "Buy now"}
           <svg 
-            className="group-hover:translate-x-1 transition" 
+            className="group-hover:translate-x-1 transition-transform" 
             width="16" 
             height="16" 
             viewBox="0 0 16 16" 
@@ -109,22 +109,6 @@ const Banner = () => {
             />
           </svg>
         </button>
-        
-        {/* Newsletter section */}
-        <div className="mt-6 text-white text-sm">
-          <p>Subscribe now & get 20% off</p>
-          <p className="mt-2 text-xs opacity-80">Lorem ipsum is simply dummy text of the printing and typesetting industry.</p>
-          <div className="mt-3 flex gap-2">
-            <input 
-              type="email" 
-              placeholder="Enter your email id" 
-              className="px-3 py-2 rounded text-gray-800 text-sm"
-            />
-            <button className="px-4 py-2 bg-white text-josseypink1 rounded font-medium">
-              Subscribe
-            </button>
-          </div>
-        </div>
       </div>
       
       {/* Right image - desktop only (using secondary_image if available) */}
