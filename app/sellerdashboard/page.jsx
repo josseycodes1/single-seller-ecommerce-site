@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 
-// Auth utility functions
+
 const isAuthenticated = () => {
   if (typeof window === 'undefined') return false;
   const token = localStorage.getItem('access_token');
@@ -36,7 +36,7 @@ const AddProduct = () => {
   
   const router = useRouter();
 
-  // Check authentication on component mount
+ 
   useEffect(() => {
     if (!isAuthenticated()) {
       router.push('/seller/login');
@@ -45,7 +45,7 @@ const AddProduct = () => {
     }
   }, [router]);
 
-  // Fetch categories from backend
+  
   const fetchCategories = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/categories/`);
@@ -53,7 +53,7 @@ const AddProduct = () => {
         const data = await response.json();
         setCategories(data);
         if (data.length > 0) {
-          setCategory(data[0].id); // Set first category as default
+          setCategory(data[0].id); 
         }
       }
     } catch (error) {
@@ -74,10 +74,10 @@ const AddProduct = () => {
         return;
       }
       
-      // Create FormData for the request
+     
       const formData = new FormData();
       
-      // Add product data
+     
       formData.append('name', name);
       formData.append('description', description);
       formData.append('category', category);
@@ -86,26 +86,35 @@ const AddProduct = () => {
       formData.append('rating', rating || '0');
       formData.append('is_featured', isFeatured.toString());
       
-      // Add images
+      
       files.forEach((file, index) => {
         if (file) {
-          formData.append('images', file);
+          
+          formData.append('images', file); 
+         
         }
+      });
+
+      console.log('Submitting form with:', {
+        name, description, category, price, stock, rating, isFeatured,
+        fileCount: files.filter(Boolean).length
       });
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
+          
         },
         body: formData,
       });
 
       const responseData = await response.json();
+      console.log('API Response:', response.status, responseData);
 
       if (response.ok) {
         alert('Product added successfully!');
-        // Reset form
+        
         setName('');
         setDescription('');
         setPrice('');
@@ -118,7 +127,11 @@ const AddProduct = () => {
           setError('Authentication failed. Please login again.');
           logout();
         } else {
-          setError(`Failed to add product: ${responseData.detail || JSON.stringify(responseData)}`);
+          
+          const errorMsg = responseData.detail || 
+                          responseData.message || 
+                          (responseData.images ? responseData.images.join(', ') : 'Unknown error');
+          setError(`Failed to add product: ${errorMsg}`);
         }
       }
     } catch (error) {
@@ -141,7 +154,7 @@ const AddProduct = () => {
     setFiles(updatedFiles);
   };
 
-  // Redirect to login if not authenticated
+
   if (!isAuthenticated()) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -196,7 +209,7 @@ const AddProduct = () => {
             {/* Product Images */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Product Images (Up to 4)
+                Product Images (Up to 4) *
               </label>
               <div className="flex flex-wrap gap-4">
                 {[...Array(4)].map((_, index) => (
@@ -213,6 +226,7 @@ const AddProduct = () => {
                         className="hidden" 
                         accept="image/*"
                         disabled={loading}
+                        required={index === 0 && files.filter(Boolean).length === 0} // Require at least one image
                       />
                       <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg hover:border-[#FC46AA] transition-colors flex items-center justify-center overflow-hidden">
                         {files[index] ? (
@@ -245,6 +259,7 @@ const AddProduct = () => {
                   </div>
                 ))}
               </div>
+              <p className="text-xs text-gray-500 mt-2">At least one image is required</p>
             </div>
 
             {/* Product Name */}
