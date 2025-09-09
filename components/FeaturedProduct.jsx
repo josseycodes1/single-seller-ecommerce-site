@@ -7,7 +7,7 @@ const FeaturedProduct = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch featured products from backend
+  
   const fetchFeaturedProducts = async () => {
     try {
       setLoading(true);
@@ -22,7 +22,7 @@ const FeaturedProduct = () => {
       
       const data = await response.json();
       
-      // Handle both array and object with results property
+     
       const products = Array.isArray(data) ? data : data.results || [];
       
       setFeaturedProducts(products);
@@ -30,7 +30,7 @@ const FeaturedProduct = () => {
       console.error('Error fetching featured products:', err);
       setError(err.message);
       
-      // Fallback to default products if API fails
+      
       setFeaturedProducts([
         {
           id: 1,
@@ -60,12 +60,12 @@ const FeaturedProduct = () => {
     fetchFeaturedProducts();
   }, []);
 
-  // Function to check if URL is from Cloudinary
+ 
   const isCloudinaryUrl = (url) => {
     return url && url.includes('cloudinary.com');
   }
 
-  // Function to get optimized Cloudinary URL
+
   const getOptimizedCloudinaryUrl = (url, width = 400, height = 400) => {
     if (!url || !isCloudinaryUrl(url)) return url
     
@@ -119,20 +119,20 @@ const FeaturedProduct = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-14 mt-12 md:px-14 px-4">
         {featuredProducts.map((product) => {
-          // Get the first image or fallback to default images
+          
           let imageSrc;
           let title;
           let description;
           
           if (product.images && product.images.length > 0 && product.images[0].image_url) {
-            // This is a product from the backend
+            
             imageSrc = getOptimizedCloudinaryUrl(product.images[0].image_url);
             title = product.name;
             description = product.description.length > 100 
               ? `${product.description.substring(0, 100)}...` 
               : product.description;
           } else {
-            // This is a fallback product
+            
             imageSrc = product.image;
             title = product.title;
             description = product.description;
