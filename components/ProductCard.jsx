@@ -6,7 +6,7 @@ import { useAppContext } from '@/context/AppContext';
 const ProductCard = ({ product }) => {
     const { currency, router } = useAppContext()
 
-    // Handle image URL properly with comprehensive checks
+    // Handle image URL properly with comprehensive checks for Cloudinary
     const getProductImage = () => {
         // If no image at all, return placeholder
         if (!product.image && (!product.images || product.images.length === 0)) {
@@ -20,9 +20,9 @@ const ProductCard = ({ product }) => {
                 if (product.image.startsWith('http')) {
                     return product.image;
                 }
-                // If it's a relative path, construct full URL
-                if (product.image.startsWith('/')) {
-                    return `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${product.image}`;
+                // If it's a Cloudinary public_id, construct URL
+                if (product.image.includes('/')) {
+                    return `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${product.image}`;
                 }
             }
             // If it's an image object with url property
@@ -30,7 +30,11 @@ const ProductCard = ({ product }) => {
                 if (product.image.url.startsWith('http')) {
                     return product.image.url;
                 }
-                return `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${product.image.url}`;
+                return `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${product.image.url}`;
+            }
+            // If it's an image object with public_id property
+            if (typeof product.image === 'object' && product.image.public_id) {
+                return `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${product.image.public_id}`;
             }
         }
         
@@ -43,7 +47,7 @@ const ProductCard = ({ product }) => {
                 if (firstImage.startsWith('http')) {
                     return firstImage;
                 }
-                return `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${firstImage}`;
+                return `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${firstImage}`;
             }
             
             // If it's an image object with url property
@@ -51,7 +55,12 @@ const ProductCard = ({ product }) => {
                 if (firstImage.url.startsWith('http')) {
                     return firstImage.url;
                 }
-                return `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}${firstImage.url}`;
+                return `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${firstImage.url}`;
+            }
+            
+            // If it's an image object with public_id property
+            if (typeof firstImage === 'object' && firstImage.public_id) {
+                return `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${firstImage.public_id}`;
             }
         }
         
@@ -62,14 +71,26 @@ const ProductCard = ({ product }) => {
     const productImage = getProductImage();
     const productName = product.name || "Unnamed Product";
     const productDescription = product.description || "No description available";
-    const productRating = product.rating || product.avg_rating || 4.5;
-    const productPrice = product.offerPrice || product.price || product.original_price || 0;
+    
+    // Ensure rating is a number
+    const productRating = typeof product.rating === 'number' 
+        ? product.rating 
+        : typeof product.avg_rating === 'number' 
+            ? product.avg_rating 
+            : 4.5;
+    
+    // FIX: Ensure productPrice is a number before using toFixed()
+    const productPrice = parseFloat(product.offerPrice || product.price || product.original_price || 0);
+    const originalPrice = product.price ? parseFloat(product.price) : null;
+
+    // Check if product has a valid ID
+    const productId = product.id || product._id;
+    const hasValidId = productId && typeof productId === 'string';
 
     return (
         <div
             onClick={() => { 
-                const productId = product.id || product._id;
-                if (productId) {
+                if (hasValidId) {
                     router.push('/product/' + productId); 
                     window.scrollTo(0, 0);
                 }
@@ -86,9 +107,6 @@ const ProductCard = ({ product }) => {
                     onError={(e) => {
                         console.error("Image failed to load:", productImage);
                         e.target.src = assets.placeholder_image || "/placeholder-product.png";
-                    }}
-                    onLoad={(e) => {
-                        console.log("Image loaded successfully:", productImage);
                     }}
                 />
                 <button 
@@ -142,9 +160,9 @@ const ProductCard = ({ product }) => {
                     <p className="text-base font-medium text-gray-700">
                         {currency}{productPrice.toFixed(2)}
                     </p>
-                    {product.offerPrice && product.price && product.offerPrice < product.price && (
+                    {originalPrice && productPrice < originalPrice && (
                         <p className="text-xs text-gray-400 line-through">
-                            {currency}{product.price.toFixed(2)}
+                            {currency}{originalPrice.toFixed(2)}
                         </p>
                     )}
                 </div>
@@ -153,7 +171,7 @@ const ProductCard = ({ product }) => {
                     onClick={(e) => {
                         e.stopPropagation(); // Prevent navigating to product page
                         // Add to cart logic here
-                        console.log("Add to cart:", product.id || product._id);
+                        console.log("Add to cart:", productId);
                     }}
                     className="max-sm:hidden px-4 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200"
                 >
