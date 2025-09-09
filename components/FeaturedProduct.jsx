@@ -139,7 +139,7 @@ const FeaturedProduct = () => {
           }
           
           return (
-            <div key={product.id} className="relative group">
+            <div key={product.id} className="relative group bg-pink-200">
               {isCloudinaryUrl(imageSrc) ? (
                 <img
                   src={imageSrc}
