@@ -34,6 +34,9 @@ const AddProduct = () => {
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState('');
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [addingCategory, setAddingCategory] = useState(false);
   
   const router = useRouter();
 
@@ -53,18 +56,12 @@ const AddProduct = () => {
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
       const url = `${base}/api/categories/`;
       
-      console.log('Fetching categories from:', url);
-      
       const response = await fetch(url);
-      
-      console.log('Categories response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Categories data received:', data);
-        
         setCategories(data);
-        if (data.length > 0) {
+        if (data.length > 0 && !category) {
           setCategory(data[0].id); // Set first category as default
         }
       } else {
@@ -76,6 +73,49 @@ const AddProduct = () => {
       setError('Error loading categories. Please check your connection.');
     } finally {
       setCategoriesLoading(false);
+    }
+  };
+
+  // Add new category
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) {
+      setError('Category name is required');
+      return;
+    }
+
+    setAddingCategory(true);
+    setError('');
+
+    try {
+      const token = getAuthToken();
+      const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
+      const url = `${base}/api/categories/`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: newCategoryName.trim() }),
+      });
+
+      if (response.ok) {
+        const newCategory = await response.json();
+        setCategories([...categories, newCategory]);
+        setCategory(newCategory.id);
+        setNewCategoryName('');
+        setShowAddCategory(false);
+        setError('');
+      } else {
+        const errorData = await response.json();
+        setError(errorData.name || 'Failed to add category');
+      }
+    } catch (error) {
+      console.error('Error adding category:', error);
+      setError('Error adding category. Please try again.');
+    } finally {
+      setAddingCategory(false);
     }
   };
 
@@ -311,26 +351,53 @@ const AddProduct = () => {
                   <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
                     <div className="animate-pulse h-4 bg-gray-300 rounded"></div>
                   </div>
-                ) : categories.length === 0 ? (
-                  <div className="text-red-500 text-sm">
-                    No categories available. Please add categories first.
-                  </div>
                 ) : (
-                  <select
-                    id="category"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
-                    onChange={(e) => setCategory(e.target.value)}
-                    value={category}
-                    required
-                    disabled={loading}
-                  >
-                    <option value="">Select Category</option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex flex-col gap-2">
+                    <select
+                      id="category"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
+                      onChange={(e) => setCategory(e.target.value)}
+                      value={category}
+                      required
+                      disabled={loading || categories.length === 0}
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setShowAddCategory(!showAddCategory)}
+                      className="flex items-center justify-center text-sm text-josseypink2 hover:text-josseypink1"
+                    >
+                      <span className="mr-1">+</span> Add New Category
+                    </button>
+                    
+                    {showAddCategory && (
+                      <div className="flex gap-2 mt-2">
+                        <input
+                          type="text"
+                          placeholder="New category name"
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                          disabled={addingCategory}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddCategory}
+                          disabled={addingCategory || !newCategoryName.trim()}
+                          className="px-2 py-1 bg-josseypink2 text-white rounded text-sm hover:bg-josseypink1 disabled:opacity-50"
+                        >
+                          {addingCategory ? 'Adding...' : 'Add'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -410,7 +477,7 @@ const AddProduct = () => {
             <div className="pt-4">
               <button 
                 type="submit" 
-                disabled={loading || categories.length === 0}
+                disabled={loading || !category}
                 className="px-6 py-3 bg-[#FC46AA] text-white font-medium rounded-md hover:bg-[#F699CD] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
@@ -425,9 +492,9 @@ const AddProduct = () => {
                   'ADD PRODUCT'
                 )}
               </button>
-              {categories.length === 0 && (
+              {!category && (
                 <p className="text-red-500 text-sm mt-2">
-                  Cannot add product: No categories available. Please add categories first.
+                  Please select or create a category
                 </p>
               )}
             </div>
