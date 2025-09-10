@@ -21,7 +21,7 @@ const NewsLetter = () => {
 
     try {
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
-      const url = `${base}/api/newsletter/subscribe/`;
+      const url = `${base}/api/newsletter/`;
       
       const response = await fetch(url, {
         method: 'POST',
