@@ -21,7 +21,7 @@ const NewsLetter = () => {
 
     try {
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
-      const url = `${base}/api/newsletter/`;
+      const url = `${base}/api/newsletter/subscribe/`;
       
       const response = await fetch(url, {
         method: 'POST',
@@ -31,14 +31,25 @@ const NewsLetter = () => {
         body: JSON.stringify({ email }),
       });
 
-      const data = await response.json();
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      let data;
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = await response.text();
+      }
 
       if (response.ok) {
         setMessage("Successfully subscribed to our newsletter! 🎉");
         setIsError(false);
         setEmail(""); // Clear the input
       } else {
-        setMessage(data.detail || data.email || "Failed to subscribe. Please try again.");
+        // Handle different error response formats
+        const errorMessage = data.detail || data.email || data.message || data.error || 
+                            (typeof data === 'string' ? data : "Failed to subscribe. Please try again.");
+        setMessage(errorMessage);
         setIsError(true);
       }
     } catch (error) {
