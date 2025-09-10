@@ -103,7 +103,7 @@ const Banner = () => {
           unoptimized={!isCloudinaryUrl(banner.image)}
         />
       ) : (
-        <div className="hidden md:block w-80 h-80 bg-gray-300 flex items-center justify-center">
+        <div className=" md:block w-80 h-80 bg-gray-300 flex items-center justify-center">
           <span className="text-gray-500">No image</span>
         </div>
       )}
@@ -164,7 +164,7 @@ const Banner = () => {
           unoptimized={!isCloudinaryUrl(banner.image)}
         />
       ) : (
-        <div className="hidden md:block w-80 h-80 bg-gray-300 flex items-center justify-center">
+        <div className="md:block w-80 h-80 bg-gray-300 flex items-center justify-center">
           <span className="text-gray-500">No image</span>
         </div>
       )}
