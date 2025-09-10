@@ -66,11 +66,11 @@ const AddProduct = () => {
         }
       } else {
         console.error('Failed to fetch categories:', response.status, response.statusText);
-        setError('Failed to load categories. Please refresh the page.');
+        // Don't show error on initial load, only if there's a real issue
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
-      setError('Error loading categories. Please check your connection.');
+      // Don't show error on initial load
     } finally {
       setCategoriesLoading(false);
     }
@@ -109,7 +109,7 @@ const AddProduct = () => {
         setError('');
       } else {
         const errorData = await response.json();
-        setError(errorData.name || 'Failed to add category');
+        setError(errorData.name || errorData.detail || 'Failed to add category');
       }
     } catch (error) {
       console.error('Error adding category:', error);
@@ -123,6 +123,19 @@ const AddProduct = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Basic validation
+    if (!category) {
+      setError('Please select or create a category');
+      setLoading(false);
+      return;
+    }
+
+    if (files.filter(Boolean).length === 0) {
+      setError('Please upload at least one image');
+      setLoading(false);
+      return;
+    }
 
     try {
       const token = getAuthToken();
@@ -151,7 +164,8 @@ const AddProduct = () => {
         }
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/`, {
+      const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
+      const response = await fetch(`${base}/api/products/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -166,11 +180,13 @@ const AddProduct = () => {
         // Reset form
         setName('');
         setDescription('');
+        setCategory(categories.length > 0 ? categories[0].id : '');
         setPrice('');
         setStock('');
         setRating('');
         setIsFeatured(false);
         setFiles([]);
+        setError('');
       } else {
         if (response.status === 401 || response.status === 403) {
           setError('Authentication failed. Please login again.');
@@ -212,7 +228,7 @@ const AddProduct = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -232,7 +248,7 @@ const AddProduct = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-6">Add New Product</h2>
           
@@ -359,7 +375,7 @@ const AddProduct = () => {
                       onChange={(e) => setCategory(e.target.value)}
                       value={category}
                       required
-                      disabled={loading || categories.length === 0}
+                      disabled={loading}
                     >
                       <option value="">Select Category</option>
                       {categories.map((cat) => (
@@ -477,7 +493,7 @@ const AddProduct = () => {
             <div className="pt-4">
               <button 
                 type="submit" 
-                disabled={loading || !category}
+                disabled={loading || !category || files.filter(Boolean).length === 0}
                 className="px-6 py-3 bg-[#FC46AA] text-white font-medium rounded-md hover:bg-[#F699CD] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
@@ -497,10 +513,36 @@ const AddProduct = () => {
                   Please select or create a category
                 </p>
               )}
+              {files.filter(Boolean).length === 0 && (
+                <p className="text-red-500 text-sm mt-2">
+                  Please upload at least one image
+                </p>
+              )}
             </div>
           </form>
         </div>
       </main>
+
+      {/* Footer - Fixed for mobile */}
+      <footer className="bg-white border-t border-gray-200 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
+            <p className="text-sm text-gray-600 text-center sm:text-left">
+              © 2024 JosseyCart. All rights reserved.
+            </p>
+            <div className="flex space-x-4">
+              <a href="#" className="text-gray-400 hover:text-gray-500">
+                <span className="sr-only">Privacy Policy</span>
+                <span className="text-sm">Privacy</span>
+              </a>
+              <a href="#" className="text-gray-400 hover:text-gray-500">
+                <span className="sr-only">Terms of Service</span>
+                <span className="text-sm">Terms</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
