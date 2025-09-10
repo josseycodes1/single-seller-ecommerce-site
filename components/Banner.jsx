@@ -6,6 +6,7 @@ const Banner = () => {
   const [banner, setBanner] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [imageErrors, setImageErrors] = useState({});
 
   useEffect(() => {
     const fetchBanner = async () => {
@@ -35,6 +36,24 @@ const Banner = () => {
     fetchBanner();
   }, []);
 
+  // Function to check if URL is from Cloudinary
+  const isCloudinaryUrl = (url) => {
+    return url && url.includes('cloudinary.com');
+  }
+
+  // Function to get optimized Cloudinary URL
+  const getOptimizedCloudinaryUrl = (url, width = 900, height = 900) => {
+    if (!url || !isCloudinaryUrl(url)) return url
+    
+    const optimizationParams = `c_fill,w_${width},h_${height},q_auto,f_auto`
+    return url.replace('/upload/', `/upload/${optimizationParams}/`)
+  }
+
+  // Handle image errors
+  const handleImageError = (imageType) => {
+    setImageErrors(prev => ({ ...prev, [imageType]: true }));
+  }
+
   if (loading) {
     return (
       <div className="flex flex-col md:flex-row items-center justify-between md:pl-20 py-14 md:py-0 bg-gray-200 my-16 rounded-xl overflow-hidden animate-pulse">
@@ -61,25 +80,33 @@ const Banner = () => {
   return (
     <div className="flex flex-col md:flex-row items-center justify-between md:pl-20 py-14 md:py-0 bg-josseypink2 my-16 rounded-xl overflow-hidden">
       {/* Left image - desktop only (using secondary_image if available) */}
-      {banner?.secondary_image ? (
+      {banner?.secondary_image && !imageErrors.secondary_image ? (
         <Image
           className="hidden md:block max-w-80"
-          src={banner.secondary_image}
+          src={getOptimizedCloudinaryUrl(banner.secondary_image)}
           alt="Banner secondary image"
           width={900}
           height={900}
           priority
+          onError={() => handleImageError('secondary_image')}
+          unoptimized={!isCloudinaryUrl(banner.secondary_image)}
         />
-      ) : banner?.image ? (
+      ) : banner?.image && !imageErrors.image ? (
         <Image
           className="hidden md:block max-w-80"
-          src={banner.image}
+          src={getOptimizedCloudinaryUrl(banner.image)}
           alt="Banner product image"
           width={900}
           height={900}
           priority
+          onError={() => handleImageError('image')}
+          unoptimized={!isCloudinaryUrl(banner.image)}
         />
-      ) : null}
+      ) : (
+        <div className="hidden md:block w-80 h-80 bg-gray-300 flex items-center justify-center">
+          <span className="text-gray-500">No image</span>
+        </div>
+      )}
       
       {/* Center content - properly centered */}
       <div className="flex flex-col items-center justify-center text-center space-y-4 px-4 md:px-0 mx-auto">
@@ -116,42 +143,58 @@ const Banner = () => {
       </div>
       
       {/* Right image - desktop only (using secondary_image if available) */}
-      {banner?.secondary_image ? (
+      {banner?.secondary_image && !imageErrors.secondary_image_right ? (
         <Image
           className="hidden md:block max-w-80"
-          src={banner.secondary_image}
+          src={getOptimizedCloudinaryUrl(banner.secondary_image, 200, 200)}
           alt="Banner secondary image"
           width={200}
           height={200}
+          onError={() => handleImageError('secondary_image_right')}
+          unoptimized={!isCloudinaryUrl(banner.secondary_image)}
         />
-      ) : banner?.image ? (
+      ) : banner?.image && !imageErrors.image_right ? (
         <Image
           className="hidden md:block max-w-80"
-          src={banner.image}
+          src={getOptimizedCloudinaryUrl(banner.image, 200, 200)}
           alt="Banner product image"
           width={200}
           height={200}
+          onError={() => handleImageError('image_right')}
+          unoptimized={!isCloudinaryUrl(banner.image)}
         />
-      ) : null}
+      ) : (
+        <div className="hidden md:block w-80 h-80 bg-gray-300 flex items-center justify-center">
+          <span className="text-gray-500">No image</span>
+        </div>
+      )}
       
       {/* Mobile image (using image_mobile if available) */}
-      {banner?.image_mobile ? (
+      {banner?.image_mobile && !imageErrors.image_mobile ? (
         <Image
           className="md:hidden max-w-48"
-          src={banner.image_mobile}
+          src={getOptimizedCloudinaryUrl(banner.image_mobile, 200, 200)}
           alt="Banner mobile image"
           width={200}
           height={200}
+          onError={() => handleImageError('image_mobile')}
+          unoptimized={!isCloudinaryUrl(banner.image_mobile)}
         />
-      ) : banner?.image ? (
+      ) : banner?.image && !imageErrors.image_mobile_fallback ? (
         <Image
           className="md:hidden max-w-48"
-          src={banner.image}
+          src={getOptimizedCloudinaryUrl(banner.image, 200, 200)}
           alt="Banner product image"
           width={200}
           height={200}
+          onError={() => handleImageError('image_mobile_fallback')}
+          unoptimized={!isCloudinaryUrl(banner.image)}
         />
-      ) : null}
+      ) : (
+        <div className="md:hidden w-48 h-48 bg-gray-300 flex items-center justify-center">
+          <span className="text-gray-500">No image</span>
+        </div>
+      )}
     </div>
   );
 };
