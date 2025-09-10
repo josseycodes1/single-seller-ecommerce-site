@@ -1,10 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const NewsLetter = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
+
+  // Auto-dismiss message after 5 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage("");
+      }, 5000); // 5 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
@@ -62,27 +73,34 @@ const NewsLetter = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center text-center space-y-2 pt-8 pb-14 px-4">
-      <h1 className="md:text-4xl text-2xl font-medium">
+    <div className="flex flex-col items-center justify-center text-center space-y-4 md:space-y-2 pt-8 pb-14 px-4 md:px-0">
+      <h1 className="md:text-4xl text-2xl font-medium px-4 md:px-0">
         Subscribe now & get 20% off
       </h1>
-      <p className="md:text-base text-gray-500/80 pb-8 max-w-2xl">
+      <p className="md:text-base text-sm text-gray-500/80 pb-6 md:pb-8 max-w-2xl px-2 md:px-0">
         Stay updated with our latest products, exclusive deals, and special offers.
         Be the first to know about new arrivals and promotions!
       </p>
       
-      {/* Message display */}
+      {/* Message display with close button */}
       {message && (
-        <div className={`w-full max-w-2xl p-3 rounded-md ${
+        <div className={`w-full max-w-2xl p-3 rounded-md relative ${
           isError ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-green-100 text-green-700 border border-green-200'
         }`}>
           {message}
+          <button
+            onClick={() => setMessage("")}
+            className="absolute top-2 right-2 text-lg font-bold hover:opacity-70 transition-opacity"
+            aria-label="Close message"
+          >
+            ×
+          </button>
         </div>
       )}
 
-      <form onSubmit={handleSubscribe} className="flex flex-col md:flex-row items-center justify-between max-w-2xl w-full md:h-14 h-12 gap-4 md:gap-0">
+      <form onSubmit={handleSubscribe} className="flex flex-col md:flex-row items-center justify-center md:justify-between max-w-2xl w-full md:h-14 h-auto gap-4 md:gap-3">
         <input
-          className="border border-gray-500/30 rounded-md h-full outline-none w-full px-3 text-gray-500 focus:border-josseypink2 transition-colors"
+          className="border border-gray-500/30 rounded-md h-12 md:h-full outline-none w-full px-4 text-gray-500 focus:border-josseypink2 transition-colors text-base md:text-sm"
           type="email"
           placeholder="Enter your email address"
           value={email}
@@ -93,7 +111,7 @@ const NewsLetter = () => {
         <button 
           type="submit"
           disabled={loading}
-          className="md:px-12 px-8 h-full text-white bg-josseypink2 rounded-md hover:bg-josseypink1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px]"
+          className="w-full md:w-auto md:px-8 px-6 h-12 md:h-full text-white bg-josseypink2 rounded-md hover:bg-josseypink1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] text-base md:text-sm font-medium"
         >
           {loading ? (
             <div className="flex items-center justify-center">
@@ -109,7 +127,7 @@ const NewsLetter = () => {
         </button>
       </form>
       
-      <p className="text-xs text-gray-400 mt-4 max-w-2xl">
+      <p className="text-xs text-gray-400 mt-4 max-w-2xl px-4 md:px-0 text-center">
         By subscribing, you agree to receive marketing emails from us. You can unsubscribe at any time.
         We respect your privacy and will never share your information with third parties.
       </p>

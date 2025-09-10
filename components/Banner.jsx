@@ -17,11 +17,14 @@ const Banner = () => {
         }
         
         const response = await axios.get(`${API_BASE_URL}/api/banners/`);
+        console.log("Banner API response:", response.data); // Debug
         
         if (response.data && response.data.length > 0) {
           // Filter for active banners if needed, or get the first one
           const activeBanners = response.data.filter(b => b.is_active);
-          setBanner(activeBanners.length > 0 ? activeBanners[0] : response.data[0]);
+          const selectedBanner = activeBanners.length > 0 ? activeBanners[0] : response.data[0];
+          console.log("Selected banner:", selectedBanner); // Debug
+          setBanner(selectedBanner);
         } else {
           setError("No banners found");
         }
@@ -50,7 +53,8 @@ const Banner = () => {
   }
 
   // Handle image errors
-  const handleImageError = (imageType) => {
+  const handleImageError = (imageType, e) => {
+    console.error(`Image error for ${imageType}:`, e);
     setImageErrors(prev => ({ ...prev, [imageType]: true }));
   }
 
@@ -77,33 +81,47 @@ const Banner = () => {
     );
   }
 
+  // Debug: Log the banner data and image URLs
+  useEffect(() => {
+    if (banner) {
+      console.log("Banner data:", banner);
+      console.log("Image URLs:", {
+        image: banner.image,
+        secondary_image: banner.secondary_image,
+        image_mobile: banner.image_mobile,
+        optimized_image: banner.image ? getOptimizedCloudinaryUrl(banner.image) : null
+      });
+    }
+  }, [banner]);
+
   return (
     <div className="flex flex-col md:flex-row items-center justify-between md:pl-20 py-14 md:py-0 bg-josseypink2 my-16 rounded-xl overflow-hidden">
+      {/* Debug info - remove in production */}
+      {banner && (
+        <div className="hidden"> {/* Hidden debug info */}
+          <p>Image: {banner.image || 'None'}</p>
+          <p>Secondary: {banner.secondary_image || 'None'}</p>
+          <p>Mobile: {banner.image_mobile || 'None'}</p>
+        </div>
+      )}
+      
       {/* Left image - desktop only (using secondary_image if available) */}
       {banner?.secondary_image && !imageErrors.secondary_image ? (
-        <Image
-          className="hidden md:block max-w-80"
+        <img
+          className="hidden md:block max-w-80 h-auto"
           src={getOptimizedCloudinaryUrl(banner.secondary_image)}
           alt="Banner secondary image"
-          width={900}
-          height={900}
-          priority
-          onError={() => handleImageError('secondary_image')}
-          unoptimized={!isCloudinaryUrl(banner.secondary_image)}
+          onError={(e) => handleImageError('secondary_image', e)}
         />
       ) : banner?.image && !imageErrors.image ? (
-        <Image
-          className="hidden md:block max-w-80"
+        <img
+          className="hidden md:block max-w-80 h-auto"
           src={getOptimizedCloudinaryUrl(banner.image)}
           alt="Banner product image"
-          width={900}
-          height={900}
-          priority
-          onError={() => handleImageError('image')}
-          unoptimized={!isCloudinaryUrl(banner.image)}
+          onError={(e) => handleImageError('image', e)}
         />
       ) : (
-        <div className=" md:block w-80 h-80 bg-gray-300 flex items-center justify-center">
+        <div className="hidden md:flex w-80 h-80 bg-gray-300 items-center justify-center">
           <span className="text-gray-500">No image</span>
         </div>
       )}
@@ -144,54 +162,42 @@ const Banner = () => {
       
       {/* Right image - desktop only (using secondary_image if available) */}
       {banner?.secondary_image && !imageErrors.secondary_image_right ? (
-        <Image
-          className="hidden md:block max-w-80"
+        <img
+          className="hidden md:block max-w-80 h-auto"
           src={getOptimizedCloudinaryUrl(banner.secondary_image, 200, 200)}
           alt="Banner secondary image"
-          width={200}
-          height={200}
-          onError={() => handleImageError('secondary_image_right')}
-          unoptimized={!isCloudinaryUrl(banner.secondary_image)}
+          onError={(e) => handleImageError('secondary_image_right', e)}
         />
       ) : banner?.image && !imageErrors.image_right ? (
-        <Image
-          className="hidden md:block max-w-80"
+        <img
+          className="hidden md:block max-w-80 h-auto"
           src={getOptimizedCloudinaryUrl(banner.image, 200, 200)}
           alt="Banner product image"
-          width={200}
-          height={200}
-          onError={() => handleImageError('image_right')}
-          unoptimized={!isCloudinaryUrl(banner.image)}
+          onError={(e) => handleImageError('image_right', e)}
         />
       ) : (
-        <div className="md:block w-80 h-80 bg-gray-300 flex items-center justify-center">
+        <div className="hidden md:flex w-80 h-80 bg-gray-300 items-center justify-center">
           <span className="text-gray-500">No image</span>
         </div>
       )}
       
       {/* Mobile image (using image_mobile if available) */}
       {banner?.image_mobile && !imageErrors.image_mobile ? (
-        <Image
-          className="md:hidden max-w-48"
+        <img
+          className="md:hidden max-w-48 h-auto mx-auto"
           src={getOptimizedCloudinaryUrl(banner.image_mobile, 200, 200)}
           alt="Banner mobile image"
-          width={200}
-          height={200}
-          onError={() => handleImageError('image_mobile')}
-          unoptimized={!isCloudinaryUrl(banner.image_mobile)}
+          onError={(e) => handleImageError('image_mobile', e)}
         />
       ) : banner?.image && !imageErrors.image_mobile_fallback ? (
-        <Image
-          className="md:hidden max-w-48"
+        <img
+          className="md:hidden max-w-48 h-auto mx-auto"
           src={getOptimizedCloudinaryUrl(banner.image, 200, 200)}
           alt="Banner product image"
-          width={200}
-          height={200}
-          onError={() => handleImageError('image_mobile_fallback')}
-          unoptimized={!isCloudinaryUrl(banner.image)}
+          onError={(e) => handleImageError('image_mobile_fallback', e)}
         />
       ) : (
-        <div className="md:hidden w-48 h-48 bg-gray-300 flex items-center justify-center">
+        <div className="md:hidden w-48 h-48 bg-gray-300 flex items-center justify-center mx-auto">
           <span className="text-gray-500">No image</span>
         </div>
       )}
