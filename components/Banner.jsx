@@ -10,7 +10,11 @@ const Banner = () => {
   useEffect(() => {
     const fetchBanner = async () => {
       try {
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+        if (!API_BASE_URL) {
+          throw new Error("API base URL is not defined");
+        }
+        
         const response = await axios.get(`${API_BASE_URL}/api/banners/`);
         
         if (response.data && response.data.length > 0) {
