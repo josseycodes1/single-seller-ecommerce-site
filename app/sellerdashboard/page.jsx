@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 
-// Auth utility functions
 const isAuthenticated = () => {
   if (typeof window === 'undefined') return false;
   const token = localStorage.getItem('access_token');
@@ -37,6 +36,8 @@ const AddProduct = () => {
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [addingCategory, setAddingCategory] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+  const [touched, setTouched] = useState({});
   
   const router = useRouter();
 
@@ -61,16 +62,11 @@ const AddProduct = () => {
       if (response.ok) {
         const data = await response.json();
         setCategories(data);
-        if (data.length > 0 && !category) {
-          setCategory(data[0].id); // Set first category as default
-        }
       } else {
         console.error('Failed to fetch categories:', response.status, response.statusText);
-        // Don't show error on initial load, only if there's a real issue
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
-      // Don't show error on initial load
     } finally {
       setCategoriesLoading(false);
     }
@@ -119,20 +115,50 @@ const AddProduct = () => {
     }
   };
 
+  // Validate form
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!name.trim()) errors.name = 'Product name is required';
+    if (!description.trim()) errors.description = 'Product description is required';
+    if (!category) errors.category = 'Please select or create a category';
+    if (!price || parseFloat(price) <= 0) errors.price = 'Valid price is required';
+    if (!stock || parseInt(stock) < 0) errors.stock = 'Valid stock quantity is required';
+    if (files.filter(Boolean).length === 0) errors.images = 'Please upload at least one image';
+    
+    return errors;
+  };
+
+  const handleBlur = (field) => {
+    setTouched({ ...touched, [field]: true });
+    
+    // Validate only the blurred field
+    const errors = validateForm();
+    if (errors[field]) {
+      setFormErrors({ ...formErrors, [field]: errors[field] });
+    } else {
+      const newErrors = { ...formErrors };
+      delete newErrors[field];
+      setFormErrors(newErrors);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // Basic validation
-    if (!category) {
-      setError('Please select or create a category');
-      setLoading(false);
-      return;
-    }
+    // Mark all fields as touched to show all errors
+    const allTouched = {};
+    Object.keys(validateForm()).forEach(key => {
+      allTouched[key] = true;
+    });
+    setTouched(allTouched);
 
-    if (files.filter(Boolean).length === 0) {
-      setError('Please upload at least one image');
+    // Validate the entire form
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       setLoading(false);
       return;
     }
@@ -180,12 +206,14 @@ const AddProduct = () => {
         // Reset form
         setName('');
         setDescription('');
-        setCategory(categories.length > 0 ? categories[0].id : '');
+        setCategory('');
         setPrice('');
         setStock('');
         setRating('');
         setIsFeatured(false);
         setFiles([]);
+        setFormErrors({});
+        setTouched({});
         setError('');
       } else {
         if (response.status === 401 || response.status === 403) {
@@ -207,6 +235,13 @@ const AddProduct = () => {
     const updatedFiles = [...files];
     updatedFiles[index] = file;
     setFiles(updatedFiles);
+    
+    // Clear image error when a file is added
+    if (file) {
+      const newErrors = { ...formErrors };
+      delete newErrors.images;
+      setFormErrors(newErrors);
+    }
   };
 
   const removeImage = (index) => {
@@ -319,6 +354,9 @@ const AddProduct = () => {
                   </div>
                 ))}
               </div>
+              {touched.images && formErrors.images && (
+                <p className="text-red-500 text-sm mt-2">{formErrors.images}</p>
+              )}
               <p className="text-xs text-gray-500 mt-2">At least one image is required</p>
             </div>
 
@@ -331,12 +369,18 @@ const AddProduct = () => {
                 id="product-name"
                 type="text"
                 placeholder="Enter product name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent ${
+                  touched.name && formErrors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
                 onChange={(e) => setName(e.target.value)}
+                onBlur={() => handleBlur('name')}
                 value={name}
                 required
                 disabled={loading}
               />
+              {touched.name && formErrors.name && (
+                <p className="text-red-500 text-sm mt-2">{formErrors.name}</p>
+              )}
             </div>
 
             {/* Product Description */}
@@ -347,13 +391,19 @@ const AddProduct = () => {
               <textarea
                 id="product-description"
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent resize-none"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent resize-none ${
+                  touched.description && formErrors.description ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="Describe your product..."
                 onChange={(e) => setDescription(e.target.value)}
+                onBlur={() => handleBlur('description')}
                 value={description}
                 required
                 disabled={loading}
               />
+              {touched.description && formErrors.description && (
+                <p className="text-red-500 text-sm mt-2">{formErrors.description}</p>
+              )}
             </div>
 
             {/* Category, Price, Stock, Rating */}
@@ -371,8 +421,11 @@ const AddProduct = () => {
                   <div className="flex flex-col gap-2">
                     <select
                       id="category"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent ${
+                        touched.category && formErrors.category ? 'border-red-500' : 'border-gray-300'
+                      }`}
                       onChange={(e) => setCategory(e.target.value)}
+                      onBlur={() => handleBlur('category')}
                       value={category}
                       required
                       disabled={loading}
@@ -384,6 +437,10 @@ const AddProduct = () => {
                         </option>
                       ))}
                     </select>
+                    
+                    {touched.category && formErrors.category && (
+                      <p className="text-red-500 text-sm mt-2">{formErrors.category}</p>
+                    )}
                     
                     <button
                       type="button"
@@ -428,12 +485,18 @@ const AddProduct = () => {
                   placeholder="0.00"
                   min="0"
                   step="0.01"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent ${
+                    touched.price && formErrors.price ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   onChange={(e) => setPrice(e.target.value)}
+                  onBlur={() => handleBlur('price')}
                   value={price}
                   required
                   disabled={loading}
                 />
+                {touched.price && formErrors.price && (
+                  <p className="text-red-500 text-sm mt-2">{formErrors.price}</p>
+                )}
               </div>
 
               {/* Stock */}
@@ -446,12 +509,18 @@ const AddProduct = () => {
                   type="number"
                   placeholder="0"
                   min="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent ${
+                    touched.stock && formErrors.stock ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   onChange={(e) => setStock(e.target.value)}
+                  onBlur={() => handleBlur('stock')}
                   value={stock}
                   required
                   disabled={loading}
                 />
+                {touched.stock && formErrors.stock && (
+                  <p className="text-red-500 text-sm mt-2">{formErrors.stock}</p>
+                )}
               </div>
 
               {/* Rating */}
@@ -493,7 +562,7 @@ const AddProduct = () => {
             <div className="pt-4">
               <button 
                 type="submit" 
-                disabled={loading || !category || files.filter(Boolean).length === 0}
+                disabled={loading}
                 className="px-6 py-3 bg-[#FC46AA] text-white font-medium rounded-md hover:bg-[#F699CD] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
@@ -508,16 +577,6 @@ const AddProduct = () => {
                   'ADD PRODUCT'
                 )}
               </button>
-              {!category && (
-                <p className="text-red-500 text-sm mt-2">
-                  Please select or create a category
-                </p>
-              )}
-              {files.filter(Boolean).length === 0 && (
-                <p className="text-red-500 text-sm mt-2">
-                  Please upload at least one image
-                </p>
-              )}
             </div>
           </form>
         </div>
