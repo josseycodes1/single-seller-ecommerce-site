@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 
+// Auth utility functions
 const isAuthenticated = () => {
   if (typeof window === 'undefined') return false;
   const token = localStorage.getItem('access_token');
@@ -103,9 +104,11 @@ const AddProduct = () => {
         setNewCategoryName('');
         setShowAddCategory(false);
         setError('');
+        // Refetch categories to ensure we have the latest data
+        fetchCategories();
       } else {
         const errorData = await response.json();
-        setError(errorData.name || errorData.detail || 'Failed to add category');
+        setError(errorData.detail || errorData.name || 'Failed to add category');
       }
     } catch (error) {
       console.error('Error adding category:', error);
@@ -121,10 +124,11 @@ const AddProduct = () => {
     
     if (!name.trim()) errors.name = 'Product name is required';
     if (!description.trim()) errors.description = 'Product description is required';
-    if (!category) errors.category = 'Please select or create a category';
     if (!price || parseFloat(price) <= 0) errors.price = 'Valid price is required';
     if (!stock || parseInt(stock) < 0) errors.stock = 'Valid stock quantity is required';
     if (files.filter(Boolean).length === 0) errors.images = 'Please upload at least one image';
+    
+    // Category is now optional, so we don't validate it
     
     return errors;
   };
@@ -177,7 +181,9 @@ const AddProduct = () => {
       // Add product data
       formData.append('name', name);
       formData.append('description', description);
-      formData.append('category', category);
+      if (category) {
+        formData.append('category', category);
+      }
       formData.append('price', price);
       formData.append('stock', stock || '0');
       formData.append('rating', rating || '0');
@@ -408,10 +414,10 @@ const AddProduct = () => {
 
             {/* Category, Price, Stock, Rating */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Category */}
+              {/* Category - Now Optional */}
               <div>
                 <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-                  Category *
+                  Category
                 </label>
                 {categoriesLoading ? (
                   <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
@@ -421,26 +427,18 @@ const AddProduct = () => {
                   <div className="flex flex-col gap-2">
                     <select
                       id="category"
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent ${
-                        touched.category && formErrors.category ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
                       onChange={(e) => setCategory(e.target.value)}
-                      onBlur={() => handleBlur('category')}
                       value={category}
-                      required
                       disabled={loading}
                     >
-                      <option value="">Select Category</option>
+                      <option value="">No Category (Optional)</option>
                       {categories.map((cat) => (
                         <option key={cat.id} value={cat.id}>
                           {cat.name}
                         </option>
                       ))}
                     </select>
-                    
-                    {touched.category && formErrors.category && (
-                      <p className="text-red-500 text-sm mt-2">{formErrors.category}</p>
-                    )}
                     
                     <button
                       type="button"
