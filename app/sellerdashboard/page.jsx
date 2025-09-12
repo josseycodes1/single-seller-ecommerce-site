@@ -68,6 +68,7 @@ const AddProduct = () => {
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
+      setError('Failed to load categories. Please refresh the page.');
     } finally {
       setCategoriesLoading(false);
     }
@@ -189,23 +190,32 @@ const AddProduct = () => {
       formData.append('rating', rating || '0');
       formData.append('is_featured', isFeatured.toString());
       
-      // Add images
+      // Add images - FIXED: Use the correct field name and append each file
       files.forEach((file, index) => {
         if (file) {
+          // Use the field name that your Django backend expects
+          // Based on your serializer, it should be 'images' (plural)
           formData.append('images', file);
         }
       });
+
+      console.log('FormData contents:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
 
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
       const response = await fetch(`${base}/api/products/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
+          // Don't set Content-Type header for FormData - browser will set it automatically with boundary
         },
         body: formData,
       });
 
       const responseData = await response.json();
+      console.log('Response:', responseData);
 
       if (response.ok) {
         alert('Product added successfully!');
@@ -226,7 +236,12 @@ const AddProduct = () => {
           setError('Authentication failed. Please login again.');
           logout();
         } else {
-          setError(`Failed to add product: ${responseData.detail || JSON.stringify(responseData)}`);
+          // Handle image-specific errors
+          if (responseData.images) {
+            setError(`Image error: ${responseData.images.join(', ')}`);
+          } else {
+            setError(`Failed to add product: ${responseData.detail || JSON.stringify(responseData)}`);
+          }
         }
       }
     } catch (error) {
@@ -307,7 +322,7 @@ const AddProduct = () => {
             </div>
           )}
           
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" encType="multipart/form-data">
             {/* Product Images */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -328,6 +343,7 @@ const AddProduct = () => {
                         className="hidden" 
                         accept="image/*"
                         disabled={loading}
+                        name={`image${index}`}
                       />
                       <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg hover:border-[#FC46AA] transition-colors flex items-center justify-center overflow-hidden">
                         {files[index] ? (
