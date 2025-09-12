@@ -194,15 +194,9 @@ const AddProduct = () => {
       files.forEach((file, index) => {
         if (file) {
           // Use the field name that your Django backend expects
-          // Based on your serializer, it should be 'images' (plural)
           formData.append('images', file);
         }
       });
-
-      console.log('FormData contents:');
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
 
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
       const response = await fetch(`${base}/api/products/`, {
@@ -215,7 +209,6 @@ const AddProduct = () => {
       });
 
       const responseData = await response.json();
-      console.log('Response:', responseData);
 
       if (response.ok) {
         alert('Product added successfully!');
@@ -595,27 +588,6 @@ const AddProduct = () => {
           </form>
         </div>
       </main>
-
-      {/* Footer - Fixed for mobile */}
-      <footer className="bg-white border-t border-gray-200 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
-            <p className="text-sm text-gray-600 text-center sm:text-left">
-              © 2024 JosseyCart. All rights reserved.
-            </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-gray-500">
-                <span className="sr-only">Privacy Policy</span>
-                <span className="text-sm">Privacy</span>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-gray-500">
-                <span className="sr-only">Terms of Service</span>
-                <span className="text-sm">Terms</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
