@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
-import Footer from "@/components/seller/Footer";
 import Loading from "@/components/Loading";
 
 const ProductList = () => {
@@ -143,127 +142,162 @@ const ProductList = () => {
             </button>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="flex-1 min-h-screen flex flex-col justify-between">
+    <div className="flex-1 min-h-screen">
       <div className="w-full md:p-10 p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-medium">All Products</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">All Products</h2>
           <button 
             onClick={() => router.push('/seller/add-product')}
-            className="px-4 py-2 bg-josseypink2 text-white rounded-md hover:bg-josseypink1 transition-colors"
+            className="px-4 py-2 bg-josseypink2 text-white rounded-md hover:bg-josseypink1 transition-colors font-medium"
           >
             Add New Product
           </button>
         </div>
         
         {products.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-gray-500 mb-4">No products found.</p>
+          <div className="text-center py-16 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="mx-auto w-24 h-24 mb-4 text-gray-300">
+              <svg fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <p className="text-gray-500 mb-4 text-lg">No products found.</p>
             <button 
               onClick={() => router.push('/seller/add-product')}
-              className="px-4 py-2 bg-josseypink2 text-white rounded-md hover:bg-josseypink1 transition-colors"
+              className="px-6 py-2 bg-josseypink2 text-white rounded-md hover:bg-josseypink1 transition-colors font-medium"
             >
               Add Your First Product
             </button>
           </div>
         ) : (
-          <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-white border border-gray-500/20">
-            <table className="table-fixed w-full overflow-hidden">
-              <thead className="text-gray-900 text-sm text-left">
-                <tr>
-                  <th className="w-2/3 md:w-2/5 px-4 py-3 font-medium truncate">Product</th>
-                  <th className="px-4 py-3 font-medium truncate max-sm:hidden">Category</th>
-                  <th className="px-4 py-3 font-medium truncate">Price</th>
-                  <th className="px-4 py-3 font-medium truncate max-sm:hidden">Stock</th>
-                  <th className="px-4 py-3 font-medium truncate">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm text-gray-500">
-                {products.map((product) => (
-                  <tr key={product.id} className="border-t border-gray-500/20 hover:bg-gray-50">
-                    <td className="md:px-4 pl-2 md:pl-4 py-3 flex items-center space-x-3 truncate">
-                      <div className="bg-gray-500/10 rounded p-2 flex-shrink-0">
-                        {product.images && product.images.length > 0 ? (
-                          <Image
-                            src={product.images[0].image_url}
-                            alt={product.name}
-                            className="w-16 h-16 object-cover"
-                            width={64}
-                            height={64}
-                          />
-                        ) : (
-                          <div className="w-16 h-16 bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-400 text-xs">No Image</span>
-                          </div>
-                        )}
-                      </div>
-                      <span className="truncate w-full">
-                        {product.name}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 max-sm:hidden capitalize">
-                      {typeof product.category === 'object' ? product.category.name : product.category}
-                    </td>
-                    <td className="px-4 py-3">
-                      ${parseFloat(product.price).toFixed(2)}
-                      {product.offer_price && product.offer_price < product.price && (
-                        <span className="text-xs text-gray-400 line-through ml-1">
-                          ${parseFloat(product.offer_price).toFixed(2)}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 max-sm:hidden">
-                      <span className={product.stock > 0 ? 'text-green-600' : 'text-red-600'}>
-                        {product.stock}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex space-x-2">
-                        <button 
-                          onClick={() => router.push(`/product/${product.id}`)} 
-                          className="flex items-center gap-1 px-2 py-1.5 bg-blue-100 text-blue-600 rounded-md hover:bg-blue-200 transition-colors"
-                          title="View Product"
-                        >
-                          <Image
-                            className="h-3.5 w-3.5"
-                            src={assets.redirect_icon}
-                            alt="View product"
-                            width={14}
-                            height={14}
-                          />
-                          <span className="hidden md:block text-xs">View</span>
-                        </button>
-                        <button 
-                          onClick={() => router.push(`/seller/edit-product/${product.id}`)} 
-                          className="flex items-center gap-1 px-2 py-1.5 bg-yellow-100 text-yellow-600 rounded-md hover:bg-yellow-200 transition-colors"
-                          title="Edit Product"
-                        >
-                          <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                          </svg>
-                          <span className="hidden md:block text-xs">Edit</span>
-                        </button>
-                        <button 
-                          onClick={() => deleteProduct(product.id)} 
-                          className="flex items-center gap-1 px-2 py-1.5 bg-red-100 text-red-600 rounded-md hover:bg-red-200 transition-colors"
-                          title="Delete Product"
-                        >
-                          <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/>
-                          </svg>
-                          <span className="hidden md:block text-xs">Delete</span>
-                        </button>
-                      </div>
-                    </td>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Product
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                      Category
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Price
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                      Stock
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {products.map((product) => (
+                    <tr key={product.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-16 w-16 bg-gray-100 rounded-md overflow-hidden">
+                            {product.images && product.images.length > 0 ? (
+                              <Image
+                                src={product.images[0].image_url}
+                                alt={product.name}
+                                className="h-16 w-16 object-cover"
+                                width={64}
+                                height={64}
+                              />
+                            ) : (
+                              <div className="h-16 w-16 bg-gray-200 flex items-center justify-center">
+                                <span className="text-gray-400 text-xs">No Image</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900 line-clamp-1">
+                              {product.name}
+                            </div>
+                            <div className="text-sm text-gray-500 md:hidden">
+                              {typeof product.category === 'object' ? product.category.name : product.category}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
+                        {typeof product.category === 'object' ? product.category.name : product.category}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${parseFloat(product.price).toFixed(2)}
+                        {product.offer_price && product.offer_price < product.price && (
+                          <span className="text-xs text-gray-400 line-through ml-1">
+                            ${parseFloat(product.offer_price).toFixed(2)}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          product.stock > 10 ? 'bg-green-100 text-green-800' : 
+                          product.stock > 0 ? 'bg-yellow-100 text-yellow-800' : 
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {product.stock} in stock
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {product.is_featured ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            Featured
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            Standard
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                          <button
+                            onClick={() => window.open(`/product/${product.id}`, '_blank')}
+                            className="text-blue-600 hover:text-blue-900 p-1.5 rounded-md hover:bg-blue-50 transition-colors"
+                            title="View Product"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => router.push(`/seller/edit-product/${product.id}`)}
+                            className="text-yellow-600 hover:text-yellow-900 p-1.5 rounded-md hover:bg-yellow-50 transition-colors"
+                            title="Edit Product"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => deleteProduct(product.id)}
+                            className="text-red-600 hover:text-red-900 p-1.5 rounded-md hover:bg-red-50 transition-colors"
+                            title="Delete Product"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
