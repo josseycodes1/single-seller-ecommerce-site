@@ -264,7 +264,7 @@ const ProductList = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
                           <button
-                            onClick={() => window.open(`/sellerdashboard/edit-product`, '_blank')}
+                            onClick={() => window.open(`/product/${product.id}`, '_blank')}
                             className="text-blue-600 hover:text-blue-900 p-1.5 rounded-md hover:bg-blue-50 transition-colors"
                             title="View Product"
                           >
@@ -274,7 +274,7 @@ const ProductList = () => {
                             </svg>
                           </button>
                           <button
-                            onClick={() => router.push(`/seller/edit-product/${product.id}`)}
+                            onClick={() => router.push(`/sellerdashboard/edit-product`)}
                             className="text-yellow-600 hover:text-yellow-900 p-1.5 rounded-md hover:bg-yellow-50 transition-colors"
                             title="Edit Product"
                           >
