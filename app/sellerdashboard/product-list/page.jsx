@@ -10,6 +10,7 @@ const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [categories, setCategories] = useState({});
 
   // Auth utility functions
   const isAuthenticated = () => {
@@ -23,6 +24,36 @@ const ProductList = () => {
     return localStorage.getItem('access_token');
   };
 
+  const fetchCategories = async () => {
+    try {
+      const token = getAuthToken();
+      if (!token) return;
+      
+      const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
+      const url = `${base}/api/categories/`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Create a mapping of category IDs to names
+        const categoryMap = {};
+        data.forEach(category => {
+          categoryMap[category.id] = category.name;
+        });
+        setCategories(categoryMap);
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
+
   const fetchSellerProducts = async () => {
     try {
       setLoading(true);
@@ -31,6 +62,9 @@ const ProductList = () => {
       if (!token) {
         throw new Error('No authentication token found');
       }
+
+      // Fetch categories first
+      await fetchCategories();
 
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
       const url = `${base}/api/products/`;
@@ -99,6 +133,16 @@ const ProductList = () => {
       console.error('Error deleting product:', err);
       alert('Failed to delete product. Please try again.');
     }
+  };
+
+  // Helper function to get category name
+  const getCategoryName = (product) => {
+    if (typeof product.category === 'object' && product.category !== null) {
+      return product.category.name;
+    } else if (typeof product.category === 'number') {
+      return categories[product.category] || 'Unknown Category';
+    }
+    return product.category || 'Uncategorized';
   };
 
   useEffect(() => {
@@ -192,9 +236,6 @@ const ProductList = () => {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                       Stock
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
@@ -225,13 +266,13 @@ const ProductList = () => {
                               {product.name}
                             </div>
                             <div className="text-sm text-gray-500 md:hidden">
-                              {typeof product.category === 'object' ? product.category.name : product.category}
+                              {getCategoryName(product)}
                             </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
-                        {typeof product.category === 'object' ? product.category.name : product.category}
+                        {getCategoryName(product)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         ${parseFloat(product.price).toFixed(2)}
@@ -249,17 +290,6 @@ const ProductList = () => {
                         }`}>
                           {product.stock} in stock
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {product.is_featured ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                            Featured
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            Standard
-                          </span>
-                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
