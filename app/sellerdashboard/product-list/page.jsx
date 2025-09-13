@@ -152,7 +152,7 @@ const ProductList = () => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">All Products</h2>
           <button 
-            onClick={() => router.push('/sellerdashboard/edit-product')}
+            onClick={() => router.push('/sellerdashboard')}
             className="px-4 py-2 bg-josseypink2 text-white rounded-md hover:bg-josseypink1 transition-colors font-medium"
           >
             Add New Product
@@ -264,7 +264,7 @@ const ProductList = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
                           <button
-                            onClick={() => window.open(`/product/${product.id}`, '_blank')}
+                            onClick={() => window.open(`/sellerdashboard/edit-product`, '_blank')}
                             className="text-blue-600 hover:text-blue-900 p-1.5 rounded-md hover:bg-blue-50 transition-colors"
                             title="View Product"
                           >
