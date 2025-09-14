@@ -61,10 +61,15 @@ const EditProduct = () => {
   const fetchCategories = async () => {
     try {
       setCategoriesLoading(true);
+      const token = getAuthToken();
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
       const url = `${base}/api/categories/`;
       
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       
       if (response.ok) {
         const data = await response.json();
@@ -424,9 +429,200 @@ const EditProduct = () => {
               <p className="text-xs text-gray-500 mt-2">At least one image is required</p>
             </div>
 
-            {/* Rest of the form remains the same as AddProduct */}
-            {/* ... (Include all the form fields from AddProduct component) ... */}
-            
+            {/* Product Name */}
+            <div>
+              <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-2">
+                Product Name *
+              </label>
+              <input
+                id="product-name"
+                type="text"
+                placeholder="Enter product name"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent ${
+                  touched.name && formErrors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={() => handleBlur('name')}
+                value={name}
+                required
+                disabled={loading}
+              />
+              {touched.name && formErrors.name && (
+                <p className="text-red-500 text-sm mt-2">{formErrors.name}</p>
+              )}
+            </div>
+
+            {/* Product Description */}
+            <div>
+              <label htmlFor="product-description" className="block text-sm font-medium text-gray-700 mb-2">
+                Product Description *
+              </label>
+              <textarea
+                id="product-description"
+                rows={4}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent resize-none ${
+                  touched.description && formErrors.description ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Describe your product..."
+                onChange={(e) => setDescription(e.target.value)}
+                onBlur={() => handleBlur('description')}
+                value={description}
+                required
+                disabled={loading}
+              />
+              {touched.description && formErrors.description && (
+                <p className="text-red-500 text-sm mt-2">{formErrors.description}</p>
+              )}
+            </div>
+
+            {/* Category, Price, Stock, Rating */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Category - Now Optional */}
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                {categoriesLoading ? (
+                  <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
+                    <div className="animate-pulse h-4 bg-gray-300 rounded"></div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <select
+                      id="category"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
+                      onChange={(e) => setCategory(e.target.value)}
+                      value={category}
+                      disabled={loading}
+                    >
+                       <option value="">No Category (Optional)</option>
+                          {categories && categories.length > 0 ? (
+                            categories.map((cat) => (
+                              <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                              </option>
+                            ))
+                          ) : (
+                            <option value="" disabled>No categories available</option>
+                          )}
+                    </select>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setShowAddCategory(!showAddCategory)}
+                      className="flex items-center justify-center text-sm text-josseypink2 hover:text-josseypink1"
+                    >
+                      <span className="mr-1">+</span> Add New Category
+                    </button>
+                    
+                    {showAddCategory && (
+                      <div className="flex gap-2 mt-2">
+                        <input
+                          type="text"
+                          placeholder="New category name"
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                          disabled={addingCategory}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddCategory}
+                          disabled={addingCategory || !newCategoryName.trim()}
+                          className="px-2 py-1 bg-josseypink2 text-white rounded text-sm hover:bg-josseypink1 disabled:opacity-50"
+                        >
+                          {addingCategory ? 'Adding...' : 'Add'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Product Price */}
+              <div>
+                <label htmlFor="product-price" className="block text-sm font-medium text-gray-700 mb-2">
+                  Price *
+                </label>
+                <input
+                  id="product-price"
+                  type="number"
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent ${
+                    touched.price && formErrors.price ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  onChange={(e) => setPrice(e.target.value)}
+                  onBlur={() => handleBlur('price')}
+                  value={price}
+                  required
+                  disabled={loading}
+                />
+                {touched.price && formErrors.price && (
+                  <p className="text-red-500 text-sm mt-2">{formErrors.price}</p>
+                )}
+              </div>
+
+              {/* Stock */}
+              <div>
+                <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">
+                  Stock *
+                </label>
+                <input
+                  id="stock"
+                  type="number"
+                  placeholder="0"
+                  min="0"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent ${
+                    touched.stock && formErrors.stock ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  onChange={(e) => setStock(e.target.value)}
+                  onBlur={() => handleBlur('stock')}
+                  value={stock}
+                  required
+                  disabled={loading}
+                />
+                {touched.stock && formErrors.stock && (
+                  <p className="text-red-500 text-sm mt-2">{formErrors.stock}</p>
+                )}
+              </div>
+
+              {/* Rating */}
+              <div>
+                <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-2">
+                  Rating
+                </label>
+                <input
+                  id="rating"
+                  type="number"
+                  placeholder="0.0"
+                  min="0"
+                  max="10"
+                  step="0.1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
+                  onChange={(e) => setRating(e.target.value)}
+                  value={rating}
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            {/* Featured Product Checkbox */}
+            <div className="flex items-center">
+              <input
+                id="is-featured"
+                type="checkbox"
+                className="h-4 w-4 text-[#FC46AA] focus:ring-[#FC46AA] border-gray-300 rounded"
+                onChange={(e) => setIsFeatured(e.target.checked)}
+                checked={isFeatured}
+                disabled={loading}
+              />
+              <label htmlFor="is-featured" className="ml-2 block text-sm text-gray-900">
+                Feature this product
+              </label>
+            </div>
+
             {/* Submit Button */}
             <div className="pt-4">
               <button 
