@@ -61,7 +61,7 @@ const AddProduct = () => {
       const response = await fetch(url);
       
       if (response.ok) {
-        const data = await response.json();
+                console.log('Categories fetched:', data); // Debug log
         setCategories(data);
       } else {
         console.error('Failed to fetch categories:', response.status, response.statusText);
@@ -441,12 +441,16 @@ const AddProduct = () => {
                       value={category}
                       disabled={loading}
                     >
-                      <option value="">No Category (Optional)</option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </option>
-                      ))}
+                       <option value="">No Category (Optional)</option>
+                          {categories && categories.length > 0 ? (
+                            categories.map((cat) => (
+                              <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                              </option>
+                            ))
+                          ) : (
+                            <option value="" disabled>No categories available</option>
+                          )}
                     </select>
                     
                     <button
