@@ -55,11 +55,17 @@ const AddProduct = () => {
   const fetchCategories = async () => {
     try {
       setCategoriesLoading(true);
+            const token = getAuthToken();
+
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
       const url = `${base}/api/categories/`;
       
-      const response = await fetch(url);
-      
+const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+            
       if (response.ok) {
                 console.log('Categories fetched:', data); // Debug log
         setCategories(data);
