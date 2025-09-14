@@ -65,10 +65,9 @@ const response = await fetch(url, {
           'Authorization': `Bearer ${token}`,
         },
       });
-            
+
       if (response.ok) {
-                console.log('Categories fetched:', data); // Debug log
-        setCategories(data);
+        const data = await response.json(); // Add this line to parse the response        setCategories(data);
       } else {
         console.error('Failed to fetch categories:', response.status, response.statusText);
       }
