@@ -381,7 +381,7 @@ const ProductList = () => {
                             </svg>
                           </button>
                           <button
-                            onClick={() => router.push(`/sellerdashboard/edit-product`)}
+                            onClick={() => window.open(`/sellerdashboard/edit-product/${product.id}`)}
                             className="text-yellow-600 hover:text-yellow-900 p-1.5 rounded-md hover:bg-yellow-50 transition-colors"
                             title="Edit Product"
                           >
