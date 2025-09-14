@@ -174,7 +174,7 @@ const ProductList = () => {
   if (error) {
     return (
       <div className="flex-1 min-h-screen flex flex-col justify-between">
-        <div className="w-full md:p-10 p-4">
+        <div className="w-full p-4">
           <h2 className="pb-4 text-lg font-medium">All Products</h2>
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
             <p>Error loading products: {error}</p>
@@ -191,13 +191,13 @@ const ProductList = () => {
   }
 
   return (
-    <div className="flex-1 min-h-screen">
-      <div className="w-full md:p-10 p-4">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">All Products</h2>
+    <div className="flex-1 min-h-screen bg-gray-50">
+      <div className="w-full p-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">All Products</h2>
           <button 
             onClick={() => router.push('/sellerdashboard')}
-            className="px-4 py-2 bg-josseypink2 text-white rounded-md hover:bg-josseypink1 transition-colors font-medium"
+            className="px-4 py-2 bg-josseypink2 text-white rounded-md hover:bg-josseypink1 transition-colors font-medium w-full sm:w-auto text-center"
           >
             Add New Product
           </button>
@@ -220,20 +220,100 @@ const ProductList = () => {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Mobile Cards View */}
+            <div className="md:hidden">
+              {products.map((product) => (
+                <div key={product.id} className="border-b border-gray-200 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 h-16 w-16 bg-gray-100 rounded-md overflow-hidden">
+                      {product.images && product.images.length > 0 ? (
+                        <Image
+                          src={product.images[0].image_url}
+                          alt={product.name}
+                          className="h-16 w-16 object-cover"
+                          width={64}
+                          height={64}
+                        />
+                      ) : (
+                        <div className="h-16 w-16 bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-400 text-xs">No Image</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-medium text-gray-900 truncate">
+                        {product.name}
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {getCategoryName(product)}
+                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-sm font-medium text-gray-900">
+                          ${parseFloat(product.price).toFixed(2)}
+                        </span>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          product.stock > 10 ? 'bg-green-100 text-green-800' : 
+                          product.stock > 0 ? 'bg-yellow-100 text-yellow-800' : 
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {product.stock} in stock
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
+                    <button
+                      onClick={() => window.open(`/product/${product.id}`, '_blank')}
+                      className="text-blue-600 hover:text-blue-900 p-2 rounded-md hover:bg-blue-50 transition-colors flex items-center gap-1 text-xs"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      View
+                    </button>
+                    
+                    <button
+                      onClick={() => router.push(`/sellerdashboard/edit-product`)}
+                      className="text-yellow-600 hover:text-yellow-900 p-2 rounded-md hover:bg-yellow-50 transition-colors flex items-center gap-1 text-xs"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit
+                    </button>
+                    
+                    <button
+                      onClick={() => deleteProduct(product.id)}
+                      className="text-red-600 hover:text-red-900 p-2 rounded-md hover:bg-red-50 transition-colors flex items-center gap-1 text-xs"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Product
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Category
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Price
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Stock
                     </th>
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -265,13 +345,10 @@ const ProductList = () => {
                             <div className="text-sm font-medium text-gray-900 line-clamp-1">
                               {product.name}
                             </div>
-                            <div className="text-sm text-gray-500 md:hidden">
-                              {getCategoryName(product)}
-                            </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {getCategoryName(product)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -282,7 +359,7 @@ const ProductList = () => {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           product.stock > 10 ? 'bg-green-100 text-green-800' : 
                           product.stock > 0 ? 'bg-yellow-100 text-yellow-800' : 
