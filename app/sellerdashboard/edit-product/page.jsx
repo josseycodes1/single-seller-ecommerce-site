@@ -47,14 +47,22 @@ const EditProduct = () => {
   const params = useParams();
   const productId = params.id;
 
-  // Check authentication on component mount
+  // Check authentication and product ID on component mount
   useEffect(() => {
     if (!isAuthenticated()) {
       router.push('/seller/login');
-    } else {
-      fetchCategories();
-      fetchProduct();
+      return;
     }
+    
+    // Check if we have a valid product ID
+    if (!productId) {
+      setError('Invalid product ID');
+      setFetching(false);
+      return;
+    }
+    
+    fetchCategories();
+    fetchProduct();
   }, [router, productId]);
 
   // Fetch categories from backend
@@ -111,6 +119,8 @@ const EditProduct = () => {
         setRating(productData.rating);
         setIsFeatured(productData.is_featured);
         setExistingImages(productData.images || []);
+      } else if (response.status === 404) {
+        setError('Product not found. It may have been deleted or does not exist.');
       } else {
         setError('Failed to load product data.');
       }
@@ -304,6 +314,23 @@ const EditProduct = () => {
     return <Loading />;
   }
 
+  if (error && (error.includes('Invalid product ID') || error.includes('Product not found'))) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-6 rounded-lg shadow-md text-center max-w-md">
+          <h2 className="text-xl font-bold text-red-600 mb-4">Error</h2>
+          <p className="text-gray-700 mb-4">{error}</p>
+          <button 
+            onClick={() => router.push('/seller/products')}
+            className="px-4 py-2 bg-josseypink2 text-white rounded-md hover:bg-josseypink1 transition-colors"
+          >
+            Back to Products
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -335,7 +362,7 @@ const EditProduct = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-md p-6">
-          {error && (
+          {error && !error.includes('Invalid product ID') && !error.includes('Product not found') && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
               {error}
             </div>
@@ -576,7 +603,7 @@ const EditProduct = () => {
                   min="0"
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent ${
                     touched.stock && formErrors.stock ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                }`}
                   onChange={(e) => setStock(e.target.value)}
                   onBlur={() => handleBlur('stock')}
                   value={stock}
