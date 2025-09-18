@@ -238,7 +238,7 @@ const EditProduct = () => {
       formData.append('price', price);
       formData.append('stock', stock);
       formData.append('rating', rating || '0');
-      formData.append('is_featured', isFeatured.toString());
+      formData.append('is_featured', isFeatured ? "1" : "0");
       
       // Add new images
       files.forEach((file, index) => {
