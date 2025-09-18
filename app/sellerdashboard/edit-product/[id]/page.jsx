@@ -22,7 +22,7 @@ const logout = () => {
   window.location.href = '/seller/login';
 };
 
-const EditProduct = (productId) => {
+const EditProduct = () => {
   const [files, setFiles] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [name, setName] = useState('');
@@ -260,7 +260,7 @@ const EditProduct = (productId) => {
 
       if (response.ok) {
         alert('Product updated successfully!');
-        router.push('/seller/products');
+        router.push('/all-products');
       } else {
         if (response.status === 401 || response.status === 403) {
           setError('Authentication failed. Please login again.');

@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 
-// Auth utility functions
 const isAuthenticated = () => {
   if (typeof window === 'undefined') return false;
   const token = localStorage.getItem('access_token');
@@ -42,7 +41,6 @@ const AddProduct = () => {
   
   const router = useRouter();
 
-  // Check authentication on component mount
   useEffect(() => {
     if (!isAuthenticated()) {
       router.push('/seller/login');
@@ -51,7 +49,6 @@ const AddProduct = () => {
     }
   }, [router]);
 
-  // Fetch categories from backend
   const fetchCategories = async () => {
     try {
       setCategoriesLoading(true);
@@ -67,7 +64,7 @@ const response = await fetch(url, {
       });
 
       if (response.ok) {
-        const data = await response.json(); // Add this line to parse the response        
+        const data = await response.json();      
         setCategories(data);
       } else {
         console.error('Failed to fetch categories:', response.status, response.statusText);
@@ -80,7 +77,6 @@ const response = await fetch(url, {
     }
   };
 
-  // Add new category
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) {
       setError('Category name is required');
@@ -111,7 +107,7 @@ const response = await fetch(url, {
         setNewCategoryName('');
         setShowAddCategory(false);
         setError('');
-        // Refetch categories to ensure we have the latest data
+  
         fetchCategories();
       } else {
         const errorData = await response.json();
@@ -125,7 +121,6 @@ const response = await fetch(url, {
     }
   };
 
-  // Validate form
   const validateForm = () => {
     const errors = {};
     
@@ -134,16 +129,14 @@ const response = await fetch(url, {
     if (!price || parseFloat(price) <= 0) errors.price = 'Valid price is required';
     if (!stock || parseInt(stock) < 0) errors.stock = 'Valid stock quantity is required';
     if (files.filter(Boolean).length === 0) errors.images = 'Please upload at least one image';
-    
-    // Category is now optional, so we don't validate it
+
     
     return errors;
   };
 
   const handleBlur = (field) => {
     setTouched({ ...touched, [field]: true });
-    
-    // Validate only the blurred field
+
     const errors = validateForm();
     if (errors[field]) {
       setFormErrors({ ...formErrors, [field]: errors[field] });
@@ -159,14 +152,12 @@ const response = await fetch(url, {
     setLoading(true);
     setError('');
 
-    // Mark all fields as touched to show all errors
     const allTouched = {};
     Object.keys(validateForm()).forEach(key => {
       allTouched[key] = true;
     });
     setTouched(allTouched);
 
-    // Validate the entire form
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
@@ -181,11 +172,9 @@ const response = await fetch(url, {
         setError('Authentication token missing. Please login again.');
         return;
       }
-      
-      // Create FormData for the request
+
       const formData = new FormData();
-      
-      // Add product data
+
       formData.append('name', name);
       formData.append('description', description);
       if (category) {
@@ -196,10 +185,8 @@ const response = await fetch(url, {
       formData.append('rating', rating || '0');
       formData.append('is_featured', isFeatured.toString());
       
-      // Add images - FIXED: Use the correct field name and append each file
       files.forEach((file, index) => {
         if (file) {
-          // Use the field name that your Django backend expects
           formData.append('images', file);
         }
       });
@@ -209,7 +196,6 @@ const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          // Don't set Content-Type header for FormData - browser will set it automatically with boundary
         },
         body: formData,
       });
@@ -218,7 +204,6 @@ const response = await fetch(url, {
 
       if (response.ok) {
         alert('Product added successfully!');
-        // Reset form
         setName('');
         setDescription('');
         setCategory('');
@@ -235,7 +220,7 @@ const response = await fetch(url, {
           setError('Authentication failed. Please login again.');
           logout();
         } else {
-          // Handle image-specific errors
+
           if (responseData.images) {
             setError(`Image error: ${responseData.images.join(', ')}`);
           } else {
@@ -256,7 +241,7 @@ const response = await fetch(url, {
     updatedFiles[index] = file;
     setFiles(updatedFiles);
     
-    // Clear image error when a file is added
+   
     if (file) {
       const newErrors = { ...formErrors };
       delete newErrors.images;
@@ -270,7 +255,7 @@ const response = await fetch(url, {
     setFiles(updatedFiles);
   };
 
-  // Redirect to login if not authenticated
+
   if (!isAuthenticated()) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -429,7 +414,6 @@ const response = await fetch(url, {
 
             {/* Category, Price, Stock, Rating */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Category - Now Optional */}
               <div>
                 <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
                   Category
