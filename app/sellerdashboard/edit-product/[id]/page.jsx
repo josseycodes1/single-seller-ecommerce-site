@@ -22,7 +22,7 @@ const logout = () => {
   window.location.href = '/seller/login';
 };
 
-const EditProduct = () => {
+const EditProduct = (productId) => {
   const [files, setFiles] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [name, setName] = useState('');
