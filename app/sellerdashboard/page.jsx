@@ -183,7 +183,8 @@ const response = await fetch(url, {
       formData.append('price', price);
       formData.append('stock', stock || '0');
       formData.append('rating', rating || '0');
-      formData.append('is_featured', isFeatured.toString());
+      formData.append('is_featured', isFeatured ? "1" : "0");
+
       
       files.forEach((file, index) => {
         if (file) {
