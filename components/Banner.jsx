@@ -87,7 +87,7 @@ const Banner = () => {
   }
 
   return (
-    <div className="relative flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-pink-500 to-pink-700 my-16 rounded-xl overflow-hidden p-8 md:p-12">
+    <div className="relative flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-josseypink2 to-josseypink1 my-16 rounded-xl overflow-hidden p-8 md:p-12">
       {/* Left decorative element */}
       <div className="hidden md:block absolute left-0 top-0 bottom-0 w-1/3 opacity-10">
         <div className="h-full w-full bg-white rounded-full transform -translate-x-1/2 -translate-y-1/4 scale-150"></div>
