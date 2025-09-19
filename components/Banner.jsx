@@ -84,7 +84,7 @@ const Banner = () => {
         )}
 
         {banner?.discount_text && (
-          <p className="text-white font-bold text-xl bg-josseypink1 p-3">
+          <p className="text-white font-bold text-xl p-3">
             {banner.discount_text}
           </p>
         )}
