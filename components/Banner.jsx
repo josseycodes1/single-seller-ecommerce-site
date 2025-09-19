@@ -114,7 +114,7 @@ const Banner = () => {
       {/* Right image */}
       {banner?.image && (
         <div className="hidden md:flex items-center justify-center w-1/4">
-          <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white shadow-lg">
+          <div className="relative w-48 h-48">
             <Image
               src={banner.image}
               alt="Banner product image"
