@@ -38,7 +38,7 @@ const Banner = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center bg-gradient-to-r from-pink-400 to-pink-600 my-16 rounded-xl overflow-hidden h-64 animate-pulse">
+      <div className="flex items-center justify-center bg-josseypink2 my-16 rounded-xl overflow-hidden h-64 animate-pulse">
         <div className="w-full h-full bg-gray-300 opacity-30"></div>
       </div>
     );
@@ -57,7 +57,7 @@ const Banner = () => {
       {/* Left image */}
       {banner?.secondary_image && (
         <div className="hidden md:flex items-center justify-center w-1/4">
-          <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white bg-white shadow-lg">
+          <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white  shadow-lg">
             <Image
               src={banner.secondary_image}
               alt="Banner secondary image"
@@ -84,12 +84,13 @@ const Banner = () => {
         )}
 
         {banner?.discount_text && (
-          <p className="text-white font-bold text-xl bg-pink-600 px-4 py-1 rounded-full">
+          <p className="text-white font-bold text-xl bg-josseypink1 p-3">
             {banner.discount_text}
           </p>
         )}
 
-        <button className="group flex items-center justify-center gap-2 px-6 py-3 bg-white rounded-full text-pink-600 font-semibold hover:bg-gray-50 transition-all shadow-md hover:shadow-lg">
+        <button className="group flex items-center justify-center gap-2 px-6 py-3 bg-white rounded-full text-josseypink2
+         font-semibold hover:bg-gray-50 transition-all shadow-md hover:shadow-lg">
           {banner?.button_text || "Buy now"}
           <svg
             className="group-hover:translate-x-1 transition-transform"
@@ -113,7 +114,7 @@ const Banner = () => {
       {/* Right image */}
       {banner?.image && (
         <div className="hidden md:flex items-center justify-center w-1/4">
-          <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white bg-white shadow-lg">
+          <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white shadow-lg">
             <Image
               src={banner.image}
               alt="Banner product image"
