@@ -13,7 +13,7 @@ const FeaturedProduct = () => {
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
       const url = `${base}/api/products/?is_featured=true&limit=3`;
 
-          console.log('Fetching from URL:', url); // Debug log
+          console.log('Fetching from URL:', url); 
 
       
       const response = await fetch(url);
@@ -24,7 +24,7 @@ const FeaturedProduct = () => {
       
       const data = await response.json();
 
-          console.log('API Response:', data); // Debug log - see what's actually returned
+          console.log('API Response:', data); 
 
       
       const products = Array.isArray(data) ? data : data.results || [];
