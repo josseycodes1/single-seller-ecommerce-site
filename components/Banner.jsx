@@ -57,7 +57,7 @@ const Banner = () => {
       {/* Left image */}
       {banner?.secondary_image && (
         <div className="hidden md:flex items-center justify-center w-1/4">
-          <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white  shadow-lg">
+          <div className="relative w-48 h-48 overflow-hidden shadow-lg">
             <Image
               src={banner.secondary_image}
               alt="Banner secondary image"
