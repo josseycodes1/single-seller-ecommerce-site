@@ -34,45 +34,26 @@ const Banner = () => {
     fetchBanner();
   }, []);
 
-  // Function to ensure HTTPS protocol for Cloudinary URLs
-  const ensureHttps = (url) => {
-    if (!url) return url;
+  // Simplified URL handling - let Cloudinary handle optimizations
+  const getImageUrl = (url) => {
+    if (!url) return null;
     
+    // Ensure HTTPS
     if (url.startsWith('http://')) {
       return url.replace('http://', 'https://');
     }
     
-    if (!url.startsWith('https://') && !url.startsWith('http://')) {
-      if (url.includes('cloudinary.com')) {
-        return `https://${url}`;
-      }
+    // If it's a Cloudinary URL, return as-is (Cloudinary handles optimizations)
+    if (url.includes('cloudinary.com')) {
       return url;
     }
     
     return url;
   };
 
-  // Function to get optimized Cloudinary URL with HTTPS
-  const getOptimizedCloudinaryUrl = (url, width = 900, height = 900) => {
-    if (!url) return url;
-    
-    const httpsUrl = ensureHttps(url);
-    const isCloudinary = httpsUrl.includes('cloudinary.com');
-    
-    if (!isCloudinary) return httpsUrl;
-    
-    const optimizationParams = `c_fill,w_${width},h_${height},q_auto,f_auto`;
-    
-    if (httpsUrl.includes('/upload/')) {
-      return httpsUrl.replace('/upload/', `/upload/${optimizationParams}/`);
-    }
-    
-    return httpsUrl;
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center bg-gradient-to-r from-pink-400 to-pink-600 my-16 rounded-xl overflow-hidden h-64 animate-pulse">
+      <div className="flex items-center justify-center bg-josseypink2 my-16 rounded-xl overflow-hidden h-64 animate-pulse">
         <div className="w-full h-full bg-gray-300 opacity-30"></div>
       </div>
     );
@@ -86,34 +67,30 @@ const Banner = () => {
     );
   }
 
+  // Debug: check what banner data we have
+  console.log('Banner data:', banner);
+
   return (
-    <div className="relative flex flex-col md:flex-row items-center justify-between bg-josseypink2 my-16 rounded-xl overflow-hidden p-8 md:p-12">
-      {/* Left decorative element */}
-      <div className="hidden md:block absolute left-0 top-0 bottom-0 w-1/3 opacity-10">
-        <div className="h-full w-full bg-white rounded-full transform -translate-x-1/2 -translate-y-1/4 scale-150"></div>
-      </div>
-      
-      {/* Right decorative element */}
-      <div className="hidden md:block absolute right-0 top-0 bottom-0 w-1/3 opacity-10">
-        <div className="h-full w-full bg-white rounded-full transform translate-x-1/2 -translate-y-1/4 scale-150"></div>
-      </div>
+    <div className="relative flex flex-col md:flex-row items-center justify-between bg-josseypink2 my-16 rounded-xl overflow-hidden p-8 md:p-12 min-h-[300px]">
       
       {/* Left image - only show if we have a secondary image */}
       {banner?.secondary_image && (
         <div className="hidden md:flex items-center justify-center w-1/4">
           <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white bg-white shadow-lg">
             <Image
-              src={getOptimizedCloudinaryUrl(banner.secondary_image, 300, 300)}
+              src={getImageUrl(banner.secondary_image)}
               alt="Banner secondary image"
               fill
               style={{ objectFit: 'cover' }}
               priority
+              // Add unoptimized if you're having issues with external domains
+              unoptimized={banner.secondary_image.includes('cloudinary.com')}
             />
           </div>
         </div>
       )}
       
-      {/* Center content - properly centered with max width */}
+      {/* Center content */}
       <div className="flex flex-col items-center justify-center text-center w-full md:w-2/4 z-10 space-y-4">
         {banner?.title && (
           <h2 className="text-white text-2xl md:text-3xl font-bold max-w-md">
@@ -159,10 +136,11 @@ const Banner = () => {
         <div className="hidden md:flex items-center justify-center w-1/4">
           <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white bg-white shadow-lg">
             <Image
-              src={getOptimizedCloudinaryUrl(banner.image, 300, 300)}
+              src={getImageUrl(banner.image)}
               alt="Banner product image"
               fill
               style={{ objectFit: 'cover' }}
+              unoptimized={banner.image.includes('cloudinary.com')}
             />
           </div>
         </div>
@@ -173,12 +151,20 @@ const Banner = () => {
         <div className="md:hidden mt-6">
           <div className="relative w-40 h-40 mx-auto rounded-full overflow-hidden border-4 border-white bg-white shadow-lg">
             <Image
-              src={getOptimizedCloudinaryUrl(banner.image_mobile || banner.image, 200, 200)}
+              src={getImageUrl(banner.image_mobile || banner.image)}
               alt="Banner mobile image"
               fill
               style={{ objectFit: 'cover' }}
+              unoptimized={(banner.image_mobile || banner.image).includes('cloudinary.com')}
             />
           </div>
+        </div>
+      )}
+
+      {/* Fallback if no images are working */}
+      {!banner?.secondary_image && !banner?.image && !banner?.image_mobile && (
+        <div className="absolute inset-0 flex items-center justify-center opacity-20">
+          <div className="text-6xl">🎯</div>
         </div>
       )}
     </div>
