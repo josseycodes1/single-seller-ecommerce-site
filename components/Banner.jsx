@@ -59,7 +59,7 @@ const Banner = () => {
         <div className="hidden md:flex items-center justify-center w-1/4">
           <div className="relative w-48 h-55">
             <Image
-              src={banner.secondary_image}
+              src={banner.image}
               alt="Banner secondary image"
               fill
               style={{ objectFit: "contain" }}
