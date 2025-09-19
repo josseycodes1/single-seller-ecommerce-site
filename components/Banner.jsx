@@ -62,8 +62,7 @@ const Banner = () => {
               src={banner.secondary_image}
               alt="Banner secondary image"
               fill
-              style={{ objectFit: "cover" }}
-              priority
+              style={{ objectFit: "contain" }}
             />
           </div>
         </div>
