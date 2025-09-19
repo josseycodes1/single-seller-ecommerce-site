@@ -13,9 +13,8 @@ const FeaturedProduct = () => {
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
       const url = `${base}/api/products/?is_featured=true&limit=3`;
 
-          console.log('Fetching from URL:', url); 
+      console.log('Fetching from URL:', url); 
 
-      
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -24,16 +23,15 @@ const FeaturedProduct = () => {
       
       const data = await response.json();
 
-          console.log('API Response:', data); 
+      console.log('API Response:', data); 
 
-      
       const products = Array.isArray(data) ? data : data.results || [];
-      
-      setFeaturedProducts(products);
+      const featuredOnly = products.filter((p) => p.is_featured === true);
+      setFeaturedProducts(featuredOnly.slice(0, 3));
     } catch (err) {
       console.error('Error fetching featured products:', err);
       setError(err.message);
-      
+
       setFeaturedProducts([
         {
           id: 1,
@@ -58,6 +56,7 @@ const FeaturedProduct = () => {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchFeaturedProducts();
