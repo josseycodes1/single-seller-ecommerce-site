@@ -83,7 +83,7 @@ const Product = () => {
     const fetchRelatedProducts = async (categoryId) => {
         try {
             const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
-            const url = `${base}/api/products/?category=${categoryId}&limit=5`; // FIXED: Added /api/ prefix
+            const url = `${base}/api/products/?category=${categoryId}&limit=5`;
             
             const response = await fetch(url);
             
@@ -222,7 +222,8 @@ const Product = () => {
                                 ({productData.review_count || 0} reviews)
                             </span>
                         </div>
-                        
+
+                        {/* Description */}
                         <p className="text-gray-600 mt-3">
                             {productData.description}
                         </p>
@@ -251,31 +252,42 @@ const Product = () => {
                         <hr className="bg-gray-600 my-6" />
                         
                         {/* Product Details Table */}
-                        <div className="overflow-x-auto">
+                            <div className="overflow-x-auto">
                             <table className="table-auto border-collapse w-full max-w-72">
                                 <tbody>
+                                {/* Quantity */}
+                                {productData.stock !== undefined && (
                                     <tr>
-                                        <td className="text-gray-600 font-medium py-2">Brand</td>
-                                        <td className="text-gray-800/50 py-2">Generic</td>
+                                    <td className="text-gray-600 font-medium py-2">Quantity</td>
+                                    <td className="text-gray-800/50 py-2">{productData.stock}</td>
                                     </tr>
+                                )}
+
+                                {/* Color */}
+                                {productData.color && (
                                     <tr>
-                                        <td className="text-gray-600 font-medium py-2">Color</td>
-                                        <td className="text-gray-800/50 py-2">Multi</td>
+                                    <td className="text-gray-600 font-medium py-2">Color</td>
+                                    <td className="text-gray-800/50 py-2 capitalize">
+                                        {productData.color}
+                                    </td>
                                     </tr>
-                                    {productData.category && (
-                                        <tr>
-                                            <td className="text-gray-600 font-medium py-2">Category</td>
-                                            <td className="text-gray-800/50 py-2 capitalize">
-                                                {typeof productData.category === 'object' 
-                                                    ? productData.category.name 
-                                                    : productData.category
-                                                }
-                                            </td>
-                                        </tr>
-                                    )}
+                                )}
+
+                                {/* Category */}
+                                {productData.category && (
+                                    <tr>
+                                    <td className="text-gray-600 font-medium py-2">Category</td>
+                                    <td className="text-gray-800/50 py-2 capitalize">
+                                        {typeof productData.category === "object"
+                                        ? productData.category.name
+                                        : productData.category}
+                                    </td>
+                                    </tr>
+                                )}
                                 </tbody>
                             </table>
-                        </div>
+                            </div>
+
 
                         {/* Add to Cart Buttons */}
                         <div className="flex items-center mt-10 gap-4">
