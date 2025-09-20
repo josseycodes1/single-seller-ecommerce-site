@@ -186,20 +186,18 @@ const AddProduct = () => {
       formData.append('price', price);
       formData.append('stock', stock || '0');
       formData.append('rating', rating || '0');
-      formData.append('is_featured', isFeatured ? true : false);
-
-
+      formData.append('is_featured', isFeatured ? 'true' : 'false');
+      
+      // Add each color individually
+      colors.forEach(color => {
+        formData.append('colors', color);
+      });
       
       files.forEach((file, index) => {
         if (file) {
           formData.append('images', file);
         }
       });
-
-      colors.forEach((color) => {
-        formData.append("colors", color);
-      });
-
 
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
       const response = await fetch(`${base}/api/products/`, {
@@ -225,15 +223,16 @@ const AddProduct = () => {
         setFormErrors({});
         setTouched({});
         setError('');
-        setColors([]);
+        setColors([]); // Reset colors
       } else {
         if (response.status === 401 || response.status === 403) {
           setError('Authentication failed. Please login again.');
           logout();
         } else {
-
           if (responseData.images) {
             setError(`Image error: ${responseData.images.join(', ')}`);
+          } else if (responseData.colors) {
+            setError(`Color error: ${responseData.colors.join(', ')}`);
           } else {
             setError(`Failed to add product: ${responseData.detail || JSON.stringify(responseData)}`);
           }
