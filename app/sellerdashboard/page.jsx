@@ -187,7 +187,6 @@ const AddProduct = () => {
       formData.append('stock', stock || '0');
       formData.append('rating', rating || '0');
       formData.append('is_featured', isFeatured ? true : false);
-      formData.append("colors", JSON.stringify(colors));
 
 
       
@@ -196,6 +195,11 @@ const AddProduct = () => {
           formData.append('images', file);
         }
       });
+
+      colors.forEach((color) => {
+        formData.append("colors", color);
+      });
+
 
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
       const response = await fetch(`${base}/api/products/`, {
