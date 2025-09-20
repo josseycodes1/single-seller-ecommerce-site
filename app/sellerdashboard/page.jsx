@@ -187,6 +187,8 @@ const AddProduct = () => {
       formData.append('stock', stock || '0');
       formData.append('rating', rating || '0');
       formData.append('is_featured', isFeatured ? true : false);
+      formData.append("colors", JSON.stringify(colors));
+
 
       
       files.forEach((file, index) => {
