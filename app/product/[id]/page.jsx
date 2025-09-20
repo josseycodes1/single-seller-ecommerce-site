@@ -9,6 +9,7 @@ import { useParams } from "next/navigation";
 import Loading from "@/components/Loading";
 import { useAppContext } from "@/context/AppContext";
 import React from "react";
+import FeaturedProduct from "@/components/FeaturedProduct";
 
 const Product = () => {
     const { id } = useParams();
@@ -308,29 +309,7 @@ const Product = () => {
                 </div>
                 
                 {/* Related Products */}
-                <div className="flex flex-col items-center">
-                    <div className="flex flex-col items-center mb-4 mt-16">
-                        <p className="text-3xl font-medium">Featured <span className="font-medium text-josseypink1">Products</span></p>
-                        <div className="w-28 h-0.5 bg-josseypink1 mt-2"></div>
-                    </div>
-                    
-                    {relatedProducts.length > 0 ? (
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6 pb-14 w-full">
-                            {relatedProducts.map((product) => (
-                                <ProductCard key={product.id || product._id} product={product} />
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-gray-500 py-10">No related products found.</p>
-                    )}
-                    
-                    <button 
-                        onClick={() => router.push('/')}
-                        className="px-8 py-2 mb-16 border rounded text-gray-500/70 hover:bg-slate-50/90 transition"
-                    >
-                        See more
-                    </button>
-                </div>
+                <FeaturedProduct />
             </div>
             <Footer />
         </>
