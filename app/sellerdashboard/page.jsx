@@ -225,6 +225,7 @@ const AddProduct = () => {
         setFormErrors({});
         setTouched({});
         setError('');
+        setColors([]);
       } else {
         if (response.status === 401 || response.status === 403) {
           setError('Authentication failed. Please login again.');
