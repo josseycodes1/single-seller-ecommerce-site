@@ -38,6 +38,9 @@ const AddProduct = () => {
   const [addingCategory, setAddingCategory] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [colors, setColors] = useState([]);
+  const [input, setInput] = useState("");
+
   
   const router = useRouter();
 
@@ -57,7 +60,7 @@ const AddProduct = () => {
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
       const url = `${base}/api/categories/`;
       
-const response = await fetch(url, {
+  const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -257,6 +260,18 @@ const response = await fetch(url, {
   };
 
 
+  const addColor = () => {
+    if (input.trim() && !colors.includes(input.trim())) {
+      setColors([...colors, input.trim()]);
+      setInput("");
+    }
+  };
+
+  const removeColor = (color) => {
+    setColors(colors.filter((c) => c !== color));
+  };
+
+
   if (!isAuthenticated()) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -415,66 +430,87 @@ const response = await fetch(url, {
 
             {/* Category, Price, Stock, Rating */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-                  Category
-                </label>
-                {categoriesLoading ? (
-                  <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
-                    <div className="animate-pulse h-4 bg-gray-300 rounded"></div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <select
-                      id="category"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
-                      onChange={(e) => setCategory(e.target.value)}
-                      value={category}
-                      disabled={loading}
-                    >
-                       <option value="">No Category (Optional)</option>
-                          {categories && categories.length > 0 ? (
-                            categories.map((cat) => (
-                              <option key={cat.id} value={cat.id}>
-                                {cat.name}
-                              </option>
-                            ))
-                          ) : (
-                            <option value="" disabled>No categories available</option>
-                          )}
-                    </select>
-                    
-                    <button
-                      type="button"
-                      onClick={() => setShowAddCategory(!showAddCategory)}
-                      className="flex items-center justify-center text-sm text-josseypink2 hover:text-josseypink1"
-                    >
-                      <span className="mr-1">+</span> Add New Category
-                    </button>
-                    
-                    {showAddCategory && (
-                      <div className="flex gap-2 mt-2">
-                        <input
-                          type="text"
-                          placeholder="New category name"
-                          value={newCategoryName}
-                          onChange={(e) => setNewCategoryName(e.target.value)}
-                          className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
-                          disabled={addingCategory}
-                        />
-                        <button
-                          type="button"
-                          onClick={handleAddCategory}
-                          disabled={addingCategory || !newCategoryName.trim()}
-                          className="px-2 py-1 bg-josseypink2 text-white rounded text-sm hover:bg-josseypink1 disabled:opacity-50"
-                        >
-                          {addingCategory ? 'Adding...' : 'Add'}
-                        </button>
+              {/* category */}
+                <div>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                    Category
+                  </label>
+                  {categoriesLoading ? (
+                    <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
+                      <div className="animate-pulse h-4 bg-gray-300 rounded"></div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      {/* Category Select */}
+                      <select
+                        id="category"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
+                        onChange={(e) => setCategory(e.target.value)}
+                        value={category}
+                        disabled={loading}
+                      >
+                        <option value="">No Category (Optional)</option>
+                        {categories && categories.length > 0 ? (
+                          categories.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </option>
+                          ))
+                        ) : (
+                          <option value="" disabled>No categories available</option>
+                        )}
+                      </select>
+
+                      {/* Add New Category Toggle */}
+                      <button
+                        type="button"
+                        onClick={() => setShowAddCategory(!showAddCategory)}
+                        className="flex items-center justify-center text-sm text-josseypink2 hover:text-josseypink1"
+                      >
+                        <span className="mr-1">+</span> Add New Category
+                      </button>
+
+                      {/* Add New Category Input */}
+                      {showAddCategory && (
+                        <div className="flex gap-2 mt-2">
+                          <input
+                            type="text"
+                            placeholder="New category name"
+                            value={newCategoryName}
+                            onChange={(e) => setNewCategoryName(e.target.value)}
+                            className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                            disabled={addingCategory}
+                          />
+                          <button
+                            type="button"
+                            onClick={handleAddCategory}
+                            disabled={addingCategory || !newCategoryName.trim()}
+                            className="px-2 py-1 bg-josseypink2 text-white rounded text-sm hover:bg-josseypink1 disabled:opacity-50"
+                          >
+                            {addingCategory ? 'Adding...' : 'Add'}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* List of Categories with Delete */}
+                      <div className="flex flex-col gap-1 mt-3">
+                        {categories.map((cat) => (
+                          <div key={cat.id} className="flex justify-between items-center text-sm border rounded px-2 py-1">
+                            <span>{cat.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCategory(cat.id)}
+                              className="text-red-500 hover:text-red-700 text-xs"
+                              disabled={loading}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                    </div>
+                  )}
+                </div>
 
               {/* Product Price */}
               <div>
@@ -544,6 +580,46 @@ const response = await fetch(url, {
                 />
               </div>
             </div>
+
+            {/*color*/}
+            <div>
+                <label className="block font-medium">Available Colors</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Enter a color and press Add"
+                    className="border px-2 py-1 rounded"
+                  />
+                  <button
+                    type="button"
+                    onClick={addColor}
+                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  {colors.map((color, idx) => (
+                    <span
+                      key={idx}
+                      className="bg-gray-200 px-3 py-1 rounded-full flex items-center gap-1"
+                    >
+                      {color}
+                      <button
+                        type="button"
+                        onClick={() => removeColor(color)}
+                        className="text-red-500"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            );
 
             {/* Featured Product Checkbox */}
             <div className="flex items-center">
