@@ -619,7 +619,6 @@ const AddProduct = () => {
                   ))}
                 </div>
               </div>
-            );
 
             {/* Featured Product Checkbox */}
             <div className="flex items-center">
