@@ -177,8 +177,8 @@ const AddProduct = () => {
         formData.append('price', price);
         formData.append('stock', stock || '0');
         formData.append('rating', rating || '0');
-        formData.append('is_featured', isFeatured); // boolean
-        formData.append('colors', JSON.stringify(colors)); // JSON string
+        formData.append('is_featured', isFeatured); 
+        formData.append('colors', JSON.stringify(colors)); 
 
         files.forEach((file) => {
           if (file) {
@@ -186,7 +186,6 @@ const AddProduct = () => {
           }
         });
 
-        // ✅ Debug: log payload before fetch
         console.log("FormData payload:");
         for (let [key, value] of formData.entries()) {
           console.log(`${key}:`, value);
