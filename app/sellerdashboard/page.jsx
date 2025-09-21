@@ -151,100 +151,73 @@ const AddProduct = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+      e.preventDefault();
+      setLoading(true);
+      setError('');
 
-    const allTouched = {};
-    Object.keys(validateForm()).forEach(key => {
-      allTouched[key] = true;
-    });
-    setTouched(allTouched);
-
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const token = getAuthToken();
-      
-      if (!token) {
-        setError('Authentication token missing. Please login again.');
+      const errors = validateForm();
+      if (Object.keys(errors).length > 0) {
+        setFormErrors(errors);
+        setLoading(false);
         return;
       }
 
-      const formData = new FormData();
-
-      formData.append('name', name);
-      formData.append('description', description);
-      if (category) {
-        formData.append('category', category);
-      }
-      formData.append('price', price);
-      formData.append('stock', stock || '0');
-      formData.append('rating', rating || '0');
-      formData.append('is_featured', isFeatured ? 'true' : 'false');
-      
-      // Add each color individually
-      colors.forEach(color => {
-        formData.append('colors', color);
-      });
-      
-      files.forEach((file, index) => {
-        if (file) {
-          formData.append('images', file);
+      try {
+        const token = getAuthToken();
+        if (!token) {
+          setError('Authentication token missing. Please login again.');
+          return;
         }
-      });
 
-      const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
-      const response = await fetch(`${base}/api/products/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
+        const formData = new FormData();
 
-      const responseData = await response.json();
+        formData.append('name', name);
+        formData.append('description', description);
+        if (category) formData.append('category', category);
+        formData.append('price', price);
+        formData.append('stock', stock || '0');
+        formData.append('rating', rating || '0');
+        formData.append('is_featured', isFeatured); // boolean
+        formData.append('colors', JSON.stringify(colors)); // JSON string
 
-      if (response.ok) {
-        alert('Product added successfully!');
-        setName('');
-        setDescription('');
-        setCategory('');
-        setPrice('');
-        setStock('');
-        setRating('');
-        setIsFeatured(false);
-        setFiles([]);
-        setFormErrors({});
-        setTouched({});
-        setError('');
-        setColors([]); // Reset colors
-      } else {
-        if (response.status === 401 || response.status === 403) {
-          setError('Authentication failed. Please login again.');
-          logout();
-        } else {
-          if (responseData.images) {
-            setError(`Image error: ${responseData.images.join(', ')}`);
-          } else if (responseData.colors) {
-            setError(`Color error: ${responseData.colors.join(', ')}`);
-          } else {
-            setError(`Failed to add product: ${responseData.detail || JSON.stringify(responseData)}`);
+        files.forEach((file) => {
+          if (file) {
+            formData.append('images', file);
           }
+        });
+
+        // ✅ Debug: log payload before fetch
+        console.log("FormData payload:");
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}:`, value);
         }
+
+        const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
+        const response = await fetch(`${base}/api/products/`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          body: formData,
+        });
+
+
+        const responseData = await response.json();
+
+        if (response.ok) {
+          alert('Product added successfully!');
+          resetForm();
+        } else {
+          setError(`Failed to add product: ${JSON.stringify(responseData)}`);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        setError('Error adding product. Please try again.');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error:', error);
-      setError('Error adding product. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
 
   const handleFileChange = (index, file) => {
     const updatedFiles = [...files];
