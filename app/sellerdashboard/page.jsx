@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
+import toast from "react-hot-toast";
 
 const isAuthenticated = () => {
   if (typeof window === 'undefined') return false;
@@ -204,11 +205,11 @@ const AddProduct = () => {
         const responseData = await response.json();
 
         if (response.ok) {
-          alert('Product added successfully!');
+          toast.success("Product added successfully!");
           router.push('/all-products');
-          
-          resetForm();
-        } else {
+        } 
+        
+        else {
           setError(`Failed to add product: ${JSON.stringify(responseData)}`);
         }
       } catch (error) {
