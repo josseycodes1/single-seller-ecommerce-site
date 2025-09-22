@@ -205,13 +205,16 @@ const AddProduct = () => {
         const responseData = await response.json();
 
         if (response.ok) {
-          toast.success("Product added successfully!", {
-            duration: 2000,
-          });
-
-          setTimeout(() => {
-            router.push('/sellerdashboard/product-list');
-          }, 1500);
+          await toast.promise(
+            Promise.resolve(),
+            {
+              loading: 'Adding product...',
+              success: 'Product added successfully!',
+              error: 'Failed to add product',
+            }
+          );
+          
+          router.push('/sellerdashboard/product-list');
         }
 
         
