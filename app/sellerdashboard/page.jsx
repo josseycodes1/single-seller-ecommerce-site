@@ -206,7 +206,7 @@ const AddProduct = () => {
 
         if (response.ok) {
           toast.success("Product added successfully!");
-          router.push('/all-products');
+          router.push('/seller-dashboard/all-products');
         } 
         
         else {
