@@ -20,6 +20,29 @@ const Product = () => {
     const [error, setError] = useState(null);
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [imageErrors, setImageErrors] = useState({});
+    const [categories, setCategories] = useState([]);
+
+    const fetchCategories = async () => {
+    try {
+        const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
+        const url = `${base}/api/categories/`;
+        const response = await fetch(url);
+        if (response.ok) {
+        const data = await response.json();
+        setCategories(data);
+        }
+    } catch (err) {
+        console.error("Error fetching categories:", err);
+    }
+    };
+
+    useEffect(() => {
+    fetchCategories();
+    }, []);
+
+    const categoryName = categories.find(cat => cat.id === productData?.category)?.name || "No category";
+
+
 
     
     const isCloudinaryUrl = (url) => {
@@ -263,27 +286,38 @@ const Product = () => {
                                     </tr>
                                 )}
 
-                                {/* Color */}
-                                {productData.color && (
-                                    <tr>
-                                    <td className="text-gray-600 font-medium py-2">Color</td>
-                                    <td className="text-gray-800/50 py-2 capitalize">
-                                        {productData.color}
-                                    </td>
-                                    </tr>
-                                )}
+                                {/* Colors */}
+                                        {productData?.colors && (
+                                        <tr>
+                                            <td className="text-gray-600 font-medium py-2">Colors</td>
+                                            <td className="text-gray-800/50 py-2 capitalize flex gap-2 flex-wrap">
+                                            {productData.colors.length > 0 ? (
+                                                productData.colors.map((color, idx) => (
+                                                <span
+                                                    key={idx}
+                                                    className="px-3 py-1 rounded-full text-sm border bg-gray-100"
+                                                >
+                                                    {color}
+                                                </span>
+                                                ))
+                                            ) : (
+                                                <span className="text-gray-500">No colors</span>
+                                            )}
+                                            </td>
+                                        </tr>
+                                        )}
+
 
                                 {/* Category */}
-                                {productData.category && (
+                                    {productData.category && (
                                     <tr>
-                                    <td className="text-gray-600 font-medium py-2">Category</td>
-                                    <td className="text-gray-800/50 py-2 capitalize">
-                                        {typeof productData.category === "object"
-                                        ? productData.category.name
-                                        : productData.category}
-                                    </td>
+                                        <td className="text-gray-600 font-medium py-2">Category</td>
+                                        <td className="text-gray-800/50 py-2 capitalize">
+                                        <span className="font-medium">{productData.category.name}</span>
+                                        </td>
                                     </tr>
-                                )}
+                                    )}
+
                                 </tbody>
                             </table>
                             </div>
