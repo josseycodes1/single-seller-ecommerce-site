@@ -205,6 +205,8 @@ const AddProduct = () => {
 
         if (response.ok) {
           alert('Product added successfully!');
+          router.push('/all-products');
+          
           resetForm();
         } else {
           setError(`Failed to add product: ${JSON.stringify(responseData)}`);
