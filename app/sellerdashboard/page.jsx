@@ -180,7 +180,11 @@ const AddProduct = () => {
         formData.append('is_featured', isFeatured); 
         formData.append('colors', JSON.stringify(colors)); 
 
-        files.forEach((file, index) => { if (file) { formData.append('images', file); } });
+        files.forEach((file) => {
+          if (file) {
+            formData.append("image_files", file);
+          }
+        });
 
         console.log("FormData payload:");
         for (let [key, value] of formData.entries()) {
