@@ -13,13 +13,16 @@ import FeaturedProduct from "@/components/FeaturedProduct";
 
 const Product = () => {
     const { id } = useParams();
-    const { router, addToCart, currency, cartLoading } = useAppContext();
+    const { router, addToCart, currency } = useAppContext();
     const [mainImage, setMainImage] = useState(null);
     const [productData, setProductData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [imageErrors, setImageErrors] = useState({});
+    const [selectedColor, setSelectedColor] = useState("");
+    const [selectedQuantity, setSelectedQuantity] = useState(1);
+    const [addToCartLoading, setAddToCartLoading] = useState(false);
 
     const isCloudinaryUrl = (url) => {
         return url && url.includes('cloudinary.com');
@@ -52,6 +55,11 @@ const Product = () => {
             const data = await response.json();
             console.log('Product data received:', data); 
             setProductData(data);
+            
+            // Set default selected color
+            if (data.colors && data.colors.length > 0) {
+                setSelectedColor(data.colors[0]);
+            }
             
             if (data.images && data.images.length > 0) {
                 setMainImage(data.images[0].image_url);
@@ -95,23 +103,32 @@ const Product = () => {
     const handleAddToCart = async () => {
         if (productData.stock === 0) return;
         
-        const result = await addToCart(productData.id || productData._id, 1, true);
+        setAddToCartLoading(true);
+        const result = await addToCart(productData.id || productData._id, selectedQuantity, true);
+        setAddToCartLoading(false);
         
         if (result.success) {
-            // Toast will be shown automatically by the context
             console.log('Product added to cart successfully');
         }
     }
 
-    // Handle buy now (add to cart and navigate)
-    const handleBuyNow = async () => {
-        if (productData.stock === 0) return;
-        
-        const result = await addToCart(productData.id || productData._id, 1, false); // Don't show toast for buy now
-        
-        if (result.success) {
-            router.push('/cart');
+    // Handle buy now - simply navigate to cart page
+    const handleBuyNow = () => {
+        router.push('/cart');
+    }
+
+    // Handle quantity change
+    const handleQuantityChange = (e) => {
+        const newQuantity = parseInt(e.target.value);
+        if (newQuantity > 0 && newQuantity <= productData.stock) {
+            setSelectedQuantity(newQuantity);
         }
+    }
+
+    // Generate quantity options based on available stock
+    const getQuantityOptions = () => {
+        const maxQuantity = Math.min(productData.stock, 10); // Limit to 10 or available stock
+        return Array.from({ length: maxQuantity }, (_, i) => i + 1);
     }
 
     if (loading) {
@@ -261,22 +278,68 @@ const Product = () => {
                         
                         <hr className="bg-gray-600 my-6" />
                         
+                        {/* Product Selection Options */}
+                        <div className="space-y-4">
+                            {/* Color Selection */}
+                            {productData?.colors && productData.colors.length > 0 && (
+                                <div>
+                                    <label className="block text-gray-600 font-medium mb-2">
+                                        Select Color
+                                    </label>
+                                    <div className="flex gap-2 flex-wrap">
+                                        {productData.colors.map((color, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => setSelectedColor(color)}
+                                                className={`px-4 py-2 rounded-full text-sm border transition ${
+                                                    selectedColor === color
+                                                        ? 'bg-josseypink2 text-white border-josseypink2'
+                                                        : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
+                                                }`}
+                                            >
+                                                {color}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Quantity Selection */}
+                            <div>
+                                <label className="block text-gray-600 font-medium mb-2">
+                                    Select Quantity
+                                </label>
+                                <select
+                                    value={selectedQuantity}
+                                    onChange={handleQuantityChange}
+                                    className="border border-gray-300 rounded px-3 py-2 w-32"
+                                    disabled={productData.stock === 0}
+                                >
+                                    {getQuantityOptions().map(quantity => (
+                                        <option key={quantity} value={quantity}>
+                                            {quantity}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
                         {/* Product Details Table */}
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto mt-6">
                             <table className="table-auto border-collapse w-full max-w-72">
                                 <tbody>
-                                    {/* Quantity */}
+                                    {/* Available Quantity */}
                                     {productData.stock !== undefined && (
                                         <tr>
-                                            <td className="text-gray-600 font-medium py-2">Quantity</td>
+                                            <td className="text-gray-600 font-medium py-2">Available Quantity</td>
                                             <td className="text-gray-800/50 py-2">{productData.stock}</td>
                                         </tr>
                                     )}
 
-                                    {/* Colors */}
+                                    {/* Available Colors */}
                                     {productData?.colors && (
                                         <tr>
-                                            <td className="text-gray-600 font-medium py-2">Colors</td>
+                                            <td className="text-gray-600 font-medium py-2">Available Colors</td>
                                             <td className="text-gray-800/50 py-2 capitalize flex gap-2 flex-wrap">
                                                 {productData.colors.length > 0 ? (
                                                     productData.colors.map((color, idx) => (
@@ -311,16 +374,16 @@ const Product = () => {
                         <div className="flex items-center mt-10 gap-4">
                             <button 
                                 onClick={handleAddToCart} 
-                                disabled={productData.stock === 0 || cartLoading}
+                                disabled={productData.stock === 0 || addToCartLoading}
                                 className={`w-full py-3.5 flex items-center justify-center ${
                                     productData.stock === 0 
                                         ? 'bg-gray-300 cursor-not-allowed' 
-                                        : cartLoading
+                                        : addToCartLoading
                                         ? 'bg-gray-400 cursor-wait'
                                         : 'bg-gray-100 text-gray-800/80 hover:bg-gray-200'
                                 } transition`}
                             >
-                                {cartLoading ? (
+                                {addToCartLoading ? (
                                     <>
                                         <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -337,16 +400,14 @@ const Product = () => {
                             
                             <button 
                                 onClick={handleBuyNow}
-                                disabled={productData.stock === 0 || cartLoading}
-                                className={`w-full py-3.5 flex items-center justify-center ${
+                                disabled={productData.stock === 0}
+                                className={`w-full py-3.5 ${
                                     productData.stock === 0 
                                         ? 'bg-gray-300 cursor-not-allowed' 
-                                        : cartLoading
-                                        ? 'bg-pink-400 cursor-wait'
                                         : 'bg-josseypink2 text-white hover:bg-josseypink1'
                                 } transition`}
                             >
-                                {cartLoading ? 'Adding...' : 'Buy now'}
+                                Buy now
                             </button>
                         </div>
                     </div>
