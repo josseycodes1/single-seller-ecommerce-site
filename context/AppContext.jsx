@@ -20,24 +20,65 @@ export const AppContextProvider = (props) => {
     const [cart, setCart] = useState(null) 
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [cartLoading, setCartLoading] = useState(false)
+    const [toasts, setToasts] = useState([])
 
-    
+    // Toast functionality
+    const addToast = (message, type = 'success', duration = 3000) => {
+        const id = Date.now() + Math.random();
+        const toast = { id, message, type, duration };
+        
+        setToasts(prev => [...prev, toast]);
+        
+        setTimeout(() => {
+            removeToast(id);
+        }, duration);
+    };
+
+    const removeToast = (id) => {
+        setToasts(prev => prev.filter(toast => toast.id !== id));
+    };
+
+    // Toast container component
+    const ToastContainer = () => (
+        <div className="fixed top-4 right-4 z-50 space-y-2">
+            {toasts.map((toast) => (
+                <div
+                    key={toast.id}
+                    className={`p-4 rounded-lg shadow-lg border-l-4 min-w-80 ${
+                        toast.type === 'success' 
+                            ? 'bg-green-50 border-green-500 text-green-700' 
+                            : toast.type === 'error'
+                            ? 'bg-red-50 border-red-500 text-red-700'
+                            : 'bg-blue-50 border-blue-500 text-blue-700'
+                    }`}
+                >
+                    <div className="flex items-center justify-between">
+                        <span>{toast.message}</span>
+                        <button
+                            onClick={() => removeToast(toast.id)}
+                            className="ml-4 text-gray-500 hover:text-gray-700"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+
     const getOrCreateCartId = () => {
         if (typeof window === 'undefined') return null;
         
         let cartId = localStorage.getItem('cart_id');
         if (!cartId) {
-            
             cartId = 'cart_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             localStorage.setItem('cart_id', cartId);
-            
-            
             createCartOnBackend(cartId);
         }
         return cartId;
     }
 
-    
     const createCartOnBackend = async (cartId) => {
         try {
             await fetch(`${API_BASE_URL}/api/cart/`, {
@@ -45,14 +86,13 @@ export const AppContextProvider = (props) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ id: cartId }) 
+                body: JSON.stringify({ id: cartId })
             });
         } catch (error) {
             console.error("Failed to create cart on backend:", error);
         }
     }
 
-    
     const fetchCart = async () => {
         try {
             const cartId = getOrCreateCartId();
@@ -64,9 +104,7 @@ export const AppContextProvider = (props) => {
                 const cartData = await response.json();
                 setCart(cartData);
             } else if (response.status === 404) {
-                
                 await createCartOnBackend(cartId);
-                
                 const retryResponse = await fetch(`${API_BASE_URL}/api/cart/?cart_id=${cartId}`);
                 if (retryResponse.ok) {
                     const cartData = await retryResponse.json();
@@ -78,9 +116,9 @@ export const AppContextProvider = (props) => {
         }
     }
 
-   
-    const addToCart = async (productId, quantity = 1) => {
+    const addToCart = async (productId, quantity = 1, showToast = true) => {
         try {
+            setCartLoading(true);
             const cartId = getOrCreateCartId();
             
             const response = await fetch(`${API_BASE_URL}/api/cart/items/`, {
@@ -98,25 +136,43 @@ export const AppContextProvider = (props) => {
             if (response.ok) {
                 const updatedCart = await response.json();
                 setCart(updatedCart);
+                
+                if (showToast) {
+                    const product = products.find(p => p.id === productId);
+                    const productName = product?.name || 'Product';
+                    addToast(`${productName} added to cart!`, 'success');
+                }
+                
                 return { success: true, cart: updatedCart };
             } else {
                 const errorData = await response.json();
+                
+                if (showToast) {
+                    addToast(errorData.detail || 'Failed to add item to cart', 'error');
+                }
+                
                 return { success: false, error: errorData };
             }
         } catch (error) {
             console.error("Failed to add to cart:", error);
+            
+            if (showToast) {
+                addToast('Network error. Please try again.', 'error');
+            }
+            
             return { success: false, error: error.message };
+        } finally {
+            setCartLoading(false);
         }
     }
 
-    
-    const updateCartQuantity = async (itemId, quantity) => {
+    const updateCartQuantity = async (itemId, quantity, showToast = false) => {
         try {
+            setCartLoading(true);
             const cartId = getOrCreateCartId();
             
             if (quantity === 0) {
-                
-                return await removeFromCart(itemId);
+                return await removeFromCart(itemId, showToast);
             }
 
             const response = await fetch(`${API_BASE_URL}/api/cart/items/${itemId}/`, {
@@ -133,20 +189,37 @@ export const AppContextProvider = (props) => {
             if (response.ok) {
                 const updatedCart = await response.json();
                 setCart(updatedCart);
+                
+                if (showToast) {
+                    addToast('Cart updated successfully!', 'success');
+                }
+                
                 return { success: true, cart: updatedCart };
             } else {
                 const errorData = await response.json();
+                
+                if (showToast) {
+                    addToast(errorData.detail || 'Failed to update cart', 'error');
+                }
+                
                 return { success: false, error: errorData };
             }
         } catch (error) {
             console.error("Failed to update cart quantity:", error);
+            
+            if (showToast) {
+                addToast('Network error. Please try again.', 'error');
+            }
+            
             return { success: false, error: error.message };
+        } finally {
+            setCartLoading(false);
         }
     }
 
-    
-    const removeFromCart = async (itemId) => {
+    const removeFromCart = async (itemId, showToast = true) => {
         try {
+            setCartLoading(true);
             const cartId = getOrCreateCartId();
             
             const response = await fetch(`${API_BASE_URL}/api/cart/items/${itemId}/`, {
@@ -162,18 +235,34 @@ export const AppContextProvider = (props) => {
             if (response.ok) {
                 const updatedCart = await response.json();
                 setCart(updatedCart);
+                
+                if (showToast) {
+                    addToast('Item removed from cart', 'success');
+                }
+                
                 return { success: true, cart: updatedCart };
             } else {
                 const errorData = await response.json();
+                
+                if (showToast) {
+                    addToast(errorData.detail || 'Failed to remove item', 'error');
+                }
+                
                 return { success: false, error: errorData };
             }
         } catch (error) {
             console.error("Failed to remove from cart:", error);
+            
+            if (showToast) {
+                addToast('Network error. Please try again.', 'error');
+            }
+            
             return { success: false, error: error.message };
+        } finally {
+            setCartLoading(false);
         }
     }
 
-    
     const clearCart = async () => {
         try {
             const cartId = getOrCreateCartId();
@@ -202,17 +291,14 @@ export const AppContextProvider = (props) => {
         }
     }
 
-    
     const getCartCount = () => {
         return cart ? cart.total_quantity : 0;
     }
 
-    
     const getCartAmount = () => {
         return cart ? parseFloat(cart.total_price) : 0;
     }
 
-    
     const getCartItemsMap = () => {
         if (!cart || !cart.items) return {};
         
@@ -279,18 +365,22 @@ export const AppContextProvider = (props) => {
         isSeller, setIsSeller,
         userData, fetchUserData,
         products, fetchProductData,
-        cart, setCart, 
-        cartItems: getCartItemsMap(), 
+        cart, setCart,
+        cartItems: getCartItemsMap(),
         addToCart, updateCartQuantity,
         removeFromCart, clearCart,
         getCartCount, getCartAmount,
         loading, error,
-        fetchCart 
+        fetchCart,
+        cartLoading,
+        addToast // Export addToast for direct use if needed
     }
 
     return (
         <AppContext.Provider value={value}>
             {props.children}
+            {/* Render toast container here */}
+            <ToastContainer />
         </AppContext.Provider>
     )
 }

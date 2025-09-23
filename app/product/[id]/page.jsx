@@ -13,7 +13,7 @@ import FeaturedProduct from "@/components/FeaturedProduct";
 
 const Product = () => {
     const { id } = useParams();
-    const { router, addToCart, currency } = useAppContext();
+    const { router, addToCart, currency, cartLoading } = useAppContext();
     const [mainImage, setMainImage] = useState(null);
     const [productData, setProductData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -21,28 +21,20 @@ const Product = () => {
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [imageErrors, setImageErrors] = useState({});
 
-   
     const isCloudinaryUrl = (url) => {
         return url && url.includes('cloudinary.com');
     }
 
-    
     const getOptimizedCloudinaryUrl = (url, width = 400, height = 400) => {
         if (!url || !isCloudinaryUrl(url)) return url
-        
-        
         const optimizationParams = `c_fill,w_${width},h_${height},q_auto,f_auto`
-        
-       
         return url.replace('/upload/', `/upload/${optimizationParams}/`)
     }
     
-   
     const handleImageError = (imageType) => {
         setImageErrors(prev => ({ ...prev, [imageType]: true }));
     }
 
-    
     const fetchProductData = async () => {
         try {
             setLoading(true);
@@ -61,11 +53,9 @@ const Product = () => {
             console.log('Product data received:', data); 
             setProductData(data);
             
-            
             if (data.images && data.images.length > 0) {
                 setMainImage(data.images[0].image_url);
             }
-            
             
             if (data.category) {
                 fetchRelatedProducts(data.category);
@@ -79,7 +69,6 @@ const Product = () => {
         }
     };
 
-   
     const fetchRelatedProducts = async (categoryId) => {
         try {
             const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
@@ -101,6 +90,29 @@ const Product = () => {
             fetchProductData();
         }
     }, [id]);
+
+    // Handle add to cart with loading state
+    const handleAddToCart = async () => {
+        if (productData.stock === 0) return;
+        
+        const result = await addToCart(productData.id || productData._id, 1, true);
+        
+        if (result.success) {
+            // Toast will be shown automatically by the context
+            console.log('Product added to cart successfully');
+        }
+    }
+
+    // Handle buy now (add to cart and navigate)
+    const handleBuyNow = async () => {
+        if (productData.stock === 0) return;
+        
+        const result = await addToCart(productData.id || productData._id, 1, false); // Don't show toast for buy now
+        
+        if (result.success) {
+            router.push('/cart');
+        }
+    }
 
     if (loading) {
         return <Loading />;
@@ -136,7 +148,6 @@ const Product = () => {
         );
     }
 
-    
     const parsePrice = (value) => {
         if (value === null || value === undefined) return 0;
         const num = typeof value === 'string' ? parseFloat(value) : Number(value);
@@ -146,7 +157,6 @@ const Product = () => {
     const productPrice = parsePrice(productData.offer_price || productData.price);
     const originalPrice = productData.price ? parsePrice(productData.price) : null;
 
-    
     const productImages = productData.images?.map(img => img.image_url).filter(Boolean) || [];
 
     return (
@@ -252,80 +262,91 @@ const Product = () => {
                         <hr className="bg-gray-600 my-6" />
                         
                         {/* Product Details Table */}
-                            <div className="overflow-x-auto">
+                        <div className="overflow-x-auto">
                             <table className="table-auto border-collapse w-full max-w-72">
                                 <tbody>
-                                {/* Quantity */}
-                                {productData.stock !== undefined && (
-                                    <tr>
-                                    <td className="text-gray-600 font-medium py-2">Quantity</td>
-                                    <td className="text-gray-800/50 py-2">{productData.stock}</td>
-                                    </tr>
-                                )}
+                                    {/* Quantity */}
+                                    {productData.stock !== undefined && (
+                                        <tr>
+                                            <td className="text-gray-600 font-medium py-2">Quantity</td>
+                                            <td className="text-gray-800/50 py-2">{productData.stock}</td>
+                                        </tr>
+                                    )}
 
-                                {/* Colors */}
-                                        {productData?.colors && (
+                                    {/* Colors */}
+                                    {productData?.colors && (
                                         <tr>
                                             <td className="text-gray-600 font-medium py-2">Colors</td>
                                             <td className="text-gray-800/50 py-2 capitalize flex gap-2 flex-wrap">
-                                            {productData.colors.length > 0 ? (
-                                                productData.colors.map((color, idx) => (
-                                                <span
-                                                    key={idx}
-                                                    className="px-3 py-1 rounded-full text-sm border bg-gray-100"
-                                                >
-                                                    {color}
-                                                </span>
-                                                ))
-                                            ) : (
-                                                <span className="text-gray-500">No colors</span>
-                                            )}
+                                                {productData.colors.length > 0 ? (
+                                                    productData.colors.map((color, idx) => (
+                                                        <span
+                                                            key={idx}
+                                                            className="px-3 py-1 rounded-full text-sm border bg-gray-100"
+                                                        >
+                                                            {color}
+                                                        </span>
+                                                    ))
+                                                ) : (
+                                                    <span className="text-gray-500">No colors</span>
+                                                )}
                                             </td>
                                         </tr>
-                                        )}
-
-
-                                {/* Category */}
-                                    {productData.category && (
-                                    <tr>
-                                        <td className="text-gray-600 font-medium py-2">Category</td>
-                                        <td className="text-gray-800/50 py-2 capitalize">
-                                        <span className="font-medium">{productData.category.name}</span>
-                                        </td>
-                                    </tr>
                                     )}
 
+                                    {/* Category */}
+                                    {productData.category && (
+                                        <tr>
+                                            <td className="text-gray-600 font-medium py-2">Category</td>
+                                            <td className="text-gray-800/50 py-2 capitalize">
+                                                <span className="font-medium">{productData.category.name}</span>
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
-                            </div>
-
+                        </div>
 
                         {/* Add to Cart Buttons */}
                         <div className="flex items-center mt-10 gap-4">
                             <button 
-                                onClick={() => addToCart(productData.id || productData._id)} 
-                                disabled={productData.stock === 0}
-                                className={`w-full py-3.5 ${productData.stock === 0 
-                                    ? 'bg-gray-300 cursor-not-allowed' 
-                                    : 'bg-gray-100 text-gray-800/80 hover:bg-gray-200'
+                                onClick={handleAddToCart} 
+                                disabled={productData.stock === 0 || cartLoading}
+                                className={`w-full py-3.5 flex items-center justify-center ${
+                                    productData.stock === 0 
+                                        ? 'bg-gray-300 cursor-not-allowed' 
+                                        : cartLoading
+                                        ? 'bg-gray-400 cursor-wait'
+                                        : 'bg-gray-100 text-gray-800/80 hover:bg-gray-200'
                                 } transition`}
                             >
-                                {productData.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                                {cartLoading ? (
+                                    <>
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Adding...
+                                    </>
+                                ) : productData.stock === 0 ? (
+                                    'Out of Stock'
+                                ) : (
+                                    'Add to Cart'
+                                )}
                             </button>
+                            
                             <button 
-                                onClick={() => { 
-                                    if (productData.stock > 0) {
-                                        addToCart(productData.id || productData._id); 
-                                        router.push('/cart');
-                                    }
-                                }} 
-                                disabled={productData.stock === 0}
-                                className={`w-full py-3.5 ${productData.stock === 0 
-                                    ? 'bg-gray-300 cursor-not-allowed' 
-                                    : 'bg-josseypink2 text-white hover:bg-josseypink1'
+                                onClick={handleBuyNow}
+                                disabled={productData.stock === 0 || cartLoading}
+                                className={`w-full py-3.5 flex items-center justify-center ${
+                                    productData.stock === 0 
+                                        ? 'bg-gray-300 cursor-not-allowed' 
+                                        : cartLoading
+                                        ? 'bg-pink-400 cursor-wait'
+                                        : 'bg-josseypink2 text-white hover:bg-josseypink1'
                                 } transition`}
                             >
-                                Buy now
+                                {cartLoading ? 'Adding...' : 'Buy now'}
                             </button>
                         </div>
                     </div>
