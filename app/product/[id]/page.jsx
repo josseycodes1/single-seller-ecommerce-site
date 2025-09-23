@@ -23,6 +23,7 @@ const Product = () => {
     const [selectedColor, setSelectedColor] = useState("");
     const [selectedQuantity, setSelectedQuantity] = useState(1);
     const [addToCartLoading, setAddToCartLoading] = useState(false);
+    const [quantityError, setQuantityError] = useState("");
 
     const isCloudinaryUrl = (url) => {
         return url && url.includes('cloudinary.com');
@@ -103,6 +104,13 @@ const Product = () => {
     const handleAddToCart = async () => {
         if (productData.stock === 0) return;
         
+        // Validate quantity
+        if (selectedQuantity > productData.stock) {
+            setQuantityError(`Only ${productData.stock} items available in stock`);
+            return;
+        }
+        
+        setQuantityError("");
         setAddToCartLoading(true);
         const result = await addToCart(productData.id || productData._id, selectedQuantity, true);
         setAddToCartLoading(false);
@@ -117,17 +125,36 @@ const Product = () => {
         router.push('/cart');
     }
 
-    // Handle quantity change
-    const handleQuantityChange = (e) => {
-        const newQuantity = parseInt(e.target.value);
-        if (newQuantity > 0 && newQuantity <= productData.stock) {
-            setSelectedQuantity(newQuantity);
+    // Handle quantity change from input
+    const handleQuantityInputChange = (e) => {
+        const newQuantity = parseInt(e.target.value) || 1;
+        
+        if (newQuantity < 1) {
+            setSelectedQuantity(1);
+            setQuantityError("Quantity must be at least 1");
+            return;
         }
+        
+        if (newQuantity > productData.stock) {
+            setSelectedQuantity(productData.stock);
+            setQuantityError(`Only ${productData.stock} items available in stock`);
+            return;
+        }
+        
+        setSelectedQuantity(newQuantity);
+        setQuantityError("");
     }
 
-    // Generate quantity options based on available stock
+    // Handle quantity change from select
+    const handleQuantitySelectChange = (e) => {
+        const newQuantity = parseInt(e.target.value);
+        setSelectedQuantity(newQuantity);
+        setQuantityError("");
+    }
+
+    // Generate quantity options based on available stock (max 10)
     const getQuantityOptions = () => {
-        const maxQuantity = Math.min(productData.stock, 10); // Limit to 10 or available stock
+        const maxQuantity = Math.min(productData.stock, 10);
         return Array.from({ length: maxQuantity }, (_, i) => i + 1);
     }
 
@@ -309,18 +336,35 @@ const Product = () => {
                                 <label className="block text-gray-600 font-medium mb-2">
                                     Select Quantity
                                 </label>
-                                <select
-                                    value={selectedQuantity}
-                                    onChange={handleQuantityChange}
-                                    className="border border-gray-300 rounded px-3 py-2 w-32"
-                                    disabled={productData.stock === 0}
-                                >
-                                    {getQuantityOptions().map(quantity => (
-                                        <option key={quantity} value={quantity}>
-                                            {quantity}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="flex items-center gap-4">
+                                    {/* Input field for manual quantity entry */}
+                                    <input
+                                        type="number"
+                                        value={selectedQuantity}
+                                        onChange={handleQuantityInputChange}
+                                        min="1"
+                                        max={productData.stock}
+                                        className="border border-gray-300 rounded px-3 py-2 w-24"
+                                        disabled={productData.stock === 0}
+                                    />
+                                    
+                                    {/* Dropdown for quick selection (max 10) */}
+                                    <select
+                                        value={selectedQuantity}
+                                        onChange={handleQuantitySelectChange}
+                                        className="border border-gray-300 rounded px-3 py-2 w-32"
+                                        disabled={productData.stock === 0}
+                                    >
+                                        {getQuantityOptions().map(quantity => (
+                                            <option key={quantity} value={quantity}>
+                                                {quantity}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                {quantityError && (
+                                    <p className="text-red-500 text-sm mt-2">{quantityError}</p>
+                                )}
                             </div>
                         </div>
 

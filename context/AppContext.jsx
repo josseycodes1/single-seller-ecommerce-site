@@ -98,21 +98,30 @@ export const AppContextProvider = (props) => {
             const cartId = getOrCreateCartId();
             if (!cartId) return;
 
+            console.log('Fetching cart with ID:', cartId);
             const response = await fetch(`${API_BASE_URL}/api/cart/?cart_id=${cartId}`);
+            
+            console.log('Cart fetch response status:', response.status);
             
             if (response.ok) {
                 const cartData = await response.json();
+                console.log('Cart data received:', cartData);
                 setCart(cartData);
             } else if (response.status === 404) {
+                console.log('Cart not found, creating new one');
                 await createCartOnBackend(cartId);
                 const retryResponse = await fetch(`${API_BASE_URL}/api/cart/?cart_id=${cartId}`);
                 if (retryResponse.ok) {
                     const cartData = await retryResponse.json();
                     setCart(cartData);
                 }
+            } else {
+                console.error('Failed to fetch cart:', response.status);
+                setCart({ items: [], total_price: 0, total_quantity: 0 }); // Set empty cart on error
             }
         } catch (error) {
             console.error("Failed to fetch cart:", error);
+            setCart({ items: [], total_price: 0, total_quantity: 0 }); // Set empty cart on error
         }
     }
 
@@ -120,6 +129,8 @@ export const AppContextProvider = (props) => {
         try {
             setCartLoading(true);
             const cartId = getOrCreateCartId();
+            
+            console.log('Adding to cart:', { cartId, productId, quantity });
             
             const response = await fetch(`${API_BASE_URL}/api/cart/items/`, {
                 method: 'POST',
@@ -133,6 +144,8 @@ export const AppContextProvider = (props) => {
                 })
             });
 
+            console.log('Add to cart response status:', response.status);
+            
             if (response.ok) {
                 const updatedCart = await response.json();
                 setCart(updatedCart);
@@ -145,7 +158,14 @@ export const AppContextProvider = (props) => {
                 
                 return { success: true, cart: updatedCart };
             } else {
-                const errorData = await response.json();
+                const errorText = await response.text();
+                console.error('Add to cart error response:', errorText);
+                let errorData;
+                try {
+                    errorData = JSON.parse(errorText);
+                } catch {
+                    errorData = { detail: 'Server error occurred' };
+                }
                 
                 if (showToast) {
                     addToast(errorData.detail || 'Failed to add item to cart', 'error');

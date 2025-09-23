@@ -1,5 +1,5 @@
 'use client'
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { assets } from "@/assets/assets";
 import OrderSummary from "@/components/OrderSummary";
 import Image from "next/image";
@@ -7,9 +7,26 @@ import Navbar from "@/components/Navbar";
 import { useAppContext } from "@/context/AppContext";
 
 const Cart = () => {
-    const { products, router, cart, cartItems, addToCart, updateCartQuantity, removeFromCart, getCartCount } = useAppContext();
+    const { products, router, cart, cartItems, addToCart, updateCartQuantity, removeFromCart, getCartCount, fetchCart } = useAppContext();
+    const [loading, setLoading] = useState(true);
 
-    
+    useEffect(() => {
+        // Set a timeout to show empty cart if cart doesn't load
+        const timer = setTimeout(() => {
+            if (!cart) {
+                setLoading(false);
+            }
+        }, 5000);
+
+        return () => clearTimeout(timer);
+    }, [cart]);
+
+    useEffect(() => {
+        if (cart !== null) {
+            setLoading(false);
+        }
+    }, [cart]);
+
     const handleUpdateQuantity = async (itemId, newQuantity) => {
         if (newQuantity === 0) {
             await removeFromCart(itemId);
@@ -18,12 +35,12 @@ const Cart = () => {
         }
     }
 
-   
     const handleAddToCart = async (productId) => {
         await addToCart(productId, 1);
     }
 
-    if (!cart) {
+    // Show loading state only for a reasonable time
+    if (loading && !cart) {
         return (
             <>
                 <Navbar />
@@ -35,6 +52,9 @@ const Cart = () => {
             </>
         );
     }
+
+    // If cart is null after loading, show empty cart
+    const displayCart = cart || { items: [], total_price: 0, total_quantity: 0 };
 
     return (
         <>
@@ -48,7 +68,7 @@ const Cart = () => {
                         <p className="text-lg md:text-xl text-gray-500/80">{getCartCount()} Items</p>
                     </div>
                     
-                    {cart.items && cart.items.length > 0 ? (
+                    {displayCart.items && displayCart.items.length > 0 ? (
                         <div className="overflow-x-auto">
                             <table className="min-w-full table-auto">
                                 <thead className="text-left">
@@ -68,7 +88,7 @@ const Cart = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {cart.items.map((cartItem) => {
+                                    {displayCart.items.map((cartItem) => {
                                         const product = products.find(p => p.id === cartItem.product.id);
 
                                         if (!product) return null;
@@ -160,7 +180,7 @@ const Cart = () => {
                     </button>
                 </div>
                 
-                {cart.items && cart.items.length > 0 && (
+                {displayCart.items && displayCart.items.length > 0 && (
                     <OrderSummary />
                 )}
             </div>
