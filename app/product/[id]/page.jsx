@@ -20,31 +20,8 @@ const Product = () => {
     const [error, setError] = useState(null);
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [imageErrors, setImageErrors] = useState({});
-    const [categories, setCategories] = useState([]);
 
-    const fetchCategories = async () => {
-    try {
-        const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
-        const url = `${base}/api/categories/`;
-        const response = await fetch(url);
-        if (response.ok) {
-        const data = await response.json();
-        setCategories(data);
-        }
-    } catch (err) {
-        console.error("Error fetching categories:", err);
-    }
-    };
-
-    useEffect(() => {
-    fetchCategories();
-    }, []);
-
-    const categoryName = categories.find(cat => cat.id === productData?.category)?.name || "No category";
-
-
-
-    
+   
     const isCloudinaryUrl = (url) => {
         return url && url.includes('cloudinary.com');
     }
@@ -59,7 +36,7 @@ const Product = () => {
        
         return url.replace('/upload/', `/upload/${optimizationParams}/`)
     }
-
+    
    
     const handleImageError = (imageType) => {
         setImageErrors(prev => ({ ...prev, [imageType]: true }));
