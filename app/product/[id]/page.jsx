@@ -11,6 +11,7 @@ import { useAppContext } from "@/context/AppContext";
 import React from "react";
 import FeaturedProduct from "@/components/FeaturedProduct";
 
+
 const Product = () => {
     const { id } = useParams();
     const { router, addToCart, currency } = useAppContext();
@@ -116,7 +117,9 @@ const Product = () => {
         setAddToCartLoading(false);
         
         if (result.success) {
-            console.log('Product added to cart successfully');
+            toast.success(result.message || "Product added to cart successfully 🎉");
+        } else {
+            toast.error(result.message || "Failed to add product to cart ❌");
         }
     }
 
