@@ -116,9 +116,10 @@ export const AppContextProvider = (props) => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    cart_id: cartId,
+                    cart_id: parseInt(cartId),
                     product_id: productId,
-                    quantity: quantity
+                    quantity: quantity,
+                    color:color
                 })
             });
 
