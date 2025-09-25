@@ -9,7 +9,6 @@ export const useAppContext = () => {
 }
 
 export const AppContextProvider = (props) => {
-
     const currency = process.env.NEXT_PUBLIC_CURRENCY
     const router = useRouter()
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
@@ -23,23 +22,18 @@ export const AppContextProvider = (props) => {
     const [cartLoading, setCartLoading] = useState(false)
     const [toasts, setToasts] = useState([])
 
-    // Toast functionality
+    // 🔹 Toast system
     const addToast = (message, type = 'success', duration = 3000) => {
         const id = Date.now() + Math.random();
         const toast = { id, message, type, duration };
-        
         setToasts(prev => [...prev, toast]);
-        
-        setTimeout(() => {
-            removeToast(id);
-        }, duration);
+        setTimeout(() => removeToast(id), duration);
     };
 
     const removeToast = (id) => {
         setToasts(prev => prev.filter(toast => toast.id !== id));
     };
 
-    // Toast container component
     const ToastContainer = () => (
         <div className="fixed top-4 right-4 z-50 space-y-2">
             {toasts.map((toast) => (
@@ -67,76 +61,60 @@ export const AppContextProvider = (props) => {
         </div>
     );
 
-    const getOrCreateCartId = () => {
+    // 🔹 Create or get cart from backend
+    const getOrCreateCartId = async () => {
         if (typeof window === 'undefined') return null;
-        
+
         let cartId = localStorage.getItem('cart_id');
         if (!cartId) {
-            cartId = 'cart_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('cart_id', cartId);
-            createCartOnBackend(cartId);
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/cart/`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                });
+
+                if (response.ok) {
+                    const cartData = await response.json();
+                    cartId = cartData.id; // integer from backend
+                    localStorage.setItem('cart_id', cartId);
+                    setCart(cartData);
+                } else {
+                    console.error("Failed to create cart on backend");
+                    return null;
+                }
+            } catch (error) {
+                console.error("Error creating cart:", error);
+                return null;
+            }
         }
         return cartId;
-    }
+    };
 
-    const createCartOnBackend = async (cartId) => {
-        try {
-            await fetch(`${API_BASE_URL}/api/cart/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: cartId })
-            });
-        } catch (error) {
-            console.error("Failed to create cart on backend:", error);
-        }
-    }
-
+    // 🔹 Fetch cart data
     const fetchCart = async () => {
         try {
-            const cartId = getOrCreateCartId();
+            const cartId = await getOrCreateCartId();
             if (!cartId) return;
 
-            console.log('Fetching cart with ID:', cartId);
             const response = await fetch(`${API_BASE_URL}/api/cart/?cart_id=${cartId}`);
-            
-            console.log('Cart fetch response status:', response.status);
-            
             if (response.ok) {
                 const cartData = await response.json();
-                console.log('Cart data received:', cartData);
                 setCart(cartData);
-            } else if (response.status === 404) {
-                console.log('Cart not found, creating new one');
-                await createCartOnBackend(cartId);
-                const retryResponse = await fetch(`${API_BASE_URL}/api/cart/?cart_id=${cartId}`);
-                if (retryResponse.ok) {
-                    const cartData = await retryResponse.json();
-                    setCart(cartData);
-                }
-            } else {
-                console.error('Failed to fetch cart:', response.status);
-                setCart({ items: [], total_price: 0, total_quantity: 0 }); // Set empty cart on error
             }
         } catch (error) {
             console.error("Failed to fetch cart:", error);
-            setCart({ items: [], total_price: 0, total_quantity: 0 }); // Set empty cart on error
         }
-    }
+    };
 
+    // 🔹 Add item to cart
     const addToCart = async (productId, quantity = 1, showToast = true) => {
         try {
             setCartLoading(true);
-            const cartId = getOrCreateCartId();
-            
-            console.log('Adding to cart:', { cartId, productId, quantity });
+            const cartId = await getOrCreateCartId();
             
             const response = await fetch(`${API_BASE_URL}/api/cart/items/`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     cart_id: cartId,
                     product_id: productId,
@@ -144,157 +122,106 @@ export const AppContextProvider = (props) => {
                 })
             });
 
-            console.log('Add to cart response status:', response.status);
-            
             if (response.ok) {
                 const updatedCart = await response.json();
                 setCart(updatedCart);
-                
+
                 if (showToast) {
                     const product = products.find(p => p.id === productId);
                     const productName = product?.name || 'Product';
                     addToast(`${productName} added to cart!`, 'success');
                 }
-                
                 return { success: true, cart: updatedCart };
             } else {
-                const errorText = await response.text();
-                console.error('Add to cart error response:', errorText);
-                let errorData;
-                try {
-                    errorData = JSON.parse(errorText);
-                } catch {
-                    errorData = { detail: 'Server error occurred' };
-                }
-                
+                const errorData = await response.json();
                 if (showToast) {
                     addToast(errorData.detail || 'Failed to add item to cart', 'error');
                 }
-                
                 return { success: false, error: errorData };
             }
         } catch (error) {
             console.error("Failed to add to cart:", error);
-            
-            if (showToast) {
-                addToast('Network error. Please try again.', 'error');
-            }
-            
+            if (showToast) addToast('Network error. Please try again.', 'error');
             return { success: false, error: error.message };
         } finally {
             setCartLoading(false);
         }
-    }
+    };
 
+    // 🔹 Update cart quantity
     const updateCartQuantity = async (itemId, quantity, showToast = false) => {
         try {
             setCartLoading(true);
-            const cartId = getOrCreateCartId();
-            
+            const cartId = await getOrCreateCartId();
+
             if (quantity === 0) {
                 return await removeFromCart(itemId, showToast);
             }
 
             const response = await fetch(`${API_BASE_URL}/api/cart/items/${itemId}/`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    cart_id: cartId,
-                    quantity: quantity
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cart_id: cartId, quantity })
             });
 
             if (response.ok) {
                 const updatedCart = await response.json();
                 setCart(updatedCart);
-                
-                if (showToast) {
-                    addToast('Cart updated successfully!', 'success');
-                }
-                
+                if (showToast) addToast('Cart updated successfully!', 'success');
                 return { success: true, cart: updatedCart };
             } else {
                 const errorData = await response.json();
-                
-                if (showToast) {
-                    addToast(errorData.detail || 'Failed to update cart', 'error');
-                }
-                
+                if (showToast) addToast(errorData.detail || 'Failed to update cart', 'error');
                 return { success: false, error: errorData };
             }
         } catch (error) {
             console.error("Failed to update cart quantity:", error);
-            
-            if (showToast) {
-                addToast('Network error. Please try again.', 'error');
-            }
-            
+            if (showToast) addToast('Network error. Please try again.', 'error');
             return { success: false, error: error.message };
         } finally {
             setCartLoading(false);
         }
-    }
+    };
 
+    // 🔹 Remove item
     const removeFromCart = async (itemId, showToast = true) => {
         try {
             setCartLoading(true);
-            const cartId = getOrCreateCartId();
-            
+            const cartId = await getOrCreateCartId();
+
             const response = await fetch(`${API_BASE_URL}/api/cart/items/${itemId}/`, {
                 method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    cart_id: cartId
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cart_id: cartId })
             });
 
             if (response.ok) {
                 const updatedCart = await response.json();
                 setCart(updatedCart);
-                
-                if (showToast) {
-                    addToast('Item removed from cart', 'success');
-                }
-                
+                if (showToast) addToast('Item removed from cart', 'success');
                 return { success: true, cart: updatedCart };
             } else {
                 const errorData = await response.json();
-                
-                if (showToast) {
-                    addToast(errorData.detail || 'Failed to remove item', 'error');
-                }
-                
+                if (showToast) addToast(errorData.detail || 'Failed to remove item', 'error');
                 return { success: false, error: errorData };
             }
         } catch (error) {
             console.error("Failed to remove from cart:", error);
-            
-            if (showToast) {
-                addToast('Network error. Please try again.', 'error');
-            }
-            
+            if (showToast) addToast('Network error. Please try again.', 'error');
             return { success: false, error: error.message };
         } finally {
             setCartLoading(false);
         }
-    }
+    };
 
+    // 🔹 Clear cart
     const clearCart = async () => {
         try {
-            const cartId = getOrCreateCartId();
-            
+            const cartId = await getOrCreateCartId();
             const response = await fetch(`${API_BASE_URL}/api/cart/clear/`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    cart_id: cartId
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cart_id: cartId })
             });
 
             if (response.ok) {
@@ -309,77 +236,64 @@ export const AppContextProvider = (props) => {
             console.error("Failed to clear cart:", error);
             return { success: false, error: error.message };
         }
-    }
+    };
 
-    const getCartCount = () => {
-        return cart ? cart.total_quantity : 0;
-    }
-
-    const getCartAmount = () => {
-        return cart ? parseFloat(cart.total_price) : 0;
-    }
+    // 🔹 Helpers
+    const getCartCount = () => (cart ? cart.total_quantity : 0);
+    const getCartAmount = () => (cart ? parseFloat(cart.total_price) : 0);
 
     const getCartItemsMap = () => {
         if (!cart || !cart.items) return {};
-        
         const cartItemsMap = {};
         cart.items.forEach(item => {
             cartItemsMap[item.product.id] = item.quantity;
         });
         return cartItemsMap;
-    }
+    };
 
+    // 🔹 Fetch products + user + cart on load
     const fetchProductData = async () => {
         try {
-            setLoading(true)
-            const response = await fetch(`${API_BASE_URL}/api/products/`)
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`)
-            }
-            
-            const data = await response.json()
-            setProducts(data) 
+            setLoading(true);
+            const response = await fetch(`${API_BASE_URL}/api/products/`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            setProducts(data);
         } catch (error) {
-            console.error("Failed to fetch products:", error)
-            setError("Failed to load products. Please try again later.")
+            console.error("Failed to fetch products:", error);
+            setError("Failed to load products. Please try again later.");
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     const fetchUserData = async () => {
         try {
-            const token = localStorage.getItem('auth_token') 
-            
+            const token = localStorage.getItem('auth_token');
             if (!token) {
-                setUserData(null)
-                return
+                setUserData(null);
+                return;
             }
-            
             const response = await fetch(`${API_BASE_URL}/api/user/profile/`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            })
-            
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+            });
             if (response.ok) {
-                const userData = await response.json()
-                setUserData(userData)
-                setIsSeller(userData.is_seller || false)
+                const userData = await response.json();
+                setUserData(userData);
+                setIsSeller(userData.is_seller || false);
             }
         } catch (error) {
-            console.error("Failed to fetch user data:", error)
+            console.error("Failed to fetch user data:", error);
         }
-    }
+    };
 
     useEffect(() => {
-        fetchProductData()
-        fetchUserData()
-        fetchCart()
-    }, [])
+        fetchProductData();
+        fetchUserData();
+        fetchCart();
+    }, []);
 
+    // 🔹 Expose context
     const value = {
         currency, router,
         isSeller, setIsSeller,
@@ -393,14 +307,13 @@ export const AppContextProvider = (props) => {
         loading, error,
         fetchCart,
         cartLoading,
-        addToast // Export addToast for direct use if needed
-    }
+        addToast
+    };
 
     return (
         <AppContext.Provider value={value}>
             {props.children}
-            {/* Render toast container here */}
             <ToastContainer />
         </AppContext.Provider>
-    )
-}
+    );
+};
