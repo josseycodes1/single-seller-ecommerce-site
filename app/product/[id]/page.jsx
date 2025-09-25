@@ -22,7 +22,7 @@ const Product = () => {
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [imageErrors, setImageErrors] = useState({});
     const [selectedColor, setSelectedColor] = useState("");
-    const [selectedQuantity, setSelectedQuantity] = useState(1);
+    const [selectedQuantity, setSelectedQuantity] = useState("");
     const [addToCartLoading, setAddToCartLoading] = useState(false);
     const [quantityError, setQuantityError] = useState("");
 
@@ -102,26 +102,36 @@ const Product = () => {
     }, [id]);
 
     // Handle add to cart with loading state
-    const handleAddToCart = async () => {
-        if (productData.stock === 0) return;
-        
-        // Validate quantity
+        const handleAddToCart = async () => {
+        if (!selectedColor) {
+            toast.error("Please select a color");
+            return;
+        }
+
+        if (!selectedQuantity || selectedQuantity < 1) {
+            toast.error("Please enter a valid quantity");
+            return;
+        }
+
         if (selectedQuantity > productData.stock) {
             setQuantityError(`Only ${productData.stock} items available in stock`);
             return;
         }
-        
-        setQuantityError("");
+
         setAddToCartLoading(true);
-        const result = await addToCart(productData.id || productData._id, selectedQuantity, selectedColor, true);
+
+        const result = await addToCart(productData.id, selectedQuantity, selectedColor, true);
+
         setAddToCartLoading(false);
-        
+
         if (result.success) {
             toast.success(result.message || "Product added to cart successfully 🎉");
         } else {
             toast.error(result.message || "Failed to add product to cart ❌");
+            console.error("Add to cart error:", result.error || result.message);
         }
-    }
+    };
+
 
     // Handle buy now - simply navigate to cart page
     const handleBuyNow = () => {
@@ -130,22 +140,31 @@ const Product = () => {
 
     // Handle quantity change from input
     const handleQuantityInputChange = (e) => {
-        const newQuantity = parseInt(e.target.value) || 1;
-        
-        if (newQuantity < 1) {
-            setSelectedQuantity(1);
-            setQuantityError("Quantity must be at least 1");
-            return;
-        }
-        
-        if (newQuantity > productData.stock) {
-            setSelectedQuantity(productData.stock);
-            setQuantityError(`Only ${productData.stock} items available in stock`);
-            return;
-        }
-        
-        setSelectedQuantity(newQuantity);
+    const value = e.target.value;
+
+    // allow empty input
+    if (value === "") {
+        setSelectedQuantity("");
         setQuantityError("");
+        return;
+    }
+
+    const newQuantity = parseInt(value);
+
+    if (isNaN(newQuantity) || newQuantity < 1) {
+        setQuantityError("Quantity must be at least 1");
+        setSelectedQuantity(1);
+        return;
+    }
+
+    if (newQuantity > productData.stock) {
+        setSelectedQuantity(productData.stock);
+        setQuantityError(`Only ${productData.stock} items available in stock`);
+        return;
+    }
+
+    setSelectedQuantity(newQuantity);
+    setQuantityError("");
     }
 
     // Handle quantity change from select
@@ -342,14 +361,15 @@ const Product = () => {
                                 <div className="flex items-center gap-4">
                                     {/* Input field for manual quantity entry */}
                                     <input
-                                        type="number"
-                                        value={selectedQuantity}
-                                        onChange={handleQuantityInputChange}
-                                        min="1"
-                                        max={productData.stock}
-                                        className="border border-gray-300 rounded px-3 py-2 w-24"
-                                        disabled={productData.stock === 0}
-                                    />
+                                    type="number"
+                                    value={selectedQuantity}
+                                    onChange={handleQuantityInputChange}
+                                    placeholder="Enter quantity"
+                                    min="1"
+                                    max={productData.stock}
+                                    className="border border-gray-300 rounded px-3 py-2 w-24"
+                                    disabled={productData.stock === 0}
+                                />
                                 </div>
                                 {quantityError && (
                                     <p className="text-red-500 text-sm mt-2">{quantityError}</p>
@@ -361,13 +381,6 @@ const Product = () => {
                         <div className="overflow-x-auto mt-6">
                             <table className="table-auto border-collapse w-full max-w-72">
                                 <tbody>
-                                    {/* Available Quantity */}
-                                    {productData.stock !== undefined && (
-                                        <tr>
-                                            <td className="text-gray-600 font-medium py-2">Available Quantity</td>
-                                            <td className="text-gray-800/50 py-2">{productData.stock}</td>
-                                        </tr>
-                                    )}
 
                                     {/* Available Colors */}
                                     {productData?.colors && (
