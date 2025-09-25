@@ -118,8 +118,8 @@ export const AppContextProvider = (props) => {
                 body: JSON.stringify({
                     cart_id: parseInt(cartId),
                     product_id: productId,
-                    quantity: quantity,
-                    color:color
+                    quantity,
+                    color,
                 })
             });
 

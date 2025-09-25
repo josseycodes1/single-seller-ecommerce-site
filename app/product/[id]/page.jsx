@@ -112,7 +112,7 @@ const Product = () => {
         
         setQuantityError("");
         setAddToCartLoading(true);
-        const result = await addToCart(productData.id || productData._id, selectedQuantity, true);
+        const result = await addToCart(productData.id || productData._id, selectedQuantity, selectedColor, true);
         setAddToCartLoading(false);
         
         if (result.success) {
