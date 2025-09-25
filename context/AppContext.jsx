@@ -3,17 +3,16 @@ import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 
 export const AppContext = createContext();
-
 export const useAppContext = () => useContext(AppContext);
 
 export const AppContextProvider = (props) => {
-    const currency = process.env.NEXT_PUBLIC_CURRENCY;
     const router = useRouter();
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const currency = process.env.NEXT_PUBLIC_CURRENCY;
 
     const [products, setProducts] = useState([]);
     const [userData, setUserData] = useState(null);
-    const [isSeller, setIsSeller] = useState(true);
+    const [isSeller, setIsSeller] = useState(false);
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -27,9 +26,7 @@ export const AppContextProvider = (props) => {
         setTimeout(() => removeToast(id), duration);
     };
 
-    const removeToast = (id) => {
-        setToasts(prev => prev.filter(t => t.id !== id));
-    };
+    const removeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id));
 
     const ToastContainer = () => (
         <div className="fixed top-4 right-4 z-50 space-y-2">
@@ -46,10 +43,7 @@ export const AppContextProvider = (props) => {
                 >
                     <div className="flex items-center justify-between">
                         <span>{toast.message}</span>
-                        <button
-                            onClick={() => removeToast(toast.id)}
-                            className="ml-4 text-gray-500 hover:text-gray-700"
-                        >
+                        <button onClick={() => removeToast(toast.id)} className="ml-4 text-gray-500 hover:text-gray-700">
                             ✕
                         </button>
                     </div>
@@ -59,70 +53,67 @@ export const AppContextProvider = (props) => {
     );
 
     // 🔹 Create or get cart from backend
-    const getOrCreateCartId = async () => {
+    const getOrCreateCart = async () => {
         if (typeof window === 'undefined') return null;
 
         let cartId = localStorage.getItem('cart_id');
 
-        // 🚨 Remove old fake IDs like "cart_123..."
-        if (cartId && cartId.startsWith("cart_")) {
-            localStorage.removeItem('cart_id');
-            cartId = null;
-        }
-
-        if (!cartId) {
+        if (cartId) {
+            // Try fetching existing cart
             try {
-                const response = await fetch(`${API_BASE_URL}/api/cart/`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" }
-                });
-
+                const response = await fetch(`${API_BASE_URL}/api/cart/?cart_id=${cartId}`);
                 if (response.ok) {
                     const cartData = await response.json();
-                    cartId = cartData.id; // UUID from backend
-                    localStorage.setItem('cart_id', cartId);
                     setCart(cartData);
+                    return cartData;
                 } else {
-                    console.error("❌ Failed to create cart on backend");
-                    return null;
+                    // Invalid cart ID? Remove and create new
+                    localStorage.removeItem('cart_id');
+                    cartId = null;
                 }
-            } catch (error) {
-                console.error("❌ Error creating cart:", error);
-                return null;
+            } catch (err) {
+                console.error("❌ Error fetching existing cart:", err);
+                localStorage.removeItem('cart_id');
+                cartId = null;
             }
         }
-        return cartId;
-    };
 
-    // 🔹 Fetch cart data
-    const fetchCart = async () => {
+        // If no valid cart, create one
         try {
-            const cartId = await getOrCreateCartId();
-            if (!cartId) return;
-
-            const response = await fetch(`${API_BASE_URL}/api/cart/?cart_id=${cartId}`);
+            const response = await fetch(`${API_BASE_URL}/api/cart/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            });
             if (response.ok) {
                 const cartData = await response.json();
+                localStorage.setItem('cart_id', cartData.id);
                 setCart(cartData);
+                return cartData;
             } else {
-                console.error("❌ Failed to fetch cart");
+                console.error("❌ Failed to create cart on backend");
+                return null;
             }
         } catch (error) {
-            console.error("❌ Failed to fetch cart:", error);
+            console.error("❌ Error creating cart:", error);
+            return null;
         }
     };
 
     // 🔹 Add item to cart
     const addToCart = async (productId, quantity = 1, color = null, showToast = true) => {
+        setCartLoading(true);
         try {
-            setCartLoading(true);
-            const cartId = await getOrCreateCartId();
+            const cartData = await getOrCreateCart();
+            if (!cartData) {
+                if (showToast) addToast("Failed to get or create cart", "error");
+                return { success: false };
+            }
 
             const response = await fetch(`${API_BASE_URL}/api/cart/items/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    cart_id: cartId, // UUID
+                    cart_id: cartData.id,
                     product_id: productId,
                     quantity,
                     color,
@@ -132,10 +123,7 @@ export const AppContextProvider = (props) => {
             if (response.ok) {
                 const updatedCart = await response.json();
                 setCart(updatedCart);
-
-                if (showToast) {
-                    addToast("Item added to cart!", "success");
-                }
+                if (showToast) addToast("Item added to cart!", "success");
                 return { success: true, cart: updatedCart };
             } else {
                 const errorData = await response.json();
@@ -155,14 +143,15 @@ export const AppContextProvider = (props) => {
     const updateCartQuantity = async (itemId, quantity, showToast = false) => {
         try {
             setCartLoading(true);
-            const cartId = await getOrCreateCartId();
+            const cartData = await getOrCreateCart();
+            if (!cartData) return { success: false };
 
             if (quantity === 0) return await removeFromCart(itemId, showToast);
 
             const response = await fetch(`${API_BASE_URL}/api/cart/items/${itemId}/`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cart_id: cartId, quantity })
+                body: JSON.stringify({ cart_id: cartData.id, quantity })
             });
 
             if (response.ok) {
@@ -188,12 +177,13 @@ export const AppContextProvider = (props) => {
     const removeFromCart = async (itemId, showToast = true) => {
         try {
             setCartLoading(true);
-            const cartId = await getOrCreateCartId();
+            const cartData = await getOrCreateCart();
+            if (!cartData) return { success: false };
 
             const response = await fetch(`${API_BASE_URL}/api/cart/items/${itemId}/`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cart_id: cartId })
+                body: JSON.stringify({ cart_id: cartData.id })
             });
 
             if (response.ok) {
@@ -218,11 +208,13 @@ export const AppContextProvider = (props) => {
     // 🔹 Clear cart
     const clearCart = async () => {
         try {
-            const cartId = await getOrCreateCartId();
+            const cartData = await getOrCreateCart();
+            if (!cartData) return { success: false };
+
             const response = await fetch(`${API_BASE_URL}/api/cart/clear/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cart_id: cartId })
+                body: JSON.stringify({ cart_id: cartData.id })
             });
 
             if (response.ok) {
@@ -243,11 +235,10 @@ export const AppContextProvider = (props) => {
     const getCartCount = () => (cart ? cart.total_quantity : 0);
     const getCartAmount = () => (cart ? parseFloat(cart.total_price) : 0);
 
-    // 🔹 Fetch products + user + cart on load
+    // 🔹 Fetch products & user on load (no cart fetch here)
     useEffect(() => {
         fetchProductData();
         fetchUserData();
-        fetchCart();
     }, []);
 
     const fetchProductData = async () => {
@@ -268,13 +259,12 @@ export const AppContextProvider = (props) => {
     const fetchUserData = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            if (!token) {
-                setUserData(null);
-                return;
-            }
+            if (!token) return setUserData(null);
+
             const response = await fetch(`${API_BASE_URL}/api/user/profile/`, {
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
             });
+
             if (response.ok) {
                 const data = await response.json();
                 setUserData(data);
@@ -296,7 +286,6 @@ export const AppContextProvider = (props) => {
         removeFromCart, clearCart,
         getCartCount, getCartAmount,
         loading, error,
-        fetchCart,
         cartLoading,
         addToast,
     };
