@@ -107,47 +107,48 @@ export const AppContextProvider = (props) => {
     };
 
     // 🔹 Add item to cart
-    const addToCart = async (productId, quantity = 1, showToast = true) => {
-        try {
-            setCartLoading(true);
-            const cartId = await getOrCreateCartId();
-            
-            const response = await fetch(`${API_BASE_URL}/api/cart/items/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    cart_id: parseInt(cartId),
-                    product_id: productId,
-                    quantity,
-                    color,
-                })
-            });
+        const addToCart = async (productId, quantity = 1, color = null, showToast = true) => {
+            try {
+                setCartLoading(true);
+                const cartId = await getOrCreateCartId();
 
-            if (response.ok) {
-                const updatedCart = await response.json();
-                setCart(updatedCart);
+                const response = await fetch(`${API_BASE_URL}/api/cart/items/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        cart_id: parseInt(cartId),
+                        product_id: productId,
+                        quantity,
+                        color,   // ✅ now it’s defined
+                    })
+                });
 
-                if (showToast) {
-                    const product = products.find(p => p.id === productId);
-                    const productName = product?.name || 'Product';
-                    addToast(`${productName} added to cart!`, 'success');
+                if (response.ok) {
+                    const updatedCart = await response.json();
+                    setCart(updatedCart);
+
+                    if (showToast) {
+                        const product = products.find(p => p.id === productId);
+                        const productName = product?.name || 'Product';
+                        addToast(`${productName} added to cart!`, 'success');
+                    }
+                    return { success: true, cart: updatedCart };
+                } else {
+                    const errorData = await response.json();
+                    if (showToast) {
+                        addToast(errorData.detail || 'Failed to add item to cart', 'error');
+                    }
+                    return { success: false, error: errorData };
                 }
-                return { success: true, cart: updatedCart };
-            } else {
-                const errorData = await response.json();
-                if (showToast) {
-                    addToast(errorData.detail || 'Failed to add item to cart', 'error');
-                }
-                return { success: false, error: errorData };
+            } catch (error) {
+                console.error("Failed to add to cart:", error);
+                if (showToast) addToast('Network error. Please try again.', 'error');
+                return { success: false, error: error.message };
+            } finally {
+                setCartLoading(false);
             }
-        } catch (error) {
-            console.error("Failed to add to cart:", error);
-            if (showToast) addToast('Network error. Please try again.', 'error');
-            return { success: false, error: error.message };
-        } finally {
-            setCartLoading(false);
-        }
-    };
+        };
+
 
     // 🔹 Update cart quantity
     const updateCartQuantity = async (itemId, quantity, showToast = false) => {
