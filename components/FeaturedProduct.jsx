@@ -25,14 +25,14 @@ const FeaturedProduct = () => {
       const data = await response.json();
       console.log("API Response:", data);
 
-      // API might return array or paginated results
+    
       const products = Array.isArray(data) ? data : data.results || [];
       const featuredOnly = products.filter((p) => p.is_featured === true);
       setFeaturedProducts(featuredOnly.slice(0, 3));
     } catch (err) {
       console.error("Error fetching featured products:", err);
       setError(err.message);
-      setFeaturedProducts([]); // no dummy data anymore
+      setFeaturedProducts([]); 
     } finally {
       setLoading(false);
     }

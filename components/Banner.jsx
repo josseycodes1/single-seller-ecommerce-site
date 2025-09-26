@@ -91,7 +91,7 @@ const Banner = () => {
 
         <button className="group flex items-center justify-center gap-2 px-6 py-3 bg-white rounded-full text-josseypink2
          font-semibold hover:bg-gray-50 transition-all shadow-md hover:shadow-lg">
-          {banner?.button_text || "Buy now"}
+          {banner?.button_text || "View Our Products"}
           <svg
             className="group-hover:translate-x-1 transition-transform"
             width="16"

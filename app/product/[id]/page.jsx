@@ -62,7 +62,7 @@ const Product = () => {
             console.log('Product data received:', data); 
             setProductData(data);
             
-            // Set default selected color
+        
             if (data.colors && data.colors.length > 0) {
                 setSelectedColor(data.colors[0]);
             }
@@ -105,7 +105,6 @@ const Product = () => {
         }
     }, [id]);
 
-    // Handle add to cart with loading state
         const handleAddToCart = async () => {
         if (!selectedColor) {
             toast.error("Please select a color");
@@ -155,11 +154,11 @@ const Product = () => {
         try {
             const qty = Number(selectedQuantity);
 
-            // Add to cart (skip toast here)
+          
             const result = await addToCart(productData.id, qty, selectedColor, false);
 
             if (result.success) {
-                router.push("/cart");  // ✅ redirect straight to cart
+                router.push("/cart");  
             } else {
                 const backendMsg =
                     result.error?.detail ||
@@ -178,12 +177,10 @@ const Product = () => {
         }
     };
 
-
-    // Handle quantity change from input
     const handleQuantityInputChange = (e) => {
     const value = e.target.value;
 
-    // allow empty input
+
     if (value === "") {
         setSelectedQuantity("");
         setQuantityError("");
@@ -208,18 +205,6 @@ const Product = () => {
     setQuantityError("");
     }
 
-    // Handle quantity change from select
-    const handleQuantitySelectChange = (e) => {
-        const newQuantity = parseInt(e.target.value);
-        setSelectedQuantity(newQuantity);
-        setQuantityError("");
-    }
-
-    // Generate quantity options based on available stock (max 10)
-    const getQuantityOptions = () => {
-        const maxQuantity = Math.min(productData.stock, 10);
-        return Array.from({ length: maxQuantity }, (_, i) => i + 1);
-    }
 
     if (loading) {
         return <Loading />;
