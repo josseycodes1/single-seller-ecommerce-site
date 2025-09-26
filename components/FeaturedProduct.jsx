@@ -141,15 +141,15 @@ const FeaturedProduct = () => {
                   {description}
                 </p>
                 <button
-                  onClick={() => router.push(`/product/${product.slug}`)}
+                  onClick={() => {
+                    if (product.id) {
+                      router.push('/product/' + product.id)
+                      window.scrollTo(0, 0)
+                    }
+                  }}
                   className="flex items-center gap-1.5 bg-josseypink2 px-4 py-2 rounded"
                 >
-                  Buy now{" "}
-                  <Image
-                    className="h-3 w-3"
-                    src={assets.redirect_icon}
-                    alt="Redirect Icon"
-                  />
+                  Buy now <Image className="h-3 w-3" src={assets.redirect_icon} alt="Redirect Icon" />
                 </button>
               </div>
             </div>
