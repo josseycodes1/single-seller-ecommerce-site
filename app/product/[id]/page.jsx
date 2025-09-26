@@ -10,6 +10,8 @@ import Loading from "@/components/Loading";
 import { useAppContext } from "@/context/AppContext";
 import React from "react";
 import FeaturedProduct from "@/components/FeaturedProduct";
+import toast from "react-hot-toast";
+
 
 
 const Product = () => {

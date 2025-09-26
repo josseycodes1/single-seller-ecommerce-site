@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { assets } from '@/assets/assets'
 import Image from 'next/image'
 import { useAppContext } from '@/context/AppContext'
+import toast from "react-hot-toast";
+
 
 const ProductCard = ({ product: initialProduct = null, productId: propProductId = null }) => {
   const { currency, router } = useAppContext()
@@ -71,50 +73,77 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
   }
 
   const handleBuyNow = async () => {
+        if (!selectedColor) {
+          toast.error("Please select a color");
+          return;
+        }
+        if (!selectedQuantity || Number(selectedQuantity) < 1) {
+          toast.error("Please enter a valid quantity");
+          return;
+        }
+        if (Number(selectedQuantity) > productData.stock) {
+          setQuantityError(`Only ${productData.stock} items available in stock`);
+          return;
+        }
+
+        const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
+        if (!API_BASE) {
+          toast.error("API base URL not configured. Set NEXT_PUBLIC_API_BASE_URL.");
+          return;
+        }
+
+        setAddToCartLoading(true);
         try {
-            if (!selectedColor) {
-                toast.error("Please select a color");
-                return;
-            }
+          let cartId = localStorage.getItem("cart_id");
 
-        
-            let cartId = localStorage.getItem("cart_id");
-
-            if (!cartId) {
-                const res = await fetch("/api/cart/", { method: "POST" });
-                const newCart = await res.json();
-                cartId = newCart.id;
-                localStorage.setItem("cart_id", cartId);
-            }
-
-          
-            const res = await fetch("/api/cart/items/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    cart_id: cartId,
-                    product_id: productData.id,
-                    quantity: selectedQuantity,
-                    color: selectedColor,
-                }),
+          // Create cart if missing
+          if (!cartId) {
+            const createRes = await fetch(`${API_BASE}/api/cart/`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
             });
 
-            if (!res.ok) {
-                const errorData = await res.json();
-                toast.error(errorData.error || "Failed to add product to cart");
-                return;
+            if (!createRes.ok) {
+              const err = await createRes.json().catch(() => null);
+              console.error("Create cart failed:", err);
+              toast.error(err?.detail || "Failed to create cart");
+              return;
             }
+            const newCart = await createRes.json();
+            cartId = newCart.id;
+            localStorage.setItem("cart_id", cartId);
+          }
 
-            toast.success("Product added to cart 🎉");
+          // Add item
+          const addRes = await fetch(`${API_BASE}/api/cart/items/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              cart_id: cartId,
+              product_id: productData.id,
+              quantity: Number(selectedQuantity),
+              color: selectedColor,
+            }),
+          });
 
-         
-            router.push("/cart");
+          if (!addRes.ok) {
+            const err = await addRes.json().catch(() => null);
+            console.error("Add item failed:", err);
+            const msg = err?.errors || err?.detail || JSON.stringify(err) || "Failed to add product to cart";
+            toast.error(msg);
+            return;
+          }
 
+          toast.success("Product added to cart 🎉");
+          router.push("/cart");
         } catch (err) {
-            console.error("Buy Now Error:", err);
-            toast.error("Something went wrong. Please try again.");
+          console.error("BuyNow unexpected error:", err);
+          toast.error("Something went wrong. Please try again.");
+        } finally {
+          setAddToCartLoading(false);
         }
-    };
+      };
+
 
 
 
