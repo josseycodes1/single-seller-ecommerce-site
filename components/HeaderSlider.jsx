@@ -65,18 +65,18 @@ const HeaderSlider = () => {
                 {slide.title}
               </h1>
               <div className="flex items-center mt-4 md:mt-6 ">
-                {/* Button 1 routes to /products */}
+                {/* button 1 routes to /products */}
                 <button
-                  onClick={() => router.push("/products")}
-                  className="md:px-10 px-7 md:py-2.5 py-2 bg-white hover:bg-josseypink1 rounded-full text-josseypink2 font-medium"
+                  onClick={() => router.push("/all-products")}
+                  className="md:px-10 px-7 md:py-2.5 py-2 bg-white hover:bg-josseypink3 rounded-full text-josseypink2 font-medium"
                 >
                   {slide.buttonText1}
                 </button>
 
-                {/* Button 2 also routes to /products */}
+                {/* button 2 also routes to /products */}
                 <button
-                  onClick={() => router.push("/products")}
-                  className="group flex items-center gap-2 px-6 py-2.5 font-medium text-white hover:bg-white hover:text-josseypink2"
+                  onClick={() => router.push("/all-products")}
+                  className="group flex items-center gap-2 px-6 py-2.5 font-medium text-white rounded-full hover:bg-white hover:text-josseypink2"
                 >
                   {slide.buttonText2}
                   <Image
