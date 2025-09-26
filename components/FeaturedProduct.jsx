@@ -1,77 +1,56 @@
 import React, { useState, useEffect } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const FeaturedProduct = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const router = useRouter();
 
   const fetchFeaturedProducts = async () => {
     try {
       setLoading(true);
-      const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
+      const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
       const url = `${base}/api/products/?is_featured=true&limit=3`;
 
-      console.log('Fetching from URL:', url); 
+      console.log("Fetching from URL:", url);
 
       const response = await fetch(url);
-      
       if (!response.ok) {
         throw new Error(`Failed to fetch featured products: ${response.status}`);
       }
-      
+
       const data = await response.json();
+      console.log("API Response:", data);
 
-      console.log('API Response:', data); 
-
+      // API might return array or paginated results
       const products = Array.isArray(data) ? data : data.results || [];
       const featuredOnly = products.filter((p) => p.is_featured === true);
       setFeaturedProducts(featuredOnly.slice(0, 3));
     } catch (err) {
-      console.error('Error fetching featured products:', err);
+      console.error("Error fetching featured products:", err);
       setError(err.message);
-
-      setFeaturedProducts([
-        {
-          id: 1,
-          image: assets.girl_with_headphone_image,
-          title: "Unparalleled Sound",
-          description: "Experience crystal-clear audio with premium headphones.",
-        },
-        {
-          id: 2,
-          image: assets.girl_with_earphone_image,
-          title: "Stay Connected",
-          description: "Compact and stylish earphones for every occasion.",
-        },
-        {
-          id: 3,
-          image: assets.boy_with_laptop_image,
-          title: "Power in Every Pixel",
-          description: "Shop the latest laptops for work, gaming, and more.",
-        },
-      ]);
+      setFeaturedProducts([]); // no dummy data anymore
     } finally {
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     fetchFeaturedProducts();
   }, []);
 
   const isCloudinaryUrl = (url) => {
-    return url && url.includes('cloudinary.com');
-  }
+    return url && url.includes("cloudinary.com");
+  };
 
   const getOptimizedCloudinaryUrl = (url, width = 400, height = 400) => {
-    if (!url || !isCloudinaryUrl(url)) return url
-    
-    const optimizationParams = `c_fill,w_${width},h_${height},q_auto,f_auto`
-    return url.replace('/upload/', `/upload/${optimizationParams}/`)
-  }
+    if (!url || !isCloudinaryUrl(url)) return url;
+    const optimizationParams = `c_fill,w_${width},h_${height},q_auto,f_auto`;
+    return url.replace("/upload/", `/upload/${optimizationParams}/`);
+  };
 
   if (loading) {
     return (
@@ -119,28 +98,23 @@ const FeaturedProduct = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-14 mt-12 md:px-14 px-4">
         {featuredProducts.map((product) => {
-          
-          let imageSrc;
-          let title;
-          let description;
-          
-          if (product.images && product.images.length > 0 && product.images[0].image_url) {
-            
-            imageSrc = getOptimizedCloudinaryUrl(product.images[0].image_url);
-            title = product.name;
-            description = product.description.length > 100 
-              ? `${product.description.substring(0, 100)}...` 
+          const imageSrc =
+            product.images && product.images.length > 0 && product.images[0].image_url
+              ? getOptimizedCloudinaryUrl(product.images[0].image_url)
+              : assets.placeholder_image;
+
+          const title = product.name;
+          const description =
+            product.description && product.description.length > 100
+              ? `${product.description.substring(0, 100)}...`
               : product.description;
-          } else {
-            
-            imageSrc = product.image;
-            title = product.title;
-            description = product.description;
-          }
-          
+
           return (
-            <div key={product.id} className="relative group overflow-hidden rounded-lg">
-              {/* Image container with overlay */}
+            <div
+              key={product.id}
+              className="relative group overflow-hidden rounded-lg"
+            >
+              {/* Image */}
               <div className="relative w-full h-64">
                 {isCloudinaryUrl(imageSrc) ? (
                   <img
@@ -157,18 +131,25 @@ const FeaturedProduct = () => {
                     height={400}
                   />
                 )}
-                {/* Simple dark overlay for text visibility */}
                 <div className="absolute inset-0 bg-black/30"></div>
               </div>
-              
+
               {/* Content */}
               <div className="group-hover:-translate-y-4 transition duration-300 absolute bottom-8 left-8 text-white space-y-2">
                 <p className="font-medium text-xl lg:text-2xl">{title}</p>
                 <p className="text-sm lg:text-base leading-5 max-w-60">
                   {description}
                 </p>
-                <button className="flex items-center gap-1.5 bg-josseypink2 px-4 py-2 rounded">
-                  Buy now <Image className="h-3 w-3" src={assets.redirect_icon} alt="Redirect Icon" />
+                <button
+                  onClick={() => router.push(`/product/${product.slug}`)}
+                  className="flex items-center gap-1.5 bg-josseypink2 px-4 py-2 rounded"
+                >
+                  Buy now{" "}
+                  <Image
+                    className="h-3 w-3"
+                    src={assets.redirect_icon}
+                    alt="Redirect Icon"
+                  />
                 </button>
               </div>
             </div>
