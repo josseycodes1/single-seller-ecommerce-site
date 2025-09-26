@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { assets } from '@/assets/assets'
 import Image from 'next/image'
 import { useAppContext } from '@/context/AppContext'
-import toast from "react-hot-toast";
-
 
 const ProductCard = ({ product: initialProduct = null, productId: propProductId = null }) => {
   const { currency, router } = useAppContext()
@@ -13,12 +11,10 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
   const [hovered, setHovered] = useState(false)
   const [imageErrors, setImageErrors] = useState({})
 
-
   useEffect(() => {
     let controller = new AbortController()
     const signal = controller.signal
 
-  
     if (initialProduct) {
       setProduct(initialProduct)
       setLoading(false)
@@ -59,7 +55,6 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
     return () => controller.abort()
   }, [initialProduct, propProductId])
 
-
   const parseRating = (value) => {
     if (value === null || value === undefined) return 4.5
     const num = typeof value === 'string' ? parseFloat(value) : Number(value)
@@ -71,81 +66,6 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
     const num = typeof value === 'string' ? parseFloat(value) : Number(value)
     return isNaN(num) ? 0 : num
   }
-
-  const handleBuyNow = async () => {
-        if (!selectedColor) {
-          toast.error("Please select a color");
-          return;
-        }
-        if (!selectedQuantity || Number(selectedQuantity) < 1) {
-          toast.error("Please enter a valid quantity");
-          return;
-        }
-        if (Number(selectedQuantity) > productData.stock) {
-          setQuantityError(`Only ${productData.stock} items available in stock`);
-          return;
-        }
-
-        const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
-        if (!API_BASE) {
-          toast.error("API base URL not configured. Set NEXT_PUBLIC_API_BASE_URL.");
-          return;
-        }
-
-        setAddToCartLoading(true);
-        try {
-          let cartId = localStorage.getItem("cart_id");
-
-          // Create cart if missing
-          if (!cartId) {
-            const createRes = await fetch(`${API_BASE}/api/cart/`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-            });
-
-            if (!createRes.ok) {
-              const err = await createRes.json().catch(() => null);
-              console.error("Create cart failed:", err);
-              toast.error(err?.detail || "Failed to create cart");
-              return;
-            }
-            const newCart = await createRes.json();
-            cartId = newCart.id;
-            localStorage.setItem("cart_id", cartId);
-          }
-
-          // Add item
-          const addRes = await fetch(`${API_BASE}/api/cart/items/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              cart_id: cartId,
-              product_id: productData.id,
-              quantity: Number(selectedQuantity),
-              color: selectedColor,
-            }),
-          });
-
-          if (!addRes.ok) {
-            const err = await addRes.json().catch(() => null);
-            console.error("Add item failed:", err);
-            const msg = err?.errors || err?.detail || JSON.stringify(err) || "Failed to add product to cart";
-            toast.error(msg);
-            return;
-          }
-
-          toast.success("Product added to cart 🎉");
-          router.push("/cart");
-        } catch (err) {
-          console.error("BuyNow unexpected error:", err);
-          toast.error("Something went wrong. Please try again.");
-        } finally {
-          setAddToCartLoading(false);
-        }
-      };
-
-
-
 
   if (loading) {
     return (
@@ -170,14 +90,12 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
     return null 
   }
 
-  
   const productImages = product.images?.map(img => img.image_url).filter(Boolean) || []
   const mainImage = productImages[0] || null
   const hoverImage = productImages[1] || mainImage
 
   const productName = product.name || 'Unnamed Product'
   const productDescription = product.description || 'No description available'
-  
 
   const productRating = parseRating(product.avg_rating || product.rating)
   const productPrice = parsePrice(product.offer_price || product.price)
@@ -186,24 +104,17 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
   const idFromProduct = product.id || product._id || propProductId
   const hasValidId = !!idFromProduct
 
- 
   const handleImageError = (imageType) => {
     setImageErrors(prev => ({ ...prev, [imageType]: true }))
   }
-
 
   const isCloudinaryUrl = (url) => {
     return url && url.includes('cloudinary.com')
   }
 
-
   const getOptimizedCloudinaryUrl = (url, width = 400, height = 400) => {
     if (!url || !isCloudinaryUrl(url)) return url
-    
-
     const optimizationParams = `c_fill,w_${width},h_${height},q_auto,f_auto`
-    
-
     return url.replace('/upload/', `/upload/${optimizationParams}/`)
   }
 
@@ -223,7 +134,6 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {/* Main image - only show if available */}
         {mainImage && !imageErrors.main && (
           <Image
             src={getOptimizedCloudinaryUrl(mainImage)}
@@ -235,8 +145,6 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
             unoptimized={!isCloudinaryUrl(mainImage)} 
           />
         )}
-
-        {/* Hover image - only show if available and different from main */}
         {hoverImage && hoverImage !== mainImage && !imageErrors.hover && (
           <Image
             src={getOptimizedCloudinaryUrl(hoverImage)}
@@ -248,20 +156,15 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
             unoptimized={!isCloudinaryUrl(hoverImage)} 
           />
         )}
-
-        {/* Fallback if no images available */}
         {(!mainImage || imageErrors.main) && (
           <div className="flex items-center justify-center w-full h-full bg-gray-100">
             <span className="text-gray-400 text-sm">No image available</span>
           </div>
         )}
-
-        {/* Wishlist button */}
         <button
           className="absolute top-2 right-2 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors z-10"
           onClick={(e) => {
             e.stopPropagation()
-           
           }}
         >
           <Image className="h-3 w-3" src={assets.heart_icon} alt="Add to wishlist" width={12} height={12} />
@@ -305,7 +208,13 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
           )}
         </div>
         <button
-          onClick={handleBuyNow}
+          onClick={(e) => {
+            e.stopPropagation()
+            if (hasValidId) {
+              router.push('/product/' + idFromProduct)
+              window.scrollTo(0, 0)
+            }
+          }}
           className="max-sm:hidden px-4 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200"
         >
           Buy now
