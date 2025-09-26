@@ -27,6 +27,8 @@ const Product = () => {
     const [selectedQuantity, setSelectedQuantity] = useState("");
     const [addToCartLoading, setAddToCartLoading] = useState(false);
     const [quantityError, setQuantityError] = useState("");
+    const [buyNowLoading, setBuyNowLoading] = useState(false);
+
 
     const isCloudinaryUrl = (url) => {
         return url && url.includes('cloudinary.com');
@@ -135,9 +137,7 @@ const Product = () => {
     };
 
 
-    // Handle buy now - simply navigate to cart page
     const handleBuyNow = async () => {
-        // validations
         if (!selectedColor) {
             toast.error("Please select a color");
             return;
@@ -151,35 +151,32 @@ const Product = () => {
             return;
         }
 
-        setAddToCartLoading(true);
+        setBuyNowLoading(true);
         try {
             const qty = Number(selectedQuantity);
 
-            // Reuse AppContext.addToCart which already creates cart if missing and uses the env API base.
-            // Pass showToast = false so we show one toast here (avoid duplicates).
+            // Add to cart (skip toast here)
             const result = await addToCart(productData.id, qty, selectedColor, false);
 
             if (result.success) {
-            toast.success(result.message || "Product added to cart 🎉");
-            router.push("/cart");
+                router.push("/cart");  // ✅ redirect straight to cart
             } else {
-            // Try to extract a useful error message from backend responses
-            const backendMsg =
-                result.error?.detail ||
-                result.error?.errors ||
-                (typeof result.error === "string" ? result.error : null) ||
-                JSON.stringify(result.error) ||
-                "Failed to add product to cart";
-            toast.error(backendMsg);
-            console.error("BuyNow addToCart error:", result.error);
+                const backendMsg =
+                    result.error?.detail ||
+                    result.error?.errors ||
+                    (typeof result.error === "string" ? result.error : null) ||
+                    JSON.stringify(result.error) ||
+                    "Failed to add product to cart";
+                toast.error(backendMsg);
+                console.error("BuyNow addToCart error:", result.error);
             }
         } catch (err) {
             console.error("BuyNow unexpected error:", err);
             toast.error("Something went wrong. Please try again.");
         } finally {
-            setAddToCartLoading(false);
+            setBuyNowLoading(false);
         }
-        };
+    };
 
 
     // Handle quantity change from input
@@ -489,16 +486,28 @@ const Product = () => {
                             </button>
                             
                             <button 
-                                onClick={handleBuyNow}
-                                disabled={productData.stock === 0}
-                                className={`w-full py-3.5 ${
-                                    productData.stock === 0 
-                                        ? 'bg-gray-300 cursor-not-allowed' 
-                                        : 'bg-josseypink2 text-white hover:bg-josseypink1'
-                                } transition`}
-                            >
-                                Buy now
-                            </button>
+                            onClick={handleBuyNow}
+                            disabled={productData.stock === 0 || buyNowLoading}
+                            className={`w-full py-3.5 flex items-center justify-center ${
+                                productData.stock === 0 
+                                    ? 'bg-gray-300 cursor-not-allowed' 
+                                    : buyNowLoading
+                                    ? 'bg-gray-400 cursor-wait text-white'
+                                    : 'bg-josseypink2 text-white hover:bg-josseypink1'
+                            } transition`}
+                        >
+                            {buyNowLoading ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Processing...
+                                </>
+                            ) : (
+                                'Buy now'
+                            )}
+                        </button>
                         </div>
                     </div>
                 </div>
