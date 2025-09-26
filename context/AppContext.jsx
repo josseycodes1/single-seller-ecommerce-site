@@ -20,7 +20,7 @@ export const AppContextProvider = (props) => {
     const [cartLoading, setCartLoading] = useState(false);
     const [toasts, setToasts] = useState([]);
 
-    // 🔹 Toast system
+    //toast
     const addToast = (message, type = 'success', duration = 3000) => {
         const id = Date.now() + Math.random();
         setToasts(prev => [...prev, { id, message, type, duration }]);
@@ -53,14 +53,13 @@ export const AppContextProvider = (props) => {
         </div>
     );
 
-    // 🔹 Create or get cart from backend
+
     const getOrCreateCart = async () => {
         if (typeof window === 'undefined') return null;
 
         let cartId = localStorage.getItem('cart_id');
 
         if (cartId) {
-            // Try fetching existing cart
             try {
                 const response = await fetch(`${API_BASE_URL}/api/cart/?cart_id=${cartId}`);
                 if (response.ok) {
@@ -68,7 +67,7 @@ export const AppContextProvider = (props) => {
                     setCart(cartData);
                     return cartData;
                 } else {
-                    // Invalid cart ID? Remove and create new
+                  
                     localStorage.removeItem('cart_id');
                     cartId = null;
                 }
@@ -79,7 +78,7 @@ export const AppContextProvider = (props) => {
             }
         }
 
-        // If no valid cart, create one
+       
         try {
             const response = await fetch(`${API_BASE_URL}/api/cart/`, {
                 method: "POST",
@@ -100,7 +99,7 @@ export const AppContextProvider = (props) => {
         }
     };
 
-    // 🔹 Add item to cart
+
     const addToCart = async (productId, quantity = 1, color = null, showToast = true) => {
         setCartLoading(true);
         try {
@@ -140,7 +139,7 @@ export const AppContextProvider = (props) => {
         }
     };
 
-    // 🔹 Update cart quantity
+ 
     const updateCartQuantity = async (itemId, quantity, showToast = false) => {
         try {
             setCartLoading(true);
@@ -174,7 +173,7 @@ export const AppContextProvider = (props) => {
         }
     };
 
-    // 🔹 Remove item
+  
     const removeFromCart = async (itemId, showToast = true) => {
         try {
             setCartLoading(true);
@@ -206,7 +205,7 @@ export const AppContextProvider = (props) => {
         }
     };
 
-    // 🔹 Clear cart
+ 
     const clearCart = async () => {
         try {
             const cartData = await getOrCreateCart();
@@ -232,11 +231,10 @@ export const AppContextProvider = (props) => {
         }
     };
 
-    // 🔹 Helpers
+ 
     const getCartCount = () => (cart ? cart.total_quantity : 0);
     const getCartAmount = () => (cart ? parseFloat(cart.total_price) : 0);
 
-    // 🔹 Fetch products & user on load (no cart fetch here)
     useEffect(() => {
         fetchProductData();
         fetchUserData();
@@ -276,7 +274,7 @@ export const AppContextProvider = (props) => {
         }
     };
 
-    // 🔹 Expose context
+  
     const value = {
         currency, router,
         isSeller, setIsSeller,

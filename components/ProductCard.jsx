@@ -11,12 +11,12 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
   const [hovered, setHovered] = useState(false)
   const [imageErrors, setImageErrors] = useState({})
 
-  // Fetch product from backend if we weren't given it via props
+
   useEffect(() => {
     let controller = new AbortController()
     const signal = controller.signal
 
-    // if initial product passed, use it and skip fetch
+  
     if (initialProduct) {
       setProduct(initialProduct)
       setLoading(false)
@@ -57,7 +57,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
     return () => controller.abort()
   }, [initialProduct, propProductId])
 
-  // Safely parse numeric values with fallbacks
+
   const parseRating = (value) => {
     if (value === null || value === undefined) return 4.5
     const num = typeof value === 'string' ? parseFloat(value) : Number(value)
@@ -70,7 +70,54 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
     return isNaN(num) ? 0 : num
   }
 
-  // simple loader / skeleton
+  const handleBuyNow = async () => {
+        try {
+            if (!selectedColor) {
+                toast.error("Please select a color");
+                return;
+            }
+
+        
+            let cartId = localStorage.getItem("cart_id");
+
+            if (!cartId) {
+                const res = await fetch("/api/cart/", { method: "POST" });
+                const newCart = await res.json();
+                cartId = newCart.id;
+                localStorage.setItem("cart_id", cartId);
+            }
+
+          
+            const res = await fetch("/api/cart/items/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    cart_id: cartId,
+                    product_id: productData.id,
+                    quantity: selectedQuantity,
+                    color: selectedColor,
+                }),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                toast.error(errorData.error || "Failed to add product to cart");
+                return;
+            }
+
+            toast.success("Product added to cart 🎉");
+
+         
+            router.push("/cart");
+
+        } catch (err) {
+            console.error("Buy Now Error:", err);
+            toast.error("Something went wrong. Please try again.");
+        }
+    };
+
+
+
   if (loading) {
     return (
       <div className="max-w-[200px] w-full animate-pulse">
@@ -91,10 +138,10 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
   }
 
   if (!product) {
-    return null // nothing to render
+    return null 
   }
 
-  // Get image URLs from backend response
+  
   const productImages = product.images?.map(img => img.image_url).filter(Boolean) || []
   const mainImage = productImages[0] || null
   const hoverImage = productImages[1] || mainImage
@@ -102,7 +149,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
   const productName = product.name || 'Unnamed Product'
   const productDescription = product.description || 'No description available'
   
-  // Safely parse rating and prices
+
   const productRating = parseRating(product.avg_rating || product.rating)
   const productPrice = parsePrice(product.offer_price || product.price)
   const originalPrice = product.price ? parsePrice(product.price) : null
@@ -110,25 +157,24 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
   const idFromProduct = product.id || product._id || propProductId
   const hasValidId = !!idFromProduct
 
-  // Handle image errors
+ 
   const handleImageError = (imageType) => {
     setImageErrors(prev => ({ ...prev, [imageType]: true }))
   }
 
-  // Function to check if URL is from Cloudinary
+
   const isCloudinaryUrl = (url) => {
     return url && url.includes('cloudinary.com')
   }
 
-  // Function to get optimized Cloudinary URL
+
   const getOptimizedCloudinaryUrl = (url, width = 400, height = 400) => {
     if (!url || !isCloudinaryUrl(url)) return url
     
-    // Cloudinary URL optimization parameters
-    // You can adjust these based on your needs
+
     const optimizationParams = `c_fill,w_${width},h_${height},q_auto,f_auto`
     
-    // Insert optimization parameters into the Cloudinary URL
+
     return url.replace('/upload/', `/upload/${optimizationParams}/`)
   }
 
@@ -157,7 +203,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
             width={200}
             height={200}
             onError={() => handleImageError('main')}
-            unoptimized={!isCloudinaryUrl(mainImage)} // Only optimize Cloudinary images
+            unoptimized={!isCloudinaryUrl(mainImage)} 
           />
         )}
 
@@ -170,7 +216,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
             width={200}
             height={200}
             onError={() => handleImageError('hover')}
-            unoptimized={!isCloudinaryUrl(hoverImage)} // Only optimize Cloudinary images
+            unoptimized={!isCloudinaryUrl(hoverImage)} 
           />
         )}
 
@@ -186,7 +232,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
           className="absolute top-2 right-2 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors z-10"
           onClick={(e) => {
             e.stopPropagation()
-            // wishlist logic (implement in parent/context)
+           
           }}
         >
           <Image className="h-3 w-3" src={assets.heart_icon} alt="Add to wishlist" width={12} height={12} />
@@ -230,11 +276,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
           )}
         </div>
         <button
-          onClick={(e) => {
-            e.stopPropagation()
-            // Add to cart logic (implement in parent/context)
-            console.log('Add to cart:', idFromProduct)
-          }}
+          onClick={handleBuyNow}
           className="max-sm:hidden px-4 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200"
         >
           Buy now

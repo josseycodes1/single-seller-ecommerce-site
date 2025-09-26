@@ -58,6 +58,7 @@ const Product = () => {
             console.log('Product data received:', data); 
             setProductData(data);
             
+            // Set default selected color
             if (data.colors && data.colors.length > 0) {
                 setSelectedColor(data.colors[0]);
             }
@@ -100,6 +101,7 @@ const Product = () => {
         }
     }, [id]);
 
+    // Handle add to cart with loading state
         const handleAddToCart = async () => {
         if (!selectedColor) {
             toast.error("Please select a color");
@@ -130,53 +132,59 @@ const Product = () => {
         }
     };
 
+
+    // Handle buy now - simply navigate to cart page
     const handleBuyNow = async () => {
-        try {
-            if (!selectedColor) {
-                toast.error("Please select a color");
-                return;
-            }
-
-            let cartId = localStorage.getItem("cart_id");
-
-            if (!cartId) {
-                const res = await fetch("/api/cart/", { method: "POST" });
-                const newCart = await res.json();
-                cartId = newCart.id;
-                localStorage.setItem("cart_id", cartId);
-            }
-
-            const res = await fetch("/api/cart/items/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    cart_id: cartId,
-                    product_id: productData.id,
-                    quantity: selectedQuantity,
-                    color: selectedColor,
-                }),
-            });
-
-            if (!res.ok) {
-                const errorData = await res.json();
-                toast.error(errorData.error || "Failed to add product to cart");
-                return;
-            }
-
-            toast.success("Product added to cart 🎉");
-
-            router.push("/cart");
-
-        } catch (err) {
-            console.error("Buy Now Error:", err);
-            toast.error("Something went wrong. Please try again.");
+        // validations
+        if (!selectedColor) {
+            toast.error("Please select a color");
+            return;
         }
-    };
+        if (!selectedQuantity || Number(selectedQuantity) < 1) {
+            toast.error("Please enter a valid quantity");
+            return;
+        }
+        if (Number(selectedQuantity) > productData.stock) {
+            setQuantityError(`Only ${productData.stock} items available in stock`);
+            return;
+        }
+
+        setAddToCartLoading(true);
+        try {
+            const qty = Number(selectedQuantity);
+
+            // Reuse AppContext.addToCart which already creates cart if missing and uses the env API base.
+            // Pass showToast = false so we show one toast here (avoid duplicates).
+            const result = await addToCart(productData.id, qty, selectedColor, false);
+
+            if (result.success) {
+            toast.success(result.message || "Product added to cart 🎉");
+            router.push("/cart");
+            } else {
+            // Try to extract a useful error message from backend responses
+            const backendMsg =
+                result.error?.detail ||
+                result.error?.errors ||
+                (typeof result.error === "string" ? result.error : null) ||
+                JSON.stringify(result.error) ||
+                "Failed to add product to cart";
+            toast.error(backendMsg);
+            console.error("BuyNow addToCart error:", result.error);
+            }
+        } catch (err) {
+            console.error("BuyNow unexpected error:", err);
+            toast.error("Something went wrong. Please try again.");
+        } finally {
+            setAddToCartLoading(false);
+        }
+        };
 
 
+    // Handle quantity change from input
     const handleQuantityInputChange = (e) => {
     const value = e.target.value;
 
+    // allow empty input
     if (value === "") {
         setSelectedQuantity("");
         setQuantityError("");
@@ -199,6 +207,19 @@ const Product = () => {
 
     setSelectedQuantity(newQuantity);
     setQuantityError("");
+    }
+
+    // Handle quantity change from select
+    const handleQuantitySelectChange = (e) => {
+        const newQuantity = parseInt(e.target.value);
+        setSelectedQuantity(newQuantity);
+        setQuantityError("");
+    }
+
+    // Generate quantity options based on available stock (max 10)
+    const getQuantityOptions = () => {
+        const maxQuantity = Math.min(productData.stock, 10);
+        return Array.from({ length: maxQuantity }, (_, i) => i + 1);
     }
 
     if (loading) {
