@@ -67,36 +67,6 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
     return isNaN(num) ? 0 : num
   }
 
-    const handleAddToCart = async () => {
-          if (!selectedColor) {
-              toast.error("Please select a color");
-              return;
-          }
-
-          if (!selectedQuantity || selectedQuantity < 1) {
-              toast.error("Please enter a valid quantity");
-              return;
-          }
-
-          if (selectedQuantity > productData.stock) {
-              setQuantityError(`Only ${productData.stock} items available in stock`);
-              return;
-          }
-
-          setAddToCartLoading(true);
-
-          const result = await addToCart(productData.id, selectedQuantity, selectedColor, true);
-
-          setAddToCartLoading(false);
-
-          if (result.success) {
-              toast.success(result.message || "Product added to cart successfully 🎉");
-          } else {
-              toast.error(result.message || "Failed to add product to cart ❌");
-              console.error("Add to cart error:", result.error || result.message);
-          }
-      };
-
   if (loading) {
     return (
       <div className="max-w-[200px] w-full animate-pulse">
@@ -238,11 +208,19 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
           )}
         </div>
         <button
-          onClick={handleAddToCart}
+          disabled={cartLoading}
+          onClick={async (e) => {
+            e.stopPropagation();
+            const result = await addToCart(product.id, 1); 
+            if (result.success) {
+              console.log("Product added to cart ✅");
+            }
+          }}
           className="max-sm:hidden px-4 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200"
         >
-          Add to Cart
+          {cartLoading ? "Adding..." : "Add to Cart"}
         </button>
+
       </div>
 
       {/* Stock Indicator */}
