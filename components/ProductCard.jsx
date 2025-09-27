@@ -4,6 +4,7 @@ import { assets } from '@/assets/assets'
 import Image from 'next/image'
 import { useAppContext } from '@/context/AppContext'
 
+
 const ProductCard = ({ product: initialProduct = null, productId: propProductId = null }) => {
   const { currency, router } = useAppContext()
   const [product, setProduct] = useState(initialProduct)
@@ -11,6 +12,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
   const [error, setError] = useState(null)
   const [hovered, setHovered] = useState(false)
   const [imageErrors, setImageErrors] = useState({})
+  const { addToCart, cartLoading } = useAppContext();
 
   useEffect(() => {
     let controller = new AbortController()
