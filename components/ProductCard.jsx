@@ -220,7 +220,6 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
         >
           {cartLoading ? "Adding..." : "Add to Cart"}
         </button>
-
       </div>
 
       {/* Stock Indicator */}

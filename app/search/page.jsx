@@ -1,8 +1,10 @@
+// app/search/page.jsx
 "use client";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 
-export default function SearchPageContent() {
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
   const [products, setProducts] = useState([]);
@@ -52,5 +54,13 @@ export default function SearchPageContent() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<p className="p-6">Loading search...</p>}>
+      <SearchPageContent />
+    </Suspense>
   );
 }
