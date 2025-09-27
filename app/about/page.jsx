@@ -3,6 +3,7 @@ import React from "react";
 import Navbar from "@/components/Navbar";
 import FeaturedProduct from "@/components/FeaturedProduct";
 import Footer from "@/components/Footer";
+import Image from "next/image";
 
 const AboutUs = () => {
     return (
@@ -38,8 +39,14 @@ const AboutUs = () => {
                                 you with the best shopping experience possible.
                             </p>
                         </div>
-                        <div className="bg-gray-100 rounded-lg h-80 flex items-center justify-center">
-                            <span className="text-gray-400 text-lg">Our Team Image</span>
+                        <div className="relative rounded-lg overflow-hidden h-80">
+                            <Image
+                                src="/images/team-photo.jpg"
+                                alt="JosseyCart Team"
+                                fill
+                                className="object-cover"
+                                priority
+                            />
                         </div>
                     </div>
                 </div>
