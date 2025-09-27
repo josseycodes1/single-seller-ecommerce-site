@@ -2,7 +2,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function SearchPage() {
+export default function SearchPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
   const [products, setProducts] = useState([]);
@@ -20,6 +20,9 @@ export default function SearchPage() {
           console.error("Search error:", err);
           setLoading(false);
         });
+    } else {
+      setLoading(false);
+      setProducts([]);
     }
   }, [query]);
 
