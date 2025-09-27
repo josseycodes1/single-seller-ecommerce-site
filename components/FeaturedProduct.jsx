@@ -1,13 +1,19 @@
+'use client'
 import React, { useState, useEffect } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useAppContext } from "@/context/AppContext";
 
 const FeaturedProduct = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
+  const { addToCart } = useAppContext();
+
+  // Track loading state per product
+  const [addingToCart, setAddingToCart] = useState({});
 
   const fetchFeaturedProducts = async () => {
     try {
@@ -15,24 +21,19 @@ const FeaturedProduct = () => {
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
       const url = `${base}/api/products/?is_featured=true&limit=3`;
 
-      console.log("Fetching from URL:", url);
-
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Failed to fetch featured products: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("API Response:", data);
-
-    
       const products = Array.isArray(data) ? data : data.results || [];
       const featuredOnly = products.filter((p) => p.is_featured === true);
       setFeaturedProducts(featuredOnly.slice(0, 3));
     } catch (err) {
       console.error("Error fetching featured products:", err);
       setError(err.message);
-      setFeaturedProducts([]); 
+      setFeaturedProducts([]);
     } finally {
       setLoading(false);
     }
@@ -42,14 +43,20 @@ const FeaturedProduct = () => {
     fetchFeaturedProducts();
   }, []);
 
-  const isCloudinaryUrl = (url) => {
-    return url && url.includes("cloudinary.com");
-  };
-
+  const isCloudinaryUrl = (url) => url && url.includes("cloudinary.com");
   const getOptimizedCloudinaryUrl = (url, width = 400, height = 400) => {
     if (!url || !isCloudinaryUrl(url)) return url;
     const optimizationParams = `c_fill,w_${width},h_${height},q_auto,f_auto`;
     return url.replace("/upload/", `/upload/${optimizationParams}/`);
+  };
+
+  const handleAddToCart = async (productId) => {
+    setAddingToCart(prev => ({ ...prev, [productId]: true }));
+    const result = await addToCart(productId, 1);
+    if (result.success) {
+      console.log("Product added to cart ✅");
+    }
+    setAddingToCart(prev => ({ ...prev, [productId]: false }));
   };
 
   if (loading) {
@@ -110,10 +117,7 @@ const FeaturedProduct = () => {
               : product.description;
 
           return (
-            <div
-              key={product.id}
-              className="relative group overflow-hidden rounded-lg"
-            >
+            <div key={product.id} className="relative group overflow-hidden rounded-lg">
               {/* Image */}
               <div className="relative w-full h-64">
                 {isCloudinaryUrl(imageSrc) ? (
@@ -137,19 +141,14 @@ const FeaturedProduct = () => {
               {/* Content */}
               <div className="group-hover:-translate-y-4 transition duration-300 absolute bottom-8 left-8 text-white space-y-2">
                 <p className="font-medium text-xl lg:text-2xl">{title}</p>
-                <p className="text-sm lg:text-base leading-5 max-w-60">
-                  {description}
-                </p>
+                <p className="text-sm lg:text-base leading-5 max-w-60">{description}</p>
+
                 <button
-                  onClick={() => {
-                    if (product.id) {
-                      router.push('/product/' + product.id)
-                      window.scrollTo(0, 0)
-                    }
-                  }}
+                  onClick={() => handleAddToCart(product.id)}
+                  disabled={addingToCart[product.id]}
                   className="flex items-center gap-1.5 bg-josseypink2 px-4 py-2 rounded"
                 >
-                  Buy now <Image className="h-3 w-3" src={assets.redirect_icon} alt="Redirect Icon" />
+                  {addingToCart[product.id] ? "Adding..." : "Add to Cart"}
                 </button>
               </div>
             </div>
