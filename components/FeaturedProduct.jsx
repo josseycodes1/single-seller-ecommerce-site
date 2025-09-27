@@ -2,16 +2,14 @@
 import React, { useState, useEffect } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAppContext } from "@/context/AppContext";
 
 const FeaturedProduct = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const router = useRouter();
   const { addToCart } = useAppContext();
-
   const [addingToCart, setAddingToCart] = useState({});
 
   const fetchFeaturedProducts = async () => {
@@ -49,21 +47,19 @@ const FeaturedProduct = () => {
     return url.replace("/upload/", `/upload/${optimizationParams}/`);
   };
 
-  const handleAddToCart = async (product) => {
-    const color = product.colors?.[0] || "default"; // Default color for this page
+  const handleAddToCart = async (product, e) => {
+    e.stopPropagation(); // prevent triggering the card navigation
+    e.preventDefault();  // prevent Link navigation
+
+    const color = product.colors?.[0] || "default"; 
     setAddingToCart(prev => ({ ...prev, [product.id]: true }));
     const result = await addToCart(product.id, 1, color);
     if (result.success) console.log("Product added to cart ✅");
     setAddingToCart(prev => ({ ...prev, [product.id]: false }));
   };
 
-  if (loading) {
-    return <p>Loading featured products...</p>;
-  }
-
-  if (error && featuredProducts.length === 0) {
-    return <p>Unable to load featured products</p>;
-  }
+  if (loading) return <p>Loading featured products...</p>;
+  if (error && featuredProducts.length === 0) return <p>Unable to load featured products</p>;
 
   return (
     <div className="mt-14">
@@ -86,7 +82,11 @@ const FeaturedProduct = () => {
               : product.description;
 
           return (
-            <div key={product.id} className="relative group overflow-hidden rounded-lg">
+            <Link
+              key={product.id}
+              href={`/product/${product.id}`}
+              className="relative group overflow-hidden rounded-lg block"
+            >
               <div className="relative w-full h-64">
                 {isCloudinaryUrl(imageSrc) ? (
                   <img
@@ -111,14 +111,14 @@ const FeaturedProduct = () => {
                 <p className="text-sm lg:text-base leading-5 max-w-60">{description}</p>
 
                 <button
-                  onClick={() => handleAddToCart(product)}
+                  onClick={(e) => handleAddToCart(product, e)}
                   disabled={addingToCart[product.id]}
                   className="flex items-center gap-1.5 bg-josseypink2 px-4 py-2 rounded"
                 >
                   {addingToCart[product.id] ? "Adding..." : "Add to Cart"}
                 </button>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>
