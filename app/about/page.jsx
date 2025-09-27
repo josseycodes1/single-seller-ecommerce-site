@@ -41,7 +41,7 @@ const AboutUs = () => {
                         </div>
                         <div className="relative rounded-lg overflow-hidden h-80">
                             <Image
-                                src="/images/team-photo.jpg"
+                                src="/team-photo.jpg"
                                 alt="JosseyCart Team"
                                 fill
                                 className="object-cover"
