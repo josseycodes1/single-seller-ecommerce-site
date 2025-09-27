@@ -20,9 +20,9 @@ const PrivacyPolicy = () => {
                 <div className="max-w-4xl mx-auto mb-16">
                     <div className="prose prose-lg max-w-none">
                         {/* Last Updated */}
-                        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8">
-                            <p className="text-blue-700">
-                                <strong>Last Updated:</strong> December 1, 2024
+                        <div className="bg-josseypink3 border-l-4 border-josseypink2 p-4 mb-8">
+                            <p className="text-josseypink2">
+                                <strong>Last Updated:</strong> January 1, 2025
                             </p>
                         </div>
 
@@ -129,11 +129,11 @@ const PrivacyPolicy = () => {
                                 If you have any questions about this Privacy Policy or how we handle your 
                                 information, please contact us:
                             </p>
-                            <div className="bg-gray-50 p-4 rounded-lg">
+                            <div className="bg-josseypink3 p-4 rounded-lg">
                                 <p className="text-gray-600">
-                                    <strong>Email:</strong> contact@greatstock.dev<br />
-                                    <strong>Phone:</strong> +1 234-567-890<br />
-                                    <strong>Address:</strong> 123 Commerce Street, Business District, New York, NY 10001
+                                    <strong>Email:</strong> contact@josseycart.dev<br />
+                                    <strong>Phone:</strong> +234 813-037-553<br />
+                                    <strong>Address:</strong> 123 Commerce Street, Oluyole Estate, Nigeria
                                 </p>
                             </div>
                         </section>
