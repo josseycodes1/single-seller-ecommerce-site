@@ -213,21 +213,20 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
           )}
         </div>
         <button
-          disabled={addingToCart}
-          onClick={async (e) => {
-            e.stopPropagation();
-            setAddingToCart(true);
-            const result = await addToCart(product.id, 1); 
-            if (result.success) {
-              console.log("Product added to cart ✅");
-            }
-            setAddingToCart(false);
-          }}
-          className="max-sm:hidden px-4 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200"
-        >
-          {addingToCart ? "Adding..." : "Add to Cart"}
-        </button>
-
+            disabled={addingToCart}
+            onClick={async (e) => {
+              e.stopPropagation()
+              setAddingToCart(true)         
+              const result = await addToCart(product.id, 1)
+              if (result.success) {
+                console.log("Product added to cart ✅")
+              }
+              setAddingToCart(false)       
+            }}
+            className="max-sm:hidden px-4 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200"
+          >
+            {addingToCart ? "Adding..." : "Add to Cart"}
+          </button>
 
       </div>
 
