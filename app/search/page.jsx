@@ -10,10 +10,11 @@ function SearchPageContent() {
 
   useEffect(() => {
     if (query) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/?search=${query}`)
+      const base = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") || "";
+      fetch(`${base}/api/products?search=${encodeURIComponent(query)}`)
         .then((res) => res.json())
         .then((data) => {
-          setProducts(data.results || data);
+          setProducts(data.results || data); // adjust depending on API response
           setLoading(false);
         })
         .catch((err) => {
@@ -41,7 +42,7 @@ function SearchPageContent() {
           {products.map((product) => (
             <div key={product.id} className="border rounded-lg p-3 shadow">
               <img
-                src={product.images?.[0]?.image || "/placeholder.png"}
+                src={product.images?.[0]?.image_url || "/placeholder.png"}
                 alt={product.name}
                 className="w-full h-40 object-cover rounded"
               />

@@ -9,10 +9,9 @@ const Footer = () => {
         <div className="w-4/5">
           <h1 className=" text-josseypink2">JOSSEYCART</h1>
           <p className="mt-6 text-sm">
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been the industry's standard dummy text
-            ever since the 1500s, when an unknown printer took a galley of type
-            and scrambled it to make a type specimen book.
+            Discover the perfect balance of elegance and comfort with JosseyCart’s premium range of fragrances and diffusers. 
+            Designed to do more than just scent your space, our diffusers create an inviting atmosphere that speaks of warmth, 
+            relaxation, and sophistication. Elevate your space today and let JosseyCart fragrance and diffuser redefine the way your world smells.
           </p>
         </div>
 
@@ -24,13 +23,13 @@ const Footer = () => {
                 <a className="hover:underline transition" href="#">Home</a>
               </li>
               <li>
-                <a className="hover:underline transition" href="#">About us</a>
+                <a className="hover:underline transition" href="/about">About us</a>
               </li>
               <li>
-                <a className="hover:underline transition" href="#">Contact us</a>
+                <a className="hover:underline transition" href="/contact">Contact us</a>
               </li>
               <li>
-                <a className="hover:underline transition" href="#">Privacy policy</a>
+                <a className="hover:underline transition" href="/privacypolicy">Privacy policy</a>
               </li>
             </ul>
           </div>
@@ -40,8 +39,8 @@ const Footer = () => {
           <div>
             <h2 className="font-medium text-josseypink2 mb-5">Get in touch</h2>
             <div className="text-sm space-y-2">
-              <p>+1-234-567-890</p>
-              <p>contact@greatstack.dev</p>
+              <p>+234-813-037-553</p>
+              <p>contact@josseycodes.dev</p>
             </div>
           </div>
         </div>
