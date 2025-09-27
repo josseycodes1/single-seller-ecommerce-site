@@ -66,8 +66,8 @@ const ContactUs = () => {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-lg mb-1">Phone</h3>
-                                        <p className="text-gray-600">+1 234-567-890</p>
-                                        <p className="text-gray-500 text-sm">Mon-Fri: 9AM-6PM EST</p>
+                                        <p className="text-gray-600">+234 813-2037-553</p>
+                                        <p className="text-gray-500 text-sm">Mon-Fri: 9AM-6PM WAT</p>
                                     </div>
                                 </div>
 
@@ -77,7 +77,7 @@ const ContactUs = () => {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-lg mb-1">Email</h3>
-                                        <p className="text-gray-600">contact@greatstock.dev</p>
+                                        <p className="text-gray-600">contact@josseycart.dev</p>
                                         <p className="text-gray-500 text-sm">We respond within 24 hours</p>
                                     </div>
                                 </div>
@@ -90,8 +90,8 @@ const ContactUs = () => {
                                         <h3 className="font-semibold text-lg mb-1">Address</h3>
                                         <p className="text-gray-600">
                                             123 Commerce Street<br />
-                                            Business District<br />
-                                            New York, NY 10001
+                                            Oluyole Estate<br />
+                                            Ibadan, Nigeria
                                         </p>
                                     </div>
                                 </div>
