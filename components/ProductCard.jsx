@@ -4,17 +4,14 @@ import { assets } from '@/assets/assets'
 import Image from 'next/image'
 import { useAppContext } from '@/context/AppContext'
 
-
 const ProductCard = ({ product: initialProduct = null, productId: propProductId = null }) => {
-  const { currency, router } = useAppContext()
+  const { currency, router, addToCart, cartLoading } = useAppContext()
   const [product, setProduct] = useState(initialProduct)
   const [loading, setLoading] = useState(!initialProduct && !!propProductId)
   const [error, setError] = useState(null)
   const [hovered, setHovered] = useState(false)
   const [imageErrors, setImageErrors] = useState({})
-  const { addToCart, cartLoading } = useAppContext();
   const [addingToCart, setAddingToCart] = useState(false)
-
 
   useEffect(() => {
     let controller = new AbortController()
@@ -91,9 +88,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
     )
   }
 
-  if (!product) {
-    return null 
-  }
+  if (!product) return null
 
   const productImages = product.images?.map(img => img.image_url).filter(Boolean) || []
   const mainImage = productImages[0] || null
@@ -113,14 +108,22 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
     setImageErrors(prev => ({ ...prev, [imageType]: true }))
   }
 
-  const isCloudinaryUrl = (url) => {
-    return url && url.includes('cloudinary.com')
-  }
-
+  const isCloudinaryUrl = (url) => url && url.includes('cloudinary.com')
   const getOptimizedCloudinaryUrl = (url, width = 400, height = 400) => {
     if (!url || !isCloudinaryUrl(url)) return url
     const optimizationParams = `c_fill,w_${width},h_${height},q_auto,f_auto`
     return url.replace('/upload/', `/upload/${optimizationParams}/`)
+  }
+
+  const handleAddToCart = async (e) => {
+    e.stopPropagation()
+    setAddingToCart(true)
+    const color = product.colors?.[0] || 'default' // Default color for this page only
+    const result = await addToCart(product.id, 1, color)
+    if (result.success) {
+      console.log("Product added to cart ✅")
+    }
+    setAddingToCart(false)
   }
 
   return (
@@ -133,7 +136,6 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
       }}
       className="flex flex-col items-start gap-0.5 max-w-[200px] w-full cursor-pointer"
     >
-      {/* Product Image with hover swap */}
       <div
         className="cursor-pointer group relative bg-pink-50 rounded-lg w-full h-52 flex items-center justify-center overflow-hidden"
         onMouseEnter={() => setHovered(true)}
@@ -147,7 +149,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
             width={200}
             height={200}
             onError={() => handleImageError('main')}
-            unoptimized={!isCloudinaryUrl(mainImage)} 
+            unoptimized={!isCloudinaryUrl(mainImage)}
           />
         )}
         {hoverImage && hoverImage !== mainImage && !imageErrors.hover && (
@@ -158,7 +160,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
             width={200}
             height={200}
             onError={() => handleImageError('hover')}
-            unoptimized={!isCloudinaryUrl(hoverImage)} 
+            unoptimized={!isCloudinaryUrl(hoverImage)}
           />
         )}
         {(!mainImage || imageErrors.main) && (
@@ -166,21 +168,11 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
             <span className="text-gray-400 text-sm">No image available</span>
           </div>
         )}
-        <button
-          className="absolute top-2 right-2 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors z-10"
-          onClick={(e) => {
-            e.stopPropagation()
-          }}
-        >
-          <Image className="h-3 w-3" src={assets.heart_icon} alt="Add to wishlist" width={12} height={12} />
-        </button>
       </div>
 
-      {/* Product Info */}
       <p className="md:text-base font-medium pt-2 w-full truncate text-gray-700">{productName}</p>
       <p className="w-full text-xs text-gray-500/70 max-sm:hidden truncate">{productDescription}</p>
 
-      {/* Rating */}
       <div className="flex items-center gap-2 mt-1">
         <p className="text-xs font-medium">{productRating.toFixed(1)}</p>
         <div className="flex items-center gap-0.5">
@@ -198,7 +190,6 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
         <span className="text-xs text-gray-400">({product.review_count || 0})</span>
       </div>
 
-      {/* Price + Buy Button */}
       <div className="flex items-end justify-between w-full mt-2">
         <div className="flex flex-col">
           <p className="text-base font-medium text-gray-700">
@@ -213,39 +204,13 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
           )}
         </div>
         <button
-            disabled={addingToCart}
-            onClick={async (e) => {
-              e.stopPropagation()
-              setAddingToCart(true)         
-              const result = await addToCart(product.id, 1)
-              if (result.success) {
-                console.log("Product added to cart ✅")
-              }
-              setAddingToCart(false)       
-            }}
-            className="max-sm:hidden px-4 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200"
-          >
-            {addingToCart ? "Adding..." : "Add to Cart"}
-          </button>
-
+          disabled={addingToCart}
+          onClick={handleAddToCart}
+          className="max-sm:hidden px-4 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200"
+        >
+          {addingToCart ? "Adding..." : "Add to Cart"}
+        </button>
       </div>
-
-      {/* Stock Indicator */}
-      {product.stock !== undefined && (
-        <div className="w-full mt-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-500">Stock:</span>
-            <span className={product.stock > 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-              {product.stock > 0 ? `${product.stock} available` : 'Out of stock'}
-            </span>
-          </div>
-          {product.stock > 0 && product.stock < 10 && (
-            <div className="w-full bg-gray-200 rounded-full h-1 mt-1">
-              <div className="bg-yellow-500 h-1 rounded-full" style={{ width: `${(product.stock / 10) * 100}%` }} />
-            </div>
-          )}
-        </div>
-      )}
     </div>
   )
 }
