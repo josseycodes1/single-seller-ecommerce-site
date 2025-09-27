@@ -70,7 +70,7 @@ const AboutUs = () => {
                         </div>
                         <div className="text-center p-6 bg-white rounded-lg shadow-sm border">
                             <div className="w-16 h-16 bg-josseypink2 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <span className="text-2xl text-white">🚀</span>
+                                <span className="text-2xl text-white">✓</span>
                             </div>
                             <h3 className="text-xl font-semibold mb-3">Innovation</h3>
                             <p className="text-gray-600">
@@ -87,16 +87,16 @@ const AboutUs = () => {
                         <h2 className="text-3xl font-bold text-gray-800 text-center mb-12">By The Numbers</h2>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                             <div>
-                                <div className="text-3xl md:text-4xl font-bold text-josseypink2 mb-2">10K+</div>
+                                <div className="text-3xl md:text-4xl font-bold text-josseypink2 mb-2">5K+</div>
                                 <div className="text-gray-600">Happy Customers</div>
                             </div>
                             <div>
-                                <div className="text-3xl md:text-4xl font-bold text-josseypink2 mb-2">500+</div>
+                                <div className="text-3xl md:text-4xl font-bold text-josseypink2 mb-2">20+</div>
                                 <div className="text-gray-600">Products</div>
                             </div>
                             <div>
-                                <div className="text-3xl md:text-4xl font-bold text-josseypink2 mb-2">50+</div>
-                                <div className="text-gray-600">Brands</div>
+                                <div className="text-3xl md:text-4xl font-bold text-josseypink2 mb-2">100+</div>
+                                <div className="text-gray-600">Reviews</div>
                             </div>
                             <div>
                                 <div className="text-3xl md:text-4xl font-bold text-josseypink2 mb-2">24/7</div>
