@@ -140,18 +140,56 @@ export const AppContextProvider = (props) => {
     };
 
  
+    // const updateCartQuantity = async (itemId, quantity, showToast = false) => {
+    //     try {
+    //         setCartLoading(true);
+    //         const cartData = await getOrCreateCart();
+    //         if (!cartData) return { success: false };
+
+    //         if (quantity === 0) return await removeFromCart(itemId, showToast);
+
+    //         const response = await fetch(`${API_BASE_URL}/api/cart/items/${itemId}/`, {
+    //             method: 'PUT',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify({ cart_id: cartData.id, quantity })
+    //         });
+
+    //         if (response.ok) {
+    //             const updatedCart = await response.json();
+    //             setCart(updatedCart);
+    //             if (showToast) addToast("Cart updated!", "success");
+    //             return { success: true, cart: updatedCart };
+    //         } else {
+    //             const errorData = await response.json();
+    //             if (showToast) addToast(errorData.detail || "Failed to update cart", "error");
+    //             return { success: false, error: errorData };
+    //         }
+    //     } catch (error) {
+    //         console.error("❌ Failed to update cart:", error);
+    //         if (showToast) addToast("Network error. Please try again.", "error");
+    //         return { success: false, error: error.message };
+    //     } finally {
+    //         setCartLoading(false);
+    //     }
+    // };
+
     const updateCartQuantity = async (itemId, quantity, showToast = false) => {
         try {
             setCartLoading(true);
-            const cartData = await getOrCreateCart();
-            if (!cartData) return { success: false };
+            
+            // Get cart_id directly from localStorage instead of calling getOrCreateCart()
+            const cartId = localStorage.getItem('cart_id');
+            if (!cartId) {
+                if (showToast) addToast("Cart not found", "error");
+                return { success: false };
+            }
 
             if (quantity === 0) return await removeFromCart(itemId, showToast);
 
             const response = await fetch(`${API_BASE_URL}/api/cart/items/${itemId}/`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cart_id: cartData.id, quantity })
+                body: JSON.stringify({ cart_id: cartId, quantity })
             });
 
             if (response.ok) {
@@ -174,16 +212,52 @@ export const AppContextProvider = (props) => {
     };
 
   
+    // const removeFromCart = async (itemId, showToast = true) => {
+    //     try {
+    //         setCartLoading(true);
+    //         const cartData = await getOrCreateCart();
+    //         if (!cartData) return { success: false };
+
+    //         const response = await fetch(`${API_BASE_URL}/api/cart/items/${itemId}/`, {
+    //             method: 'DELETE',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify({ cart_id: cartData.id })
+    //         });
+
+    //         if (response.ok) {
+    //             const updatedCart = await response.json();
+    //             setCart(updatedCart);
+    //             if (showToast) addToast("Item removed from cart", "success");
+    //             return { success: true, cart: updatedCart };
+    //         } else {
+    //             const errorData = await response.json();
+    //             if (showToast) addToast(errorData.detail || "Failed to remove item", "error");
+    //             return { success: false, error: errorData };
+    //         }
+    //     } catch (error) {
+    //         console.error("❌ Failed to remove from cart:", error);
+    //         if (showToast) addToast("Network error. Please try again.", "error");
+    //         return { success: false, error: error.message };
+    //     } finally {
+    //         setCartLoading(false);
+    //     }
+    // };
+
     const removeFromCart = async (itemId, showToast = true) => {
         try {
             setCartLoading(true);
-            const cartData = await getOrCreateCart();
-            if (!cartData) return { success: false };
+            
+            // Get cart_id directly from localStorage
+            const cartId = localStorage.getItem('cart_id');
+            if (!cartId) {
+                if (showToast) addToast("Cart not found", "error");
+                return { success: false };
+            }
 
             const response = await fetch(`${API_BASE_URL}/api/cart/items/${itemId}/`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cart_id: cartData.id })
+                body: JSON.stringify({ cart_id: cartId })
             });
 
             if (response.ok) {
