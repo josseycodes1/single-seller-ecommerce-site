@@ -1,10 +1,11 @@
 "use client"
 import React from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import FeaturedProduct from "@/components/FeaturedProduct";
 import Footer from "@/components/Footer";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+
 
 const AboutUs = () => {
     const [products, setProducts] = useState([]);
