@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
 import SearchBar from "@/components/SearchBar";
+import MobileSearchBar from "@/components/MobileSearchBar"; // Import the new component
 
 const Navbar = () => {
   const { isSeller, router, cart } = useAppContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false); // New state for mobile search
 
   const cartCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
@@ -20,12 +22,20 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
+  const openSearch = () => {
+    setIsSearchOpen(true);
+  };
+
+  const closeSearch = () => {
+    setIsSearchOpen(false);
+  };
+
   return (
     <>
       <nav className="flex items-center justify-between px-4 md:px-8 lg:px-16 py-3 border-b border-gray-300 text-gray-700 bg-white relative z-50">
         {/* Left Side - Hamburger + Logo */}
         <div className="flex items-center gap-4">
-          {/* Hamburger Menu - Mobile - Changed to pink */}
+          {/* Hamburger Menu - Mobile - Pink */}
           <button
             onClick={toggleMenu}
             className="lg:hidden flex flex-col items-center justify-center w-8 h-8 space-y-1 transition"
@@ -75,19 +85,9 @@ const Navbar = () => {
             <SearchBar />
           </div>
 
-          {/* Search Icon - Mobile - Now functional */}
+          {/* Search Icon - Mobile - Now opens dedicated search */}
           <button 
-            onClick={() => {
-              // Open the mobile menu and focus on search
-              setIsMenuOpen(true);
-              // Small delay to ensure menu is open before focusing
-              setTimeout(() => {
-                const searchInput = document.querySelector('#mobile-search-input');
-                if (searchInput) {
-                  searchInput.focus();
-                }
-              }, 300);
-            }}
+            onClick={openSearch}
             className="md:hidden flex items-center justify-center w-8 h-8 hover:text-josseypink2 transition"
           >
             <Image src={assets.search_icon} alt="search icon" className="w-5 h-5" />
@@ -173,11 +173,17 @@ const Navbar = () => {
               </Link>
             </div>
 
-            {/* Mobile Search Bar - Now with auto-focus */}
-            <div className="mb-6">
-              <div className="text-sm font-medium text-gray-600 mb-2">Search Products</div>
-              <SearchBar onSearch={closeMenu} />
-            </div>
+            {/* Quick Search Button in Menu */}
+            <button
+              onClick={() => {
+                closeMenu();
+                openSearch();
+              }}
+              className="w-full bg-gray-100 hover:bg-josseypink2 hover:text-white text-gray-800 py-3 rounded-lg font-medium transition mb-4 flex items-center justify-center gap-2"
+            >
+              <Image src={assets.search_icon} alt="search" className="w-5 h-5" />
+              Search Products
+            </button>
 
             {/* Seller Dashboard Button */}
             {isSeller && (
@@ -207,6 +213,9 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
+
+      {/* Mobile Search Overlay */}
+      <MobileSearchBar isOpen={isSearchOpen} onClose={closeSearch} />
     </>
   );
 };
