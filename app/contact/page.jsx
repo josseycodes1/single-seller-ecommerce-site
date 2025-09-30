@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import FeaturedProduct from "@/components/FeaturedProduct";
 import Footer from "@/components/Footer";
 import toast from "react-hot-toast";
+import Image from 'next/image'
 
 // ✅ Safe static FAQ array
 const faqs = [
