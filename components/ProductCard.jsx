@@ -113,13 +113,21 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
     return url.replace('/upload/', `/upload/${optimizationParams}/`)
   }
 
-  const handleAddToCart = async () => {
-    setAddingToCart(true)
-    const color = product.colors?.[0] || 'default'
-    const result = await addToCart(product.id, 1, color)
-    if (result.success) console.log("Product added to cart ✅")
-    setAddingToCart(false)
-  }
+  const handleAddToCart = async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (addingToCart) return;   // 🚀 lock so it won't fire twice
+
+    setAddingToCart(true);
+    const color = product.colors?.[0] || "default";
+    const result = await addToCart(product.id, 1, color);
+    if (result.success) {
+      console.log("Product added to cart ✅");
+    }
+    setAddingToCart(false);
+  };
+
 
   return (
     <div className="flex flex-col items-start gap-0.5 max-w-[200px] w-full">

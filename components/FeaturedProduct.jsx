@@ -7,21 +7,21 @@ import { addToCart } from "@/utils/cartUtils";
 export default function FeaturedProducts({ products }) {
   const [addingToCart, setAddingToCart] = useState({});
 
-  const handleAddToCart = async (product, e) => {
-    e.preventDefault();
+    const handleAddToCart = async (e) => {
     e.stopPropagation();
+    e.preventDefault();
 
-    setAddingToCart((prev) => ({ ...prev, [product.id]: true }));
+    if (addingToCart) return;   // 🚀 lock so it won't fire twice
 
+    setAddingToCart(true);
     const color = product.colors?.[0] || "default";
     const result = await addToCart(product.id, 1, color);
-
     if (result.success) {
       console.log("Product added to cart ✅");
     }
-
-    setAddingToCart((prev) => ({ ...prev, [product.id]: false }));
+    setAddingToCart(false);
   };
+
 
   return (
     <section className="bg-[#EFD9D9] py-10 md:py-16 px-4 md:px-6">
