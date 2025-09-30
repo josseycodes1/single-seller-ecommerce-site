@@ -34,16 +34,29 @@ const AboutUs = () => {
       <Navbar />
       <div className="px-6 md:px-16 lg:px-32 pt-14">
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-josseypink2 to-josseypink1 text-white py-16 rounded-lg mb-12">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              About JosseyCart
-            </h1>
-            <p className="text-xl opacity-90">
-              Your trusted partner in quality products and exceptional service
-            </p>
-          </div>
+              <div className="relative py-16 rounded-lg mb-12 overflow-hidden">
+        {/* Background Image with Next.js Image component */}
+        <div className="absolute inset-0">
+          <Image
+            src="/diffuser12.png"
+            alt="JosseyCart background"
+            fill
+            className="object-cover"
+            priority
+          />
+          {/* Dark overlay for better text readability */}
+          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         </div>
+        
+        <div className="relative max-w-4xl mx-auto text-center z-10">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            About JosseyCart
+          </h1>
+          <p className="text-xl opacity-90">
+            Your trusted partner in quality products and exceptional service
+          </p>
+        </div>
+      </div>
 
         {/* Our Story */}
         <div className="max-w-6xl mx-auto mb-16">
