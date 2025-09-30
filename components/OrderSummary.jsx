@@ -200,7 +200,7 @@ const OrderSummary = () => {
             <button 
               onClick={handleApplyPromo}
               disabled={!!appliedPromo}
-              className="bg-josseypink1 text-white px-6 py-2.5 hover:bg-josseypink2 disabled:bg-gray-400 disabled:cursor-not-allowed whitespace-nowrap"
+              className="bg-josseypink2 text-white px-6 py-2.5 hover:bg-josseypink1 disabled:bg-gray-400 disabled:cursor-not-allowed whitespace-nowrap"
             >
               {appliedPromo ? "Applied" : "Apply"}
             </button>
@@ -215,7 +215,7 @@ const OrderSummary = () => {
                   setAppliedPromo(null);
                   setPromoCode("");
                 }}
-                className="ml-2 text-red-600 hover:underline"
+                className="ml-2 text-josseypink2 hover:underline"
               >
                 Remove
               </button>
@@ -259,7 +259,7 @@ const OrderSummary = () => {
         <button 
           onClick={createOrder}
           disabled={!selectedAddress || isCreatingOrder}
-          className="w-full bg-josseypink1 text-white py-3 hover:bg-josseypink2 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+          className="w-full bg-josseypink2 text-white py-3 hover:bg-josseypink1 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
         >
           {isCreatingOrder ? "Placing Order..." : "Place Order"}
         </button>
@@ -273,7 +273,7 @@ const OrderSummary = () => {
       </div>
 
       {!selectedAddress && (
-        <div className="mt-3 text-sm text-red-600 text-center">
+        <div className="mt-3 text-sm text-josseypink2 text-center">
           Please select a delivery address to continue
         </div>
       )}

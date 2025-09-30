@@ -229,7 +229,7 @@ const Cart = () => {
         <div className="flex-1">
           <div className="flex items-center justify-between mb-6 border-b border-gray-300 pb-4">
             <p className="text-xl sm:text-2xl md:text-3xl text-gray-700">
-              Your <span className="font-semibold text-josseypink1">Cart</span>
+              Your <span className="font-semibold text-josseypink2">Cart</span>
             </p>
             <p className="text-base sm:text-lg text-gray-600">{getCartCount()} Items</p>
           </div>
@@ -271,7 +271,7 @@ const Cart = () => {
                               <div>
                                 <p className="text-gray-800 font-medium">{productName}</p>
                                 <button
-                                  className="text-sm text-josseypink1 hover:text-josseypink2 mt-1 transition-colors"
+                                  className="text-sm text-josseypink2 hover:text-josseypink1 mt-1 transition-colors"
                                   onClick={() => handleUpdateQuantity(cartItem.id, 0)}
                                 >
                                   Remove
@@ -291,7 +291,7 @@ const Cart = () => {
                               </span>
                               <button
                                 onClick={() => openColorModal(cartItem)}
-                                className="text-xs px-3 py-1 border border-josseypink1 text-josseypink1 rounded-full hover:bg-josseypink1 hover:text-white transition-colors"
+                                className="text-xs px-3 py-1 border border-josseypink2 text-josseypink2 rounded-full hover:bg-josseypink1 hover:text-white transition-colors"
                               >
                                 Change
                               </button>
@@ -314,7 +314,7 @@ const Cart = () => {
                                 min="1"
                                 onChange={(e) => handleQuantityInputChange(cartItem.id, e.target.value)}
                                 onBlur={() => handleQuantityBlur(cartItem.id, cartItem)}
-                                className="w-12 border border-gray-300 rounded text-center py-1 focus:outline-none focus:border-josseypink1"
+                                className="w-12 border border-gray-300 rounded text-center py-1 focus:outline-none focus:border-josseypink2"
                                 disabled={qtyLoadingMap[cartItem.id]}
                               />
 
@@ -370,7 +370,7 @@ const Cart = () => {
                             <h3 className="text-gray-800 font-medium truncate">{productName}</h3>
                             <button
                               onClick={() => handleUpdateQuantity(cartItem.id, 0)}
-                              className="text-josseypink1 hover:text-josseypink2 text-sm transition-colors"
+                              className="text-josseypink2 hover:text-josseypink1 text-sm transition-colors"
                             >
                               Remove
                             </button>
@@ -390,7 +390,7 @@ const Cart = () => {
                                 </span>
                                 <button
                                   onClick={() => openColorModal(cartItem)}
-                                  className="text-xs px-2 py-1 border border-josseypink1 text-josseypink1 rounded hover:bg-josseypink1 hover:text-white transition-colors"
+                                  className="text-xs px-2 py-1 border border-josseypink1 text-josseypink2 rounded hover:bg-josseypink1 hover:text-white transition-colors"
                                 >
                                   Change
                                 </button>
@@ -414,7 +414,7 @@ const Cart = () => {
                                   min="1"
                                   onChange={(e) => handleQuantityInputChange(cartItem.id, e.target.value)}
                                   onBlur={() => handleQuantityBlur(cartItem.id, cartItem)}
-                                  className="w-10 border border-gray-300 rounded text-center py-1 text-xs focus:outline-none focus:border-josseypink1"
+                                  className="w-10 border border-gray-300 rounded text-center py-1 text-xs focus:outline-none focus:border-josseypink2"
                                   disabled={qtyLoadingMap[cartItem.id]}
                                 />
 
@@ -445,7 +445,7 @@ const Cart = () => {
               <p className="text-gray-500 text-lg mb-4">Your cart is empty</p>
               <button
                 onClick={() => router.push('/all-products')}
-                className="bg-josseypink1 text-white px-6 py-3 rounded-lg hover:bg-josseypink2 transition-colors"
+                className="bg-josseypink2 text-white px-6 py-3 rounded-lg hover:bg-josseypink1 transition-colors"
               >
                 Start Shopping
               </button>
@@ -454,7 +454,7 @@ const Cart = () => {
 
           <button 
             onClick={() => router.push('/all-products')} 
-            className="group flex items-center mt-8 gap-2 text-josseypink1 hover:text-josseypink2 transition-colors"
+            className="group flex items-center mt-8 gap-2 text-josseypink2 hover:text-josseypink1 transition-colors"
           >
             <Image 
               className="group-hover:-translate-x-1 transition-transform" 
@@ -493,7 +493,7 @@ const Cart = () => {
                     onClick={() => setColorModal(m => ({ ...m, selectedColor: c }))}
                     className={`px-4 py-2 rounded-full border transition-colors ${
                       colorModal.selectedColor === c 
-                        ? 'bg-josseypink2 text-white border-josseypink2' 
+                        ? 'bg-josseypink2 text-white border-josseypink1' 
                         : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
                     }`}
                   >
