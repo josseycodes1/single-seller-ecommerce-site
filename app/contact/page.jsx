@@ -77,11 +77,11 @@ const ContactUs = () => {
       </div>
       
       <div className="relative max-w-4xl mx-auto text-center z-10">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">
-          About JosseyCart
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-josseypink2">
+          Contact JosseyCart
         </h1>
-        <p className="text-xl opacity-90">
-          Your trusted partner in quality products and exceptional service
+        <p className="text-xl opacity-90 text-josseypink2">
+          We are here to attend to all your enquiries and questions
         </p>
       </div>
     </div>
