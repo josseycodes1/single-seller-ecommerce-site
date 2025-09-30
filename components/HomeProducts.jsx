@@ -8,7 +8,7 @@ const HomeProducts = () => {
   if (loading) {
     return (
       <div className="flex flex-col items-center pt-14">
-        <p className="text-3xl font-medium bg-gray-900">Popular products</p>
+        <p className="text-3xl font-medium text-gray-900">Popular products</p>
         <div className="w-28 h-0.5 bg-josseypink2 mt-2"></div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6 pb-14 w-full">
           {/* Skeleton loading */}

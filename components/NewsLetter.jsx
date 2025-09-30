@@ -74,7 +74,7 @@ const NewsLetter = () => {
 
   return (
     <div className="flex flex-col items-center justify-center text-center space-y-4 md:space-y-2 pt-8 pb-14 px-4 md:px-0">
-      <h1 className="md:text-4xl text-2xl font-medium px-4 md:px-0 bg-gray-900">
+      <h1 className="md:text-4xl text-2xl font-medium px-4 md:px-0 text-gray-900">
         Subscribe now & get 20% off
       </h1>
       <p className="md:text-base text-sm text-gray-500/80 pb-6 md:pb-8 max-w-2xl px-2 md:px-0">

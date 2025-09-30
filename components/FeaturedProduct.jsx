@@ -72,7 +72,7 @@ const FeaturedProduct = () => {
     <div className="mt-14">
       {/* section title */}
       <div className="flex flex-col items-center">
-        <p className="text-3xl font-medium bg-gray-900">Featured Products</p>
+        <p className="text-3xl font-medium text-gray-900">Featured Products</p>
         <div className="w-28 h-0.5 bg-josseypink2 mt-2"></div>
       </div>
 
