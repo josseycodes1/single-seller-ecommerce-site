@@ -11,7 +11,6 @@ const Cart = () => {
     products,
     router,
     cart,
-    addToCart,
     updateCartQuantity,
     removeFromCart,
     getCartCount,
@@ -27,17 +26,18 @@ const Cart = () => {
     selectedColor: null,
     saving: false,
   });
-  const [qtyLoadingMap, setQtyLoadingMap] = useState({});
-  const [quantityInputs, setQuantityInputs] = useState({});
+  const [localQuantities, setLocalQuantities] = useState({});
+  const [isUpdating, setIsUpdating] = useState({});
 
-  // Initialize quantity inputs when cart loads
+  // Initialize local quantities when cart loads
   useEffect(() => {
     if (cart?.items) {
       const initialQuantities = {};
       cart.items.forEach(item => {
         initialQuantities[item.id] = item.quantity.toString();
       });
-      setQuantityInputs(initialQuantities);
+      setLocalQuantities(initialQuantities);
+      setIsUpdating({});
     }
   }, [cart]);
 
@@ -71,46 +71,80 @@ const Cart = () => {
 
   const handleUpdateQuantity = async (itemId, newQuantity) => {
     const qty = Number(newQuantity);
-    if (Number.isNaN(qty)) return;
+    if (Number.isNaN(qty) || qty < 0) return;
 
+    // Remove item if quantity is 0
     if (qty === 0) {
-      setQtyLoadingMap(m => ({ ...m, [itemId]: true }));
+      setIsUpdating(prev => ({ ...prev, [itemId]: true }));
       await removeFromCart(itemId);
-      setQtyLoadingMap(m => ({ ...m, [itemId]: false }));
+      setIsUpdating(prev => ({ ...prev, [itemId]: false }));
       return;
     }
 
-    setQtyLoadingMap(m => ({ ...m, [itemId]: true }));
-    const res = await updateCartQuantity(itemId, qty);
-    setQtyLoadingMap(m => ({ ...m, [itemId]: false }));
+    // Check stock if available
+    const cartItem = cart?.items?.find(item => item.id === itemId);
+    const product = products?.find(p => p.id === cartItem?.product.id);
+    if (product && qty > product.stock) {
+      addToast?.(`Only ${product.stock} items available`, "error");
+      // Reset to max available stock
+      setLocalQuantities(prev => ({
+        ...prev,
+        [itemId]: Math.min(cartItem.quantity, product.stock).toString()
+      }));
+      return;
+    }
 
-    if (!res || !res.success) {
-      addToast?.("Failed to update quantity", "error");
+    // Update optimistically
+    setIsUpdating(prev => ({ ...prev, [itemId]: true }));
+    
+    try {
+      const res = await updateCartQuantity(itemId, qty);
+      if (!res || !res.success) {
+        // Revert on error
+        setLocalQuantities(prev => ({
+          ...prev,
+          [itemId]: cartItem.quantity.toString()
+        }));
+        addToast?.("Failed to update quantity", "error");
+      }
+    } catch (error) {
+      // Revert on error
+      setLocalQuantities(prev => ({
+        ...prev,
+        [itemId]: cartItem.quantity.toString()
+      }));
+    } finally {
+      setIsUpdating(prev => ({ ...prev, [itemId]: false }));
     }
   };
 
   const handleQuantityInputChange = (itemId, value) => {
-    setQuantityInputs(prev => ({
+    // Allow empty input for manual typing
+    setLocalQuantities(prev => ({
       ...prev,
       [itemId]: value
     }));
   };
 
-  const handleQuantityBlur = async (itemId, cartItem) => {
-    const value = quantityInputs[itemId];
+  const handleQuantityBlur = async (itemId) => {
+    const value = localQuantities[itemId];
+    
+    // If empty, reset to current cart quantity
     if (value === "" || value === "0") {
-      // Reset to original quantity if empty or zero
-      setQuantityInputs(prev => ({
-        ...prev,
-        [itemId]: cartItem.quantity.toString()
-      }));
+      const cartItem = cart?.items?.find(item => item.id === itemId);
+      if (cartItem) {
+        setLocalQuantities(prev => ({
+          ...prev,
+          [itemId]: cartItem.quantity.toString()
+        }));
+      }
       return;
     }
 
     const qty = parseInt(value);
     if (isNaN(qty) || qty < 1) {
       // Reset to 1 if invalid
-      setQuantityInputs(prev => ({
+      setLocalQuantities(prev => ({
         ...prev,
         [itemId]: "1"
       }));
@@ -118,36 +152,39 @@ const Cart = () => {
       return;
     }
 
-    // Check stock if available
-    const product = products?.find(p => p.id === cartItem.product.id);
-    if (product && qty > product.stock) {
-      addToast?.(`Only ${product.stock} items available`, "error");
-      setQuantityInputs(prev => ({
-        ...prev,
-        [itemId]: Math.min(cartItem.quantity, product.stock).toString()
-      }));
-      return;
-    }
-
     await handleUpdateQuantity(itemId, qty);
   };
 
-  const handleIncrease = (cartItem) => {
-    const newQty = cartItem.quantity + 1;
-    setQuantityInputs(prev => ({
-      ...prev,
-      [cartItem.id]: newQty.toString()
-    }));
-    handleUpdateQuantity(cartItem.id, newQty);
+  const handleQuantityKeyPress = (e, itemId) => {
+    if (e.key === 'Enter') {
+      handleQuantityBlur(itemId);
+    }
   };
 
-  const handleDecrease = (cartItem) => {
-    const newQty = Math.max(1, cartItem.quantity - 1);
-    setQuantityInputs(prev => ({
+  const handleIncrease = async (cartItem) => {
+    const currentQty = parseInt(localQuantities[cartItem.id] || cartItem.quantity);
+    const newQty = currentQty + 1;
+    
+    // Update optimistically
+    setLocalQuantities(prev => ({
       ...prev,
       [cartItem.id]: newQty.toString()
     }));
-    handleUpdateQuantity(cartItem.id, newQty);
+    
+    await handleUpdateQuantity(cartItem.id, newQty);
+  };
+
+  const handleDecrease = async (cartItem) => {
+    const currentQty = parseInt(localQuantities[cartItem.id] || cartItem.quantity);
+    const newQty = Math.max(1, currentQty - 1);
+    
+    // Update optimistically
+    setLocalQuantities(prev => ({
+      ...prev,
+      [cartItem.id]: newQty.toString()
+    }));
+    
+    await handleUpdateQuantity(cartItem.id, newQty);
   };
 
   const openColorModal = (cartItem) => {
@@ -302,7 +339,7 @@ const Cart = () => {
                             <div className="flex items-center gap-2 max-w-[140px]">
                               <button
                                 onClick={() => handleDecrease(cartItem)}
-                                disabled={qtyLoadingMap[cartItem.id] || cartItem.quantity <= 1}
+                                disabled={isUpdating[cartItem.id] || cartItem.quantity <= 1}
                                 className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                               >
                                 <span className="text-gray-600 font-bold">−</span>
@@ -310,25 +347,22 @@ const Cart = () => {
 
                               <input
                                 type="number"
-                                value={quantityInputs[cartItem.id] || cartItem.quantity}
+                                value={localQuantities[cartItem.id] || cartItem.quantity}
                                 min="1"
                                 onChange={(e) => handleQuantityInputChange(cartItem.id, e.target.value)}
-                                onBlur={() => handleQuantityBlur(cartItem.id, cartItem)}
-                                className="w-12 border border-gray-300 rounded text-center py-1 focus:outline-none focus:border-josseypink2"
-                                disabled={qtyLoadingMap[cartItem.id]}
+                                onBlur={() => handleQuantityBlur(cartItem.id)}
+                                onKeyPress={(e) => handleQuantityKeyPress(e, cartItem.id)}
+                                className="w-12 border border-gray-300 rounded text-center py-1 focus:outline-none focus:border-josseypink2 disabled:opacity-50"
+                                disabled={isUpdating[cartItem.id]}
                               />
 
                               <button
                                 onClick={() => handleIncrease(cartItem)}
-                                disabled={qtyLoadingMap[cartItem.id]}
+                                disabled={isUpdating[cartItem.id]}
                                 className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                               >
                                 <span className="text-gray-600 font-bold">+</span>
                               </button>
-
-                              {qtyLoadingMap[cartItem.id] && (
-                                <span className="text-xs text-gray-500 ml-2">Updating...</span>
-                              )}
                             </div>
                           </td>
 
@@ -342,7 +376,7 @@ const Cart = () => {
                 </table>
               </div>
 
-              {/* Mobile Cards */}
+              {/* Mobile Cards - Similar fixes applied */}
               <div className="lg:hidden space-y-4">
                 {displayCart.items.map((cartItem) => {
                   const product = products?.find(p => p.id === cartItem.product.id);
@@ -402,7 +436,7 @@ const Cart = () => {
                               <div className="flex items-center gap-2">
                                 <button
                                   onClick={() => handleDecrease(cartItem)}
-                                  disabled={qtyLoadingMap[cartItem.id] || cartItem.quantity <= 1}
+                                  disabled={isUpdating[cartItem.id] || cartItem.quantity <= 1}
                                   className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 text-xs"
                                 >
                                   −
@@ -410,17 +444,18 @@ const Cart = () => {
 
                                 <input
                                   type="number"
-                                  value={quantityInputs[cartItem.id] || cartItem.quantity}
+                                  value={localQuantities[cartItem.id] || cartItem.quantity}
                                   min="1"
                                   onChange={(e) => handleQuantityInputChange(cartItem.id, e.target.value)}
-                                  onBlur={() => handleQuantityBlur(cartItem.id, cartItem)}
-                                  className="w-10 border border-gray-300 rounded text-center py-1 text-xs focus:outline-none focus:border-josseypink2"
-                                  disabled={qtyLoadingMap[cartItem.id]}
+                                  onBlur={() => handleQuantityBlur(cartItem.id)}
+                                  onKeyPress={(e) => handleQuantityKeyPress(e, cartItem.id)}
+                                  className="w-10 border border-gray-300 rounded text-center py-1 text-xs focus:outline-none focus:border-josseypink2 disabled:opacity-50"
+                                  disabled={isUpdating[cartItem.id]}
                                 />
 
                                 <button
                                   onClick={() => handleIncrease(cartItem)}
-                                  disabled={qtyLoadingMap[cartItem.id]}
+                                  disabled={isUpdating[cartItem.id]}
                                   className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 text-xs"
                                 >
                                   +

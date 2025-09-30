@@ -443,27 +443,6 @@ const Product = () => {
                             <table className="table-auto border-collapse w-full max-w-72">
                                 <tbody>
 
-                                    {/* Available Colors */}
-                                    {/* {productData?.colors && (
-                                        <tr>
-                                            <td className="text-gray-600 font-medium py-2">Available Colors</td>
-                                            <td className="text-gray-800/50 py-2 capitalize flex gap-2 flex-wrap">
-                                                {productData.colors.length > 0 ? (
-                                                    productData.colors.map((color, idx) => (
-                                                        <span
-                                                            key={idx}
-                                                            className="px-3 py-1 rounded-full text-sm border bg-gray-100"
-                                                        >
-                                                            {color}
-                                                        </span>
-                                                    ))
-                                                ) : (
-                                                    <span className="text-gray-500">No colors</span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )} */}
-
                                     {/* Category */}
                                     {productData.category && (
                                         <tr>
