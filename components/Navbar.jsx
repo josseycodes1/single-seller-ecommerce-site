@@ -25,14 +25,14 @@ const Navbar = () => {
       <nav className="flex items-center justify-between px-4 md:px-8 lg:px-16 py-3 border-b border-gray-300 text-gray-700 bg-white relative z-50">
         {/* Left Side - Hamburger + Logo */}
         <div className="flex items-center gap-4">
-          {/* Hamburger Menu - Mobile */}
+          {/* Hamburger Menu - Mobile - Changed to pink */}
           <button
             onClick={toggleMenu}
             className="lg:hidden flex flex-col items-center justify-center w-8 h-8 space-y-1 transition"
           >
-            <span className={`block w-6 h-0.5 bg-gray-700 transition-transform ${isMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-            <span className={`block w-6 h-0.5 bg-gray-700 transition-opacity ${isMenuOpen ? 'opacity-0' : ''}`}></span>
-            <span className={`block w-6 h-0.5 bg-gray-700 transition-transform ${isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+            <span className={`block w-6 h-0.5 bg-josseypink2 transition-transform ${isMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+            <span className={`block w-6 h-0.5 bg-josseypink2 transition-opacity ${isMenuOpen ? 'opacity-0' : ''}`}></span>
+            <span className={`block w-6 h-0.5 bg-josseypink2 transition-transform ${isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
           </button>
 
           {/* Logo */}
@@ -75,8 +75,21 @@ const Navbar = () => {
             <SearchBar />
           </div>
 
-          {/* Search Icon - Mobile */}
-          <button className="md:hidden flex items-center justify-center w-8 h-8 hover:text-josseypink2 transition">
+          {/* Search Icon - Mobile - Now functional */}
+          <button 
+            onClick={() => {
+              // Open the mobile menu and focus on search
+              setIsMenuOpen(true);
+              // Small delay to ensure menu is open before focusing
+              setTimeout(() => {
+                const searchInput = document.querySelector('#mobile-search-input');
+                if (searchInput) {
+                  searchInput.focus();
+                }
+              }, 300);
+            }}
+            className="md:hidden flex items-center justify-center w-8 h-8 hover:text-josseypink2 transition"
+          >
             <Image src={assets.search_icon} alt="search icon" className="w-5 h-5" />
           </button>
 
@@ -160,7 +173,7 @@ const Navbar = () => {
               </Link>
             </div>
 
-            {/* Mobile Search Bar */}
+            {/* Mobile Search Bar - Now with auto-focus */}
             <div className="mb-6">
               <div className="text-sm font-medium text-gray-600 mb-2">Search Products</div>
               <SearchBar onSearch={closeMenu} />
@@ -194,11 +207,6 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
-
-      {/* Search Bar for Tablet - Below navbar */}
-      <div className="md:hidden bg-gray-50 border-b border-gray-200 px-4 py-3">
-        <SearchBar />
-      </div>
     </>
   );
 };
