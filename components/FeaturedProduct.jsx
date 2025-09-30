@@ -2,26 +2,30 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { addToCart } from "@/utils/cartUtils";
+import { useAppContext } from "@/context/AppContext";
 
 export default function FeaturedProducts({ products }) {
+  const { addToCart } = useAppContext();
   const [addingToCart, setAddingToCart] = useState({});
 
-    const handleAddToCart = async (e) => {
+  const handleAddToCart = async (product, e) => {
     e.stopPropagation();
     e.preventDefault();
 
-    if (addingToCart) return;   // 🚀 lock so it won't fire twice
+    // 🚀 Prevent duplicate clicks for this product
+    if (addingToCart[product.id]) return;
 
-    setAddingToCart(true);
+    setAddingToCart((prev) => ({ ...prev, [product.id]: true }));
+
     const color = product.colors?.[0] || "default";
     const result = await addToCart(product.id, 1, color);
-    if (result.success) {
-      console.log("Product added to cart ✅");
-    }
-    setAddingToCart(false);
-  };
 
+    if (result.success) {
+      console.log(`✅ Product ${product.id} added to cart`);
+    }
+
+    setAddingToCart((prev) => ({ ...prev, [product.id]: false }));
+  };
 
   return (
     <section className="bg-[#EFD9D9] py-10 md:py-16 px-4 md:px-6">

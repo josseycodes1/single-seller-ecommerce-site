@@ -117,7 +117,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
     e.stopPropagation();
     e.preventDefault();
 
-    if (addingToCart) return;   // 🚀 lock so it won't fire twice
+    if (addingToCart) return;  
 
     setAddingToCart(true);
     const color = product.colors?.[0] || "default";
