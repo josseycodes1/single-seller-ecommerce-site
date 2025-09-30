@@ -73,11 +73,11 @@ const ContactUs = () => {
           priority
         />
         {/* Dark overlay for better text readability */}
-        <div className="absolute inset-0 bg-white bg-opacity-50"></div>
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
       </div>
       
       <div className="relative max-w-4xl mx-auto text-center z-10">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-josseypink2">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
           Contact JosseyCart
         </h1>
         <p className="text-xl opacity-90 text-josseypink2">
