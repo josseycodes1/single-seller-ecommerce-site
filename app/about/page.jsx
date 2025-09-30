@@ -52,7 +52,7 @@ const AboutUs = () => {
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
             About JosseyCart
           </h1>
-          <p className="text-xl opacity-90">
+          <p className="text-xl opacity-90 text-white">
             Your trusted partner in quality products and exceptional service
           </p>
         </div>
