@@ -116,15 +116,17 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
   }
 
   const handleAddToCart = async (e) => {
-    e.stopPropagation()
-    setAddingToCart(true)
-    const color = product.colors?.[0] || 'default' // Default color for this page only
-    const result = await addToCart(product.id, 1, color)
-    if (result.success) {
-      console.log("Product added to cart ✅")
-    }
-    setAddingToCart(false)
-  }
+      e.stopPropagation();  
+      e.preventDefault();    
+      setAddingToCart(true);
+      const color = product.colors?.[0] || 'default';
+      const result = await addToCart(product.id, 1, color);
+      if (result.success) {
+        console.log("Product added to cart ✅");
+      }
+      setAddingToCart(false);
+    };
+
 
   return (
     <div
@@ -206,7 +208,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
         <button
           disabled={addingToCart}
           onClick={handleAddToCart}
-          className="max-sm:hidden px-4 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200"
+          className=" px-4 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200"
         >
           {addingToCart ? "Adding..." : "Add to Cart"}
         </button>
