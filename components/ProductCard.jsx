@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useAppContext } from '@/context/AppContext'
 
 const ProductCard = ({ product: initialProduct = null, productId: propProductId = null }) => {
-  const { currency, router, addToCart, cartLoading } = useAppContext()
+  const { currency, router, addToCart } = useAppContext()
   const [product, setProduct] = useState(initialProduct)
   const [loading, setLoading] = useState(!initialProduct && !!propProductId)
   const [error, setError] = useState(null)
@@ -44,13 +44,12 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
         }
         return res.json()
       })
-      .then((data) => {
-        setProduct(data)
-      })
+      .then((data) => setProduct(data))
       .catch((err) => {
-        if (err.name === 'AbortError') return
-        console.error('Product fetch error:', err)
-        setError(err.message || 'Failed to load product')
+        if (err.name !== 'AbortError') {
+          console.error('Product fetch error:', err)
+          setError(err.message || 'Failed to load product')
+        }
       })
       .finally(() => setLoading(false))
 
@@ -102,7 +101,6 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
   const originalPrice = product.price ? parsePrice(product.price) : null
 
   const idFromProduct = product.id || product._id || propProductId
-  const hasValidId = !!idFromProduct
 
   const handleImageError = (imageType) => {
     setImageErrors(prev => ({ ...prev, [imageType]: true }))
@@ -115,30 +113,24 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
     return url.replace('/upload/', `/upload/${optimizationParams}/`)
   }
 
-  const handleAddToCart = async (e) => {
-      e.stopPropagation();  
-      e.preventDefault();    
-      setAddingToCart(true);
-      const color = product.colors?.[0] || 'default';
-      const result = await addToCart(product.id, 1, color);
-      if (result.success) {
-        console.log("Product added to cart ✅");
-      }
-      setAddingToCart(false);
-    };
-
+  const handleAddToCart = async () => {
+    setAddingToCart(true)
+    const color = product.colors?.[0] || 'default'
+    const result = await addToCart(product.id, 1, color)
+    if (result.success) console.log("Product added to cart ✅")
+    setAddingToCart(false)
+  }
 
   return (
-    <div
-      onClick={() => {
-        if (hasValidId) {
-          router.push('/product/' + idFromProduct)
-          window.scrollTo(0, 0)
-        }
-      }}
-      className="flex flex-col items-start gap-0.5 max-w-[200px] w-full cursor-pointer"
-    >
+    <div className="flex flex-col items-start gap-0.5 max-w-[200px] w-full">
+      {/* Clickable area */}
       <div
+        onClick={() => {
+          if (idFromProduct) {
+            router.push('/product/' + idFromProduct)
+            window.scrollTo(0, 0)
+          }
+        }}
         className="cursor-pointer group relative bg-pink-50 rounded-lg w-full h-52 flex items-center justify-center overflow-hidden"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -173,7 +165,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
       </div>
 
       <p className="md:text-base font-medium pt-2 w-full truncate text-gray-700">{productName}</p>
-      <p className="w-full text-xs text-gray-500/70 max-sm:hidden truncate">{productDescription}</p>
+      <p className="w-full text-xs text-gray-500/70 truncate">{productDescription}</p>
 
       <div className="flex items-center gap-2 mt-1">
         <p className="text-xs font-medium">{productRating.toFixed(1)}</p>
@@ -192,23 +184,22 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
         <span className="text-xs text-gray-400">({product.review_count || 0})</span>
       </div>
 
+      {/* Price + Add to Cart */}
       <div className="flex items-end justify-between w-full mt-2">
         <div className="flex flex-col">
           <p className="text-base font-medium text-gray-700">
-            {currency}
-            {productPrice.toFixed(2)}
+            {currency}{productPrice.toFixed(2)}
           </p>
           {originalPrice && productPrice < originalPrice && (
             <p className="text-xs text-gray-400 line-through">
-              {currency}
-              {originalPrice.toFixed(2)}
+              {currency}{originalPrice.toFixed(2)}
             </p>
           )}
         </div>
         <button
           disabled={addingToCart}
           onClick={handleAddToCart}
-          className=" px-4 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200"
+          className="px-4 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200"
         >
           {addingToCart ? "Adding..." : "Add to Cart"}
         </button>
