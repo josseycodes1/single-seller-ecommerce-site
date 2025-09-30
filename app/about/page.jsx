@@ -4,25 +4,25 @@ import Navbar from "@/components/Navbar";
 import FeaturedProduct from "@/components/FeaturedProduct";
 import Footer from "@/components/Footer";
 import Image from "next/image";
+import React, { useEffect, useState } from "react";
 
 const AboutUs = () => {
-      const [products, setProducts] = useState([]);
+    const [products, setProducts] = useState([]);
 
-  useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const res = await fetch(
-          "https://josseycart-backend.onrender.com/api/products/"
-        );
-        const data = await res.json();
-        setProducts(data);
-      } catch (err) {
-        console.error("Failed to fetch products:", err);
-      }
-    }
-    fetchProducts();
-  }, []);
-  
+        useEffect(() => {
+            async function fetchProducts() {
+            try {
+                const res = await fetch(
+                "https://josseycart-backend.onrender.com/api/products/"
+                );
+                const data = await res.json();
+                setProducts(data);
+            } catch (err) {
+                console.error("Failed to fetch products:", err);
+            }
+            }
+            fetchProducts();
+        }, []);
     return (
         <>
             <Navbar />
