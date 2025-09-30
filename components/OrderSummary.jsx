@@ -261,7 +261,7 @@ const OrderSummary = () => {
           disabled={!selectedAddress || isCreatingOrder}
           className="w-full bg-josseypink2 text-white py-3 hover:bg-josseypink1 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
         >
-          {isCreatingOrder ? "Placing Order..." : "Place Order"}
+          {isCreatingOrder ? "Placing Order..." : "Proceed to Checkout"}
         </button>
         
         <button 
