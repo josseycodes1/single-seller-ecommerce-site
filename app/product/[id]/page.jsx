@@ -154,18 +154,18 @@ const Product = () => {
         try {
             const qty = Number(selectedQuantity);
 
-            // First, check if the product with the same color already exists in the cart
+            
             let cartId = localStorage.getItem('cart_id');
             let productExistsInCart = false;
 
             if (cartId) {
                 try {
-                    // Fetch current cart to check if product already exists
+                    
                     const cartResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/cart/?cart_id=${cartId}`);
                     if (cartResponse.ok) {
                         const cartData = await cartResponse.json();
                         
-                        // Check if the product with same color already exists in cart
+                       
                         if (cartData.items && cartData.items.length > 0) {
                             const existingItem = cartData.items.find(item => 
                                 item.product_id === productData.id && 
@@ -179,11 +179,11 @@ const Product = () => {
                     }
                 } catch (err) {
                     console.error("Error checking cart:", err);
-                    // Continue with adding to cart if we can't check
+                    
                 }
             }
 
-            // If product doesn't exist in cart, add it
+            
             if (!productExistsInCart) {
                 const result = await addToCart(productData.id, qty, selectedColor, false);
                 
@@ -201,7 +201,7 @@ const Product = () => {
                 }
             }
 
-            // Redirect to cart page regardless of whether we added or it already existed
+           
             router.push("/cart");
             
         } catch (err) {
@@ -444,7 +444,7 @@ const Product = () => {
                                 <tbody>
 
                                     {/* Available Colors */}
-                                    {productData?.colors && (
+                                    {/* {productData?.colors && (
                                         <tr>
                                             <td className="text-gray-600 font-medium py-2">Available Colors</td>
                                             <td className="text-gray-800/50 py-2 capitalize flex gap-2 flex-wrap">
@@ -462,7 +462,7 @@ const Product = () => {
                                                 )}
                                             </td>
                                         </tr>
-                                    )}
+                                    )} */}
 
                                     {/* Category */}
                                     {productData.category && (
