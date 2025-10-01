@@ -107,63 +107,67 @@ const Checkout = () => {
 
   const handlePayment = async () => {
     if (!cart?.id) {
-        addToast('Cart not found', 'error')
-        return
+      addToast('Cart not found', 'error')
+      return
     }
 
     setLoading(true)
     try {
-        // 1. Create order
-        const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/checkout/`, {
+      // 1. Create order
+      const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/checkout/`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            cart_id: cart.id,
-            ...formData
+          cart_id: cart.id,
+          ...formData
         })
-        })
+      })
 
-        const orderData = await orderResponse.json()
+      const orderData = await orderResponse.json()
 
-        if (!orderResponse.ok) {
+      if (!orderResponse.ok) {
         throw new Error(orderData.error || 'Failed to create order')
-        }
+      }
 
-        // 2. Initialize payment
-        const paymentResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/payment/initialize/`, {
+     
+      const orderId = orderData.order_id
+
+      
+      const paymentResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/payment/initialize/`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            cart_id: cart.id,
-            email: formData.email,
-            callback_url: `${window.location.origin}/payment/verify`
+          cart_id: cart.id,
+          email: formData.email,
+          order_id: orderId, 
+          callback_url: `${window.location.origin}/payment/verify`
         })
-        })
+      })
 
-        const paymentData = await paymentResponse.json()
+      const paymentData = await paymentResponse.json()
 
-        if (!paymentResponse.ok) {
+      if (!paymentResponse.ok) {
         throw new Error(paymentData.error || 'Failed to initialize payment')
-        }
+      }
 
-        // 3. Redirect to Paystack
-        if (paymentData.authorization_url) {
+     
+      if (paymentData.authorization_url) {
         window.location.href = paymentData.authorization_url
-        } else {
+      } else {
         throw new Error('No authorization URL received')
-        }
+      }
 
     } catch (error) {
-        console.error('Payment error:', error)
-        addToast(error.message || 'Payment failed. Please try again.', 'error')
+      console.error('Payment error:', error)
+      addToast(error.message || 'Payment failed. Please try again.', 'error')
     } finally {
-        setLoading(false)
+      setLoading(false)
     }
-    }
+  }
 
   if (!cart || cart.items.length === 0) {
     return (
