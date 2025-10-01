@@ -128,7 +128,7 @@ const OrderSummary = () => {
   }
 
   return (
-    <div className="w-full md:w-96 bg-josseypink3 p-5 sticky top-24">
+    <div className="w-full md:w-96 bg-gray-500/5 p-5 sticky top-24">
       <h2 className="text-xl md:text-2xl font-medium text-gray-700">
         Order Summary
       </h2>
