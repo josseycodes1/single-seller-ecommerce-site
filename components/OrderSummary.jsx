@@ -9,7 +9,6 @@ const OrderSummary = () => {
   const [userAddresses, setUserAddresses] = useState([]);
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState(null);
-  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
 
   const fetchUserAddresses = async () => {
     setUserAddresses(addressDummyData);
@@ -22,7 +21,6 @@ const OrderSummary = () => {
 
   const handleApplyPromo = () => {
     if (promoCode.trim()) {
-     
       const validPromos = {
         "SAVE10": { discount: 0.1, type: "percentage" },
         "FREESHIP": { discount: 5, type: "fixed" }
@@ -57,7 +55,7 @@ const OrderSummary = () => {
     return subtotal + tax - discount;
   };
 
-  const createOrder = async () => {
+  const handleProceedToCheckout = () => {
     if (!selectedAddress) {
       alert("Please select a delivery address");
       return;
@@ -68,50 +66,21 @@ const OrderSummary = () => {
       return;
     }
 
-    setIsCreatingOrder(true);
-
-    try {
-      
-      const orderData = {
-        customer_name: selectedAddress.fullName,
-        customer_email: "customer@example.com", 
-        customer_phone: selectedAddress.phone || "0000000000",
-        customer_address: `${selectedAddress.area}, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.pincode}`,
-        items: cart.items.map(item => ({
-          product_id: item.product.id,
-          quantity: item.quantity,
-          price: item.product.price
-        })),
-        promo_code: appliedPromo ? promoCode : null
-      };
-
-      
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderData)
-      });
-
-      if (response.ok) {
-        const order = await response.json();
-        
-      
-        await clearCart();
-        
-       
-        router.push(`/order-confirmation?order_id=${order.id}`);
-      } else {
-        const errorData = await response.json();
-        alert(`Failed to create order: ${errorData.error || 'Please try again'}`);
-      }
-    } catch (error) {
-      console.error("Order creation error:", error);
-      alert("Failed to create order. Please try again.");
-    } finally {
-      setIsCreatingOrder(false);
+    // Save selected address to localStorage or context for checkout page
+    if (selectedAddress) {
+      localStorage.setItem('selectedAddress', JSON.stringify(selectedAddress));
     }
+
+    // Save promo code if applied
+    if (appliedPromo) {
+      localStorage.setItem('appliedPromo', JSON.stringify({
+        code: promoCode,
+        ...appliedPromo
+      }));
+    }
+
+    // Navigate to checkout page
+    router.push('/checkout');
   };
 
   const handleClearCart = async () => {
@@ -123,7 +92,6 @@ const OrderSummary = () => {
   useEffect(() => {
     fetchUserAddresses();
   }, []);
-
 
   if (!cart || !cart.items || cart.items.length === 0) {
     return null;
@@ -257,11 +225,11 @@ const OrderSummary = () => {
 
       <div className="mt-6 space-y-3">
         <button 
-          onClick={createOrder}
-          disabled={!selectedAddress || isCreatingOrder}
+          onClick={handleProceedToCheckout}
+          disabled={!selectedAddress}
           className="w-full bg-josseypink2 text-white py-3 hover:bg-josseypink1 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
         >
-          {isCreatingOrder ? "Placing Order..." : "Proceed to Checkout"}
+          Proceed to Checkout
         </button>
         
         <button 

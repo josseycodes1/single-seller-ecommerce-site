@@ -1,10 +1,11 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAppContext } from '@/context/AppContext'
 import Navbar from '@/components/Navbar'
 
-const PaymentVerify = () => {
+// Content component that uses useSearchParams
+const PaymentVerifyContent = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { addToast, clearCart } = useAppContext()
@@ -128,6 +129,22 @@ const PaymentVerify = () => {
         </div>
       </div>
     </>
+  )
+}
+
+// Main component with Suspense boundary
+const PaymentVerify = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-josseypink2 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading payment verification...</p>
+        </div>
+      </div>
+    }>
+      <PaymentVerifyContent />
+    </Suspense>
   )
 }
 
