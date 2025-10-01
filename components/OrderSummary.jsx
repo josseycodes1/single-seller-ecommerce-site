@@ -18,7 +18,7 @@ const OrderSummary = () => {
   const handleAddressSelect = (address) => {
     setSelectedAddress(address);
     setIsDropdownOpen(false);
-    setShowAddressError(false); // Hide error when address is selected
+    setShowAddressError(false);
   };
 
   const handleApplyPromo = () => {
@@ -60,11 +60,11 @@ const OrderSummary = () => {
 
   const handleProceedToCheckout = () => {
     if (!selectedAddress) {
-      // Show visual error and toast message
+      
       setShowAddressError(true);
       addToast('Please select a delivery address to continue', 'error');
       
-      // Scroll to address section for better UX
+      
       const addressElement = document.getElementById('address-section');
       if (addressElement) {
         addressElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -77,12 +77,12 @@ const OrderSummary = () => {
       return;
     }
 
-    // Save selected address to localStorage or context for checkout page
+   
     if (selectedAddress) {
       localStorage.setItem('selectedAddress', JSON.stringify(selectedAddress));
     }
 
-    // Save promo code if applied
+   
     if (appliedPromo) {
       localStorage.setItem('appliedPromo', JSON.stringify({
         code: promoCode,
@@ -90,7 +90,7 @@ const OrderSummary = () => {
       }));
     }
 
-    // Navigate to checkout page
+   
     router.push('/checkout');
   };
 
@@ -105,7 +105,7 @@ const OrderSummary = () => {
     }
   };
 
-  // Auto-close dropdown when clicking outside
+ 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.address-dropdown-container')) {
@@ -128,7 +128,7 @@ const OrderSummary = () => {
   }
 
   return (
-    <div className="w-full md:w-96 bg-gray-500/5 p-5 sticky top-24">
+    <div className="w-full md:w-96 bg-josseypink3 p-5 sticky top-24">
       <h2 className="text-xl md:text-2xl font-medium text-gray-700">
         Order Summary
       </h2>
