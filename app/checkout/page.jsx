@@ -132,8 +132,9 @@ const Checkout = () => {
       }
 
       // ✅ STORE EMAIL IN LOCALSTORAGE FOR MYORDERS PAGE
-      localStorage.setItem('guestOrderEmail', formData.email);
-      console.log('🔍 DEBUG: Stored email in localStorage:', formData.email);
+       localStorage.setItem('guestOrderEmail', formData.email);
+      sessionStorage.setItem('guestOrderEmail', formData.email);
+      console.log('🔍 DEBUG: Stored email for MyOrders:', formData.email);
 
       // 2. Initialize payment WITH order_id
       const paymentResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/payment/initialize/`, {
