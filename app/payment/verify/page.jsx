@@ -13,6 +13,16 @@ const PaymentVerifyContent = () => {
   const [status, setStatus] = useState('verifying') // verifying, success, failed
   const [paymentData, setPaymentData] = useState(null)
 
+   //Separate useEffect to handle email storage when paymentData is available
+  useEffect(() => {
+    if (paymentData && paymentData.email) {
+      console.log('🔍 DEBUG: Storing email from payment verification:', paymentData.email)
+      // Store in both localStorage and sessionStorage for redundancy
+      localStorage.setItem('guestOrderEmail', paymentData.email)
+      sessionStorage.setItem('guestOrderEmail', paymentData.email)
+    }
+  }, [paymentData])
+
   useEffect(() => {
     const verifyPayment = async () => {
       const reference = searchParams.get('reference')
@@ -46,7 +56,7 @@ const PaymentVerifyContent = () => {
           // Optional: Redirect to success page after delay
           setTimeout(() => {
             router.push('/payment/success')
-          }, 2000)
+          }, 3000)
         } else {
           setStatus('failed')
           addToast(data.message || 'Payment verification failed', 'error')
