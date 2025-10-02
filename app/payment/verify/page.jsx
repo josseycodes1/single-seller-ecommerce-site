@@ -48,7 +48,7 @@ const PaymentVerifyContent = () => {
           setPaymentData(data.payment_data)
           addToast('Payment successful!', 'success')
 
-          localStorage.setItem('guestOrderEmail', paymentData.email);
+          
           
           // Clear cart using your existing clearCart method
           clearCart()

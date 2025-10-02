@@ -1,225 +1,276 @@
-'use client';
-import React, { useEffect, useState } from "react";
-import { assets } from "@/assets/assets";
-import Image from "next/image";
-import { useAppContext } from "@/context/AppContext";
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
-import Loading from "@/components/Loading";
+'use client'
+import React, { useState, useEffect, Suspense } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAppContext } from '@/context/AppContext'
+import Navbar from '@/components/Navbar'
+import Link from 'next/link'
 
-const MyOrders = () => {
-    const { currency, userData, addToast } = useAppContext();
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [currentEmail, setCurrentEmail] = useState('');
+// Content component
+const MyOrdersContent = () => {
+  const router = useRouter()
+  const { addToast } = useAppContext()
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [email, setEmail] = useState('')
 
-    const fetchOrders = async (email) => {
-        try {
-            setLoading(true);
-            console.log(`🔍 DEBUG: Fetching orders for email: ${email}`);
-            
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/?email=${email}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            console.log(`🔍 DEBUG: Response status: ${response.status}`);
-            
-            if (response.ok) {
-                const ordersData = await response.json();
-                console.log(`🔍 DEBUG: Orders received:`, ordersData);
-                setOrders(ordersData);
-                setCurrentEmail(email);
-            } else {
-                const errorText = await response.text();
-                console.error(`🔍 DEBUG: API error: ${response.status} - ${errorText}`);
-                throw new Error(`Failed to fetch orders: ${response.status}`);
-            }
-        } catch (error) {
-            console.error('Error fetching orders:', error);
-            addToast('Failed to load orders', 'error');
-            setOrders([]);
-        } finally {
-            setLoading(false);
-        }
+  useEffect(() => {
+    // Get email from localStorage or sessionStorage
+    const guestEmail = localStorage.getItem('guestOrderEmail') || sessionStorage.getItem('guestOrderEmail')
+    
+    if (!guestEmail) {
+      addToast('No order history found. Please complete a purchase first.', 'info')
+      router.push('/')
+      return
     }
 
-    useEffect(() => {
-        console.log('🔍 DEBUG: MyOrders page loaded');
-        
-        // Check for stored email from checkout
-        const storedEmail = localStorage.getItem('guestOrderEmail');
-        console.log('🔍 DEBUG: Stored email from localStorage:', storedEmail);
-        
-        if (storedEmail) {
-            console.log('🔍 DEBUG: Found stored email, fetching orders...');
-            fetchOrders(storedEmail);
-        } else if (userData && userData.email) {
-            console.log('🔍 DEBUG: Using logged-in user email');
-            fetchOrders(userData.email);
-        } else {
-            console.log('🔍 DEBUG: No email found');
-            setLoading(false);
-            addToast('No order history found', 'info');
-        }
-    }, [userData]);
+    setEmail(guestEmail)
+    fetchOrders(guestEmail)
+  }, [router, addToast])
 
-    // Fallback: Manual email input if no stored email
-    const handleEmailSubmit = (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const email = formData.get('email');
-        if (email) {
-            localStorage.setItem('guestOrderEmail', email);
-            fetchOrders(email);
-        }
+  const fetchOrders = async (userEmail) => {
+    try {
+      setLoading(true)
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/?email=${encodeURIComponent(userEmail)}`
+      )
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch orders')
+      }
+
+      const ordersData = await response.json()
+      setOrders(ordersData)
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+      addToast('Failed to load orders. Please try again.', 'error')
+    } finally {
+      setLoading(false)
     }
+  }
 
-    const formatStatus = (status) => {
-        const statusMap = {
-            'pending': 'Pending',
-            'processing': 'Processing',
-            'shipped': 'Shipped',
-            'delivered': 'Delivered'
-        };
-        return statusMap[status] || status;
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'delivered':
+        return 'bg-green-100 text-green-800'
+      case 'shipped':
+        return 'bg-blue-100 text-blue-800'
+      case 'processing':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'pending':
+        return 'bg-gray-100 text-gray-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
     }
+  }
 
-    const formatPaymentStatus = (paymentStatus, isPaid) => {
-        if (isPaid) return 'Paid';
-        return paymentStatus === 'success' ? 'Paid' : 'Pending';
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'delivered':
+        return 'Delivered'
+      case 'shipped':
+        return 'Shipped'
+      case 'processing':
+        return 'Processing'
+      case 'pending':
+        return 'Pending'
+      default:
+        return status
     }
+  }
 
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN'
+    }).format(price)
+  }
+
+  if (loading) {
     return (
-        <>
-            <Navbar />
-            <div className="flex flex-col justify-between px-6 md:px-16 lg:px-32 py-6 min-h-screen">
-                <div className="space-y-5">
-                    <h2 className="text-2xl font-bold mt-6">My Orders</h2>
-                    
-                    {/* Show current email being used */}
-                    {currentEmail && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md">
-                            <p className="text-blue-800 text-sm">
-                                Showing orders for: <strong>{currentEmail}</strong>
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Manual email input only shown if no orders and no stored email */}
-                    {!loading && orders.length === 0 && !currentEmail && (
-                        <div className="max-w-md mx-auto bg-blue-50 border border-blue-200 rounded-lg p-6">
-                            <h3 className="text-lg font-medium text-blue-800 mb-3">View Your Orders</h3>
-                            <p className="text-blue-600 mb-4">Enter the email address you used for your order</p>
-                            <form onSubmit={handleEmailSubmit} className="space-y-3">
-                                <input
-                                    type="email"
-                                    name="email"
-                                    placeholder="your@email.com"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                />
-                                <button
-                                    type="submit"
-                                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
-                                >
-                                    View My Orders
-                                </button>
-                            </form>
-                        </div>
-                    )}
-                    
-                    {loading ? (
-                        <Loading />
-                    ) : orders.length === 0 && currentEmail ? (
-                        <div className="text-center py-12">
-                            <Image
-                                src={assets.box_icon}
-                                alt="No orders"
-                                width={80}
-                                height={80}
-                                className="mx-auto mb-4 opacity-50"
-                            />
-                            <h3 className="text-lg font-medium text-gray-600 mb-2">No orders found</h3>
-                            <p className="text-gray-500">
-                                No orders found for <strong>{currentEmail}</strong>
-                            </p>
-                        </div>
-                    ) : orders.length > 0 ? (
-                        <div className="max-w-5xl border-t border-gray-300 text-sm">
-                            {orders.map((order) => (
-                                <div key={order.id} className="flex flex-col md:flex-row gap-5 justify-between p-5 border-b border-gray-300">
-                                    <div className="flex-1 flex gap-5 max-w-80">
-                                        <Image
-                                            className="max-w-16 max-h-16 object-cover"
-                                            src={assets.box_icon}
-                                            alt="box_icon"
-                                            width={64}
-                                            height={64}
-                                        />
-                                        <div className="flex flex-col gap-2">
-                                            <span className="font-medium text-base">
-                                                {order.items && order.items.map((item) => 
-                                                    `${item.product?.name || 'Product'} x ${item.quantity}`
-                                                ).join(", ")}
-                                            </span>
-                                            <span className="text-gray-600">Order ID: #{order.id}</span>
-                                            <span className="text-gray-600">Items: {order.items?.length || 0}</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="text-gray-700">
-                                        <p>
-                                            <span className="font-medium">{order.customer_name}</span>
-                                            <br />
-                                            <span>{order.customer_email}</span>
-                                            <br />
-                                            <span>{order.customer_phone}</span>
-                                            {order.address && (
-                                                <>
-                                                    <br />
-                                                    <span>{order.address.street_address}</span>
-                                                    <br />
-                                                    <span>{`${order.address.town}, ${order.address.state}`}</span>
-                                                </>
-                                            )}
-                                        </p>
-                                    </div>
-                                    
-                                    <div className="font-medium my-auto">
-                                        {currency}{parseFloat(order.total_amount || 0).toFixed(2)}
-                                    </div>
-                                    
-                                    <div className="flex flex-col gap-1">
-                                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                            order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                                            order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
-                                            order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-gray-100 text-gray-800'
-                                        }`}>
-                                            {formatStatus(order.status)}
-                                        </span>
-                                        <span className="text-gray-600 text-xs">
-                                            Date: {new Date(order.created_at).toLocaleDateString()}
-                                        </span>
-                                        <span className={`text-xs font-medium ${
-                                            order.is_paid || order.payment_status === 'success' ? 
-                                            'text-green-600' : 'text-yellow-600'
-                                        }`}>
-                                            Payment: {formatPaymentStatus(order.payment_status, order.is_paid)}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : null}
-                </div>
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-gray-50 py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-josseypink2 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading your orders...</p>
             </div>
-            <Footer />
-        </>
-    );
-};
+          </div>
+        </div>
+      </>
+    )
+  }
 
-export default MyOrders;
+  return (
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
+            <p className="text-gray-600 mt-2">
+              Order history for <span className="font-semibold">{email}</span>
+            </p>
+          </div>
+
+          {orders.length === 0 ? (
+            // Empty state
+            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">No Orders Found</h2>
+              <p className="text-gray-600 mb-6">
+                You haven't placed any orders yet. Start shopping to see your order history here.
+              </p>
+              <Link
+                href="/"
+                className="inline-block bg-josseypink2 text-white py-3 px-6 rounded-md hover:bg-josseypink1 transition-colors font-medium"
+              >
+                Start Shopping
+              </Link>
+            </div>
+          ) : (
+            // Orders list
+            <div className="space-y-6">
+              {orders.map((order) => (
+                <div key={order.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                  {/* Order header */}
+                  <div className="border-b border-gray-200 px-6 py-4 bg-gray-50">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                      <div className="mb-2 sm:mb-0">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          Order #{order.id}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Placed on {formatDate(order.created_at)}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                          {getStatusText(order.status)}
+                        </span>
+                        <span className="text-lg font-bold text-gray-900">
+                          {formatPrice(order.total_amount)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Order items */}
+                  <div className="p-6">
+                    <div className="space-y-4">
+                      {order.items.map((item) => (
+                        <div key={item.id} className="flex items-center space-x-4">
+                          {item.product.images && item.product.images.length > 0 && (
+                            <img
+                              src={item.product.images[0].image_url}
+                              alt={item.product.name}
+                              className="w-16 h-16 object-cover rounded-md"
+                            />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-medium text-gray-900 truncate">
+                              {item.product.name}
+                            </h4>
+                            <p className="text-sm text-gray-600">
+                              Quantity: {item.quantity}
+                            </p>
+                            {item.color && (
+                              <p className="text-sm text-gray-600">
+                                Color: <span className="capitalize">{item.color}</span>
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-gray-900">
+                              {formatPrice(item.price * item.quantity)}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {formatPrice(item.price)} each
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Order footer */}
+                    <div className="mt-6 pt-6 border-t border-gray-200">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <div className="mb-4 sm:mb-0">
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">Shipping Address</h4>
+                          {order.address ? (
+                            <p className="text-sm text-gray-600">
+                              {order.address.street_address}, {order.address.town}<br />
+                              {order.address.state}, {order.address.country}<br />
+                              {order.address.postal_code}
+                            </p>
+                          ) : (
+                            <p className="text-sm text-gray-500">No address provided</p>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            order.is_paid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {order.is_paid ? 'Paid' : 'Pending Payment'}
+                          </span>
+                          {order.order_notes && (
+                            <div className="text-sm text-gray-600">
+                              <strong>Notes:</strong> {order.order_notes}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Support section */}
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-600">
+              Need help with your orders?{' '}
+              <Link href="/contact" className="text-josseypink2 hover:text-josseypink1 font-medium">
+                Contact our support team
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+// Main component with Suspense boundary
+const MyOrders = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-josseypink2 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <MyOrdersContent />
+    </Suspense>
+  )
+}
+
+export default MyOrders
