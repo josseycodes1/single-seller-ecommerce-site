@@ -302,7 +302,7 @@ const Checkout = () => {
             ? formData.address[name.split('.')[1]]
             : formData[name]
           }
-          onChange={handleInputChange}
+          onChange={handleInputChange} // ✅ FIXED: Added onChange handler
           className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2 focus:border-transparent ${
             hasError ? 'border-red-500 bg-red-50' : 'border-gray-300'
           }`}
