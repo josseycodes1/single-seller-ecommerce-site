@@ -5,7 +5,7 @@ import { useAppContext } from '@/context/AppContext'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 
-// Content component
+
 const MyOrdersContent = () => {
   const router = useRouter()
   const { addToast } = useAppContext()
