@@ -11,33 +11,38 @@ const MyOrders = () => {
     const { currency, userData, addToast } = useAppContext();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [debugInfo, setDebugInfo] = useState('');
 
-    const fetchOrders = async () => {
+    const fetchOrders = async (email) => {
         try {
             setLoading(true);
+            setDebugInfo(`Fetching orders for email: ${email}`);
             
-          
-            if (userData && userData.email) {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/?email=${userData.email}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
+            console.log(`🔍 DEBUG: Fetching orders for email: ${email}`);
+            console.log(`🔍 DEBUG: API URL: ${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/?email=${email}`);
 
-                if (response.ok) {
-                    const ordersData = await response.json();
-                    setOrders(ordersData);
-                } else {
-                    throw new Error('Failed to fetch orders');
-                }
+            const response = await fetch(`${process.env.NUBLIC_API_BASE_URL}/api/orders/?email=${email}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            console.log(`🔍 DEBUG: Response status: ${response.status}`);
+            
+            if (response.ok) {
+                const ordersData = await response.json();
+                console.log(`🔍 DEBUG: Orders received:`, ordersData);
+                setOrders(ordersData);
+                setDebugInfo(`Found ${ordersData.length} orders for ${email}`);
             } else {
-               
-                addToast('Please log in to view your orders', 'info');
-                setOrders([]);
+                const errorText = await response.text();
+                console.error(`🔍 DEBUG: API error: ${response.status} - ${errorText}`);
+                throw new Error(`Failed to fetch orders: ${response.status}`);
             }
         } catch (error) {
             console.error('Error fetching orders:', error);
+            setDebugInfo(`Error: ${error.message}`);
             addToast('Failed to load orders', 'error');
             setOrders([]);
         } finally {
@@ -46,10 +51,44 @@ const MyOrders = () => {
     }
 
     useEffect(() => {
-        fetchOrders();
+        console.log('🔍 DEBUG: useEffect running');
+        console.log('🔍 DEBUG: userData:', userData);
+        
+        // Check for guest email in URL parameters or localStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        const emailFromUrl = urlParams.get('email');
+        const storedEmail = localStorage.getItem('guestOrderEmail');
+        
+        console.log('🔍 DEBUG: emailFromUrl:', emailFromUrl);
+        console.log('🔍 DEBUG: storedEmail:', storedEmail);
+
+        if (userData && userData.email) {
+            console.log('🔍 DEBUG: Using logged-in user email');
+            fetchOrders(userData.email);
+        } else if (emailFromUrl) {
+            console.log('🔍 DEBUG: Using email from URL');
+            fetchOrders(emailFromUrl);
+        } else if (storedEmail) {
+            console.log('🔍 DEBUG: Using stored guest email');
+            fetchOrders(storedEmail);
+        } else {
+            console.log('🔍 DEBUG: No email found - showing empty state');
+            setLoading(false);
+            addToast('Please enter your email to view orders', 'info');
+        }
     }, [userData]);
 
-    
+    // Add a simple email input for guests
+    const handleEmailSubmit = (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const email = formData.get('email');
+        if (email) {
+            localStorage.setItem('guestOrderEmail', email);
+            fetchOrders(email);
+        }
+    }
+
     const formatStatus = (status) => {
         const statusMap = {
             'pending': 'Pending',
@@ -60,7 +99,6 @@ const MyOrders = () => {
         return statusMap[status] || status;
     }
 
-  
     const formatPaymentStatus = (paymentStatus, isPaid) => {
         if (isPaid) return 'Paid';
         return paymentStatus === 'success' ? 'Paid' : 'Pending';
@@ -73,9 +111,39 @@ const MyOrders = () => {
                 <div className="space-y-5">
                     <h2 className="text-2xl font-bold mt-6">My Orders</h2>
                     
+                    {/* Debug info - remove in production */}
+                    {process.env.NODE_ENV === 'development' && debugInfo && (
+                        <div className="bg-yellow-100 border border-yellow-400 p-3 rounded">
+                            <p className="text-sm text-yellow-800">Debug: {debugInfo}</p>
+                        </div>
+                    )}
+
+                    {/* Email input for guests */}
+                    {!userData?.email && orders.length === 0 && !loading && (
+                        <div className="max-w-md mx-auto bg-blue-50 border border-blue-200 rounded-lg p-6">
+                            <h3 className="text-lg font-medium text-blue-800 mb-3">View Your Orders</h3>
+                            <p className="text-blue-600 mb-4">Enter the email address you used for your order</p>
+                            <form onSubmit={handleEmailSubmit} className="space-y-3">
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="your@email.com"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required
+                                />
+                                <button
+                                    type="submit"
+                                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+                                >
+                                    View My Orders
+                                </button>
+                            </form>
+                        </div>
+                    )}
+                    
                     {loading ? (
                         <Loading />
-                    ) : orders.length === 0 ? (
+                    ) : orders.length === 0 && (userData?.email || localStorage.getItem('guestOrderEmail')) ? (
                         <div className="text-center py-12">
                             <Image
                                 src={assets.box_icon}
@@ -84,10 +152,12 @@ const MyOrders = () => {
                                 height={80}
                                 className="mx-auto mb-4 opacity-50"
                             />
-                            <h3 className="text-lg font-medium text-gray-600 mb-2">No orders yet</h3>
-                            <p className="text-gray-500">You haven't placed any orders yet.</p>
+                            <h3 className="text-lg font-medium text-gray-600 mb-2">No orders found</h3>
+                            <p className="text-gray-500">
+                                No orders found for this email address.
+                            </p>
                         </div>
-                    ) : (
+                    ) : orders.length > 0 ? (
                         <div className="max-w-5xl border-t border-gray-300 text-sm">
                             {orders.map((order) => (
                                 <div key={order.id} className="flex flex-col md:flex-row gap-5 justify-between p-5 border-b border-gray-300">
@@ -154,7 +224,7 @@ const MyOrders = () => {
                                 </div>
                             ))}
                         </div>
-                    )}
+                    ) : null}
                 </div>
             </div>
             <Footer />
