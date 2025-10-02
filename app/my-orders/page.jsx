@@ -5,7 +5,7 @@ import { useAppContext } from '@/context/AppContext'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 
-
+// Content component
 const MyOrdersContent = () => {
   const router = useRouter()
   const { addToast } = useAppContext()
@@ -30,18 +30,33 @@ const MyOrdersContent = () => {
   const fetchOrders = async (userEmail) => {
     try {
       setLoading(true)
+      console.log('🔍 DEBUG: Fetching orders for email:', userEmail)
+      
+      // Use the guest orders endpoint
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/?email=${encodeURIComponent(userEmail)}`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/guest/orders/?email=${encodeURIComponent(userEmail)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'omit'
+        }
       )
 
+      console.log('🔍 DEBUG: Response status:', response.status)
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch orders')
+        const errorText = await response.text()
+        console.error('🔍 DEBUG: Response error:', errorText)
+        throw new Error(`Failed to fetch orders: ${response.status}`)
       }
 
       const ordersData = await response.json()
+      console.log('🔍 DEBUG: Orders data received:', ordersData)
       setOrders(ordersData)
     } catch (error) {
-      console.error('Error fetching orders:', error)
+      console.error('❌ Error fetching orders:', error)
       addToast('Failed to load orders. Please try again.', 'error')
     } finally {
       setLoading(false)
