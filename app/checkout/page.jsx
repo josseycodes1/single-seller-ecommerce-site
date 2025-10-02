@@ -131,10 +131,11 @@ const Checkout = () => {
         throw new Error(orderData.error || 'Failed to create order')
       }
 
-     
-      const orderId = orderData.order_id
+      // ✅ STORE EMAIL IN LOCALSTORAGE FOR MYORDERS PAGE
+      localStorage.setItem('guestOrderEmail', formData.email);
+      console.log('🔍 DEBUG: Stored email in localStorage:', formData.email);
 
-      
+      // 2. Initialize payment WITH order_id
       const paymentResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/payment/initialize/`, {
         method: 'POST',
         headers: {
@@ -143,7 +144,7 @@ const Checkout = () => {
         body: JSON.stringify({
           cart_id: cart.id,
           email: formData.email,
-          order_id: orderId, 
+          order_id: orderData.order_id,
           callback_url: `${window.location.origin}/payment/verify`
         })
       })
@@ -154,7 +155,7 @@ const Checkout = () => {
         throw new Error(paymentData.error || 'Failed to initialize payment')
       }
 
-     
+      // 3. Redirect to Paystack
       if (paymentData.authorization_url) {
         window.location.href = paymentData.authorization_url
       } else {

@@ -11,17 +11,14 @@ const MyOrders = () => {
     const { currency, userData, addToast } = useAppContext();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [debugInfo, setDebugInfo] = useState('');
+    const [currentEmail, setCurrentEmail] = useState('');
 
     const fetchOrders = async (email) => {
         try {
             setLoading(true);
-            setDebugInfo(`Fetching orders for email: ${email}`);
-            
             console.log(`🔍 DEBUG: Fetching orders for email: ${email}`);
-            console.log(`🔍 DEBUG: API URL: ${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/?email=${email}`);
-
-            const response = await fetch(`${process.env.NUBLIC_API_BASE_URL}/api/orders/?email=${email}`, {
+            
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/?email=${email}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -34,7 +31,7 @@ const MyOrders = () => {
                 const ordersData = await response.json();
                 console.log(`🔍 DEBUG: Orders received:`, ordersData);
                 setOrders(ordersData);
-                setDebugInfo(`Found ${ordersData.length} orders for ${email}`);
+                setCurrentEmail(email);
             } else {
                 const errorText = await response.text();
                 console.error(`🔍 DEBUG: API error: ${response.status} - ${errorText}`);
@@ -42,7 +39,6 @@ const MyOrders = () => {
             }
         } catch (error) {
             console.error('Error fetching orders:', error);
-            setDebugInfo(`Error: ${error.message}`);
             addToast('Failed to load orders', 'error');
             setOrders([]);
         } finally {
@@ -51,34 +47,26 @@ const MyOrders = () => {
     }
 
     useEffect(() => {
-        console.log('🔍 DEBUG: useEffect running');
-        console.log('🔍 DEBUG: userData:', userData);
+        console.log('🔍 DEBUG: MyOrders page loaded');
         
-        // Check for guest email in URL parameters or localStorage
-        const urlParams = new URLSearchParams(window.location.search);
-        const emailFromUrl = urlParams.get('email');
+        // Check for stored email from checkout
         const storedEmail = localStorage.getItem('guestOrderEmail');
+        console.log('🔍 DEBUG: Stored email from localStorage:', storedEmail);
         
-        console.log('🔍 DEBUG: emailFromUrl:', emailFromUrl);
-        console.log('🔍 DEBUG: storedEmail:', storedEmail);
-
-        if (userData && userData.email) {
+        if (storedEmail) {
+            console.log('🔍 DEBUG: Found stored email, fetching orders...');
+            fetchOrders(storedEmail);
+        } else if (userData && userData.email) {
             console.log('🔍 DEBUG: Using logged-in user email');
             fetchOrders(userData.email);
-        } else if (emailFromUrl) {
-            console.log('🔍 DEBUG: Using email from URL');
-            fetchOrders(emailFromUrl);
-        } else if (storedEmail) {
-            console.log('🔍 DEBUG: Using stored guest email');
-            fetchOrders(storedEmail);
         } else {
-            console.log('🔍 DEBUG: No email found - showing empty state');
+            console.log('🔍 DEBUG: No email found');
             setLoading(false);
-            addToast('Please enter your email to view orders', 'info');
+            addToast('No order history found', 'info');
         }
     }, [userData]);
 
-    // Add a simple email input for guests
+    // Fallback: Manual email input if no stored email
     const handleEmailSubmit = (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -111,15 +99,17 @@ const MyOrders = () => {
                 <div className="space-y-5">
                     <h2 className="text-2xl font-bold mt-6">My Orders</h2>
                     
-                    {/* Debug info - remove in production */}
-                    {process.env.NODE_ENV === 'development' && debugInfo && (
-                        <div className="bg-yellow-100 border border-yellow-400 p-3 rounded">
-                            <p className="text-sm text-yellow-800">Debug: {debugInfo}</p>
+                    {/* Show current email being used */}
+                    {currentEmail && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md">
+                            <p className="text-blue-800 text-sm">
+                                Showing orders for: <strong>{currentEmail}</strong>
+                            </p>
                         </div>
                     )}
 
-                    {/* Email input for guests */}
-                    {!userData?.email && orders.length === 0 && !loading && (
+                    {/* Manual email input only shown if no orders and no stored email */}
+                    {!loading && orders.length === 0 && !currentEmail && (
                         <div className="max-w-md mx-auto bg-blue-50 border border-blue-200 rounded-lg p-6">
                             <h3 className="text-lg font-medium text-blue-800 mb-3">View Your Orders</h3>
                             <p className="text-blue-600 mb-4">Enter the email address you used for your order</p>
@@ -143,7 +133,7 @@ const MyOrders = () => {
                     
                     {loading ? (
                         <Loading />
-                    ) : orders.length === 0 && (userData?.email || localStorage.getItem('guestOrderEmail')) ? (
+                    ) : orders.length === 0 && currentEmail ? (
                         <div className="text-center py-12">
                             <Image
                                 src={assets.box_icon}
@@ -154,7 +144,7 @@ const MyOrders = () => {
                             />
                             <h3 className="text-lg font-medium text-gray-600 mb-2">No orders found</h3>
                             <p className="text-gray-500">
-                                No orders found for this email address.
+                                No orders found for <strong>{currentEmail}</strong>
                             </p>
                         </div>
                     ) : orders.length > 0 ? (
