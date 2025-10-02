@@ -57,10 +57,10 @@ const PaymentSuccessContent = () => {
               Continue Shopping
             </Link>
             <Link
-              href="/my-orders"
+              href="/contact"
               className="block w-full bg-gray-200 text-gray-800 py-3 px-4 rounded-md hover:bg-gray-300 transition-colors font-medium text-center"
             >
-              View My Orders
+              Contact Us
             </Link>
           </div>
 
