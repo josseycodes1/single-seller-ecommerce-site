@@ -81,95 +81,47 @@ const Checkout = () => {
     }
   }
 
-  const validateField = (name, value) => {
-    const errors = {}
-    
-    switch (name) {
-      case 'email':
-        if (!value.trim()) {
-          errors.email = 'Email is required'
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          errors.email = 'Please enter a valid email address'
-        }
-        break
-        
-      case 'customer_name':
-        if (!value.trim()) {
-          errors.customer_name = 'Full name is required'
-        } else if (value.trim().length < 2) {
-          errors.customer_name = 'Name must be at least 2 characters'
-        }
-        break
-        
-      case 'customer_phone':
-        if (!value.trim()) {
-          errors.customer_phone = 'Phone number is required'
-        } else if (!/^[\+]?[0-9\s\-\(\)]{10,}$/.test(value.replace(/\s/g, ''))) {
-          errors.customer_phone = 'Please enter a valid phone number'
-        }
-        break
-        
-      case 'address.street_address':
-        if (!value.trim()) {
-          errors['address.street_address'] = 'Street address is required'
-        }
-        break
-        
-      case 'address.town':
-        if (!value.trim()) {
-          errors['address.town'] = 'Town/City is required'
-        }
-        break
-        
-      case 'address.state':
-        if (!value.trim()) {
-          errors['address.state'] = 'State is required'
-        }
-        break
-        
-      case 'address.postal_code':
-        if (!value.trim()) {
-          errors['address.postal_code'] = 'Postal code is required'
-        }
-        break
-        
-      default:
-        break
-    }
-    
-    return errors
-  }
-
   const validateStep1 = () => {
     const errors = {}
     
-    // Validate all fields
-    Object.keys(formData).forEach(key => {
-      if (key !== 'address' && key !== 'order_notes') {
-        const fieldErrors = validateField(key, formData[key])
-        Object.assign(errors, fieldErrors)
-      }
-    })
+    // Validate email
+    if (!formData.email.trim()) {
+      errors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = 'Please enter a valid email address'
+    }
+    
+    // Validate name
+    if (!formData.customer_name.trim()) {
+      errors.customer_name = 'Full name is required'
+    } else if (formData.customer_name.trim().length < 2) {
+      errors.customer_name = 'Name must be at least 2 characters'
+    }
+    
+    // Validate phone
+    if (!formData.customer_phone.trim()) {
+      errors.customer_phone = 'Phone number is required'
+    } else if (!/^[\+]?[0-9\s\-\(\)]{10,}$/.test(formData.customer_phone.replace(/\s/g, ''))) {
+      errors.customer_phone = 'Please enter a valid phone number'
+    }
     
     // Validate address fields
-    Object.keys(formData.address).forEach(key => {
-      const fieldName = `address.${key}`
-      const fieldErrors = validateField(fieldName, formData.address[key])
-      Object.assign(errors, fieldErrors)
-    })
+    if (!formData.address.street_address.trim()) {
+      errors['address.street_address'] = 'Street address is required'
+    }
+    if (!formData.address.town.trim()) {
+      errors['address.town'] = 'Town/City is required'
+    }
+    if (!formData.address.state.trim()) {
+      errors['address.state'] = 'State is required'
+    }
+    if (!formData.address.postal_code.trim()) {
+      errors['address.postal_code'] = 'Postal code is required'
+    }
     
     setFormErrors(errors)
     
     if (Object.keys(errors).length > 0) {
-      // Scroll to first error
-      const firstErrorField = document.querySelector('[data-error="true"]')
-      if (firstErrorField) {
-        firstErrorField.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
-        })
-      }
-      
       addToast('Please fix the errors in the form', 'error')
       return false
     }
@@ -286,42 +238,6 @@ const Checkout = () => {
     )
   }
 
-  const InputField = ({ label, name, type = 'text', placeholder, required = false }) => {
-    const error = formErrors[name]
-    const hasError = !!error
-    
-    return (
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {label} {required && '*'}
-        </label>
-        <input
-          type={type}
-          name={name}
-          value={name.includes('address.') 
-            ? formData.address[name.split('.')[1]]
-            : formData[name]
-          }
-          onChange={handleInputChange} // ✅ FIXED: Added onChange handler
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2 focus:border-transparent ${
-            hasError ? 'border-red-500 bg-red-50' : 'border-gray-300'
-          }`}
-          placeholder={placeholder}
-          required={required}
-          data-error={hasError}
-        />
-        {hasError && (
-          <p className="mt-1 text-sm text-red-600 flex items-center">
-            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-            {error}
-          </p>
-        )}
-      </div>
-    )
-  }
-
   return (
     <>
       <Navbar />
@@ -362,29 +278,81 @@ const Checkout = () => {
                   <h2 className="text-xl font-semibold text-gray-800">Contact Information</h2>
                   
                   <div className="grid grid-cols-1 gap-4">
-                    <InputField
-                      label="Email Address"
-                      name="email"
-                      type="email"
-                      placeholder="your@email.com"
-                      required
-                    />
+                    {/* Email Field */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2 focus:border-transparent ${
+                          formErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                        }`}
+                        placeholder="your@email.com"
+                      />
+                      {formErrors.email && (
+                        <p className="mt-1 text-sm text-red-600 flex items-center">
+                          <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          {formErrors.email}
+                        </p>
+                      )}
+                    </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <InputField
-                        label="Full Name"
-                        name="customer_name"
-                        placeholder="John Doe"
-                        required
-                      />
+                      {/* Name Field */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          name="customer_name"
+                          value={formData.customer_name}
+                          onChange={handleInputChange}
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2 focus:border-transparent ${
+                            formErrors.customer_name ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                          }`}
+                          placeholder="John Doe"
+                        />
+                        {formErrors.customer_name && (
+                          <p className="mt-1 text-sm text-red-600 flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                            {formErrors.customer_name}
+                          </p>
+                        )}
+                      </div>
 
-                      <InputField
-                        label="Phone Number"
-                        name="customer_phone"
-                        type="tel"
-                        placeholder="+234 800 000 0000"
-                        required
-                      />
+                      {/* Phone Field */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Phone Number *
+                        </label>
+                        <input
+                          type="tel"
+                          name="customer_phone"
+                          value={formData.customer_phone}
+                          onChange={handleInputChange}
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2 focus:border-transparent ${
+                            formErrors.customer_phone ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                          }`}
+                          placeholder="+234 800 000 0000"
+                        />
+                        {formErrors.customer_phone && (
+                          <p className="mt-1 text-sm text-red-600 flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                            {formErrors.customer_phone}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -392,37 +360,110 @@ const Checkout = () => {
                     <h2 className="text-xl font-semibold text-gray-800 mb-4">Shipping Address</h2>
                     
                     <div className="space-y-4">
-                      <InputField
-                        label="Street Address"
-                        name="address.street_address"
-                        placeholder="123 Main Street"
-                        required
-                      />
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <InputField
-                          label="Town/City"
-                          name="address.town"
-                          placeholder="Lagos"
-                          required
+                      {/* Street Address */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Street Address *
+                        </label>
+                        <input
+                          type="text"
+                          name="address.street_address"
+                          value={formData.address.street_address}
+                          onChange={handleInputChange}
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2 focus:border-transparent ${
+                            formErrors['address.street_address'] ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                          }`}
+                          placeholder="123 Main Street"
                         />
-
-                        <InputField
-                          label="State"
-                          name="address.state"
-                          placeholder="Lagos State"
-                          required
-                        />
+                        {formErrors['address.street_address'] && (
+                          <p className="mt-1 text-sm text-red-600 flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                            {formErrors['address.street_address']}
+                          </p>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <InputField
-                          label="Postal Code"
-                          name="address.postal_code"
-                          placeholder="100001"
-                          required
-                        />
+                        {/* Town/City */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Town/City *
+                          </label>
+                          <input
+                            type="text"
+                            name="address.town"
+                            value={formData.address.town}
+                            onChange={handleInputChange}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2 focus:border-transparent ${
+                              formErrors['address.town'] ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                            }`}
+                            placeholder="Lagos"
+                          />
+                          {formErrors['address.town'] && (
+                            <p className="mt-1 text-sm text-red-600 flex items-center">
+                              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                              </svg>
+                              {formErrors['address.town']}
+                            </p>
+                          )}
+                        </div>
 
+                        {/* State */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            State *
+                          </label>
+                          <input
+                            type="text"
+                            name="address.state"
+                            value={formData.address.state}
+                            onChange={handleInputChange}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2 focus:border-transparent ${
+                              formErrors['address.state'] ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                            }`}
+                            placeholder="Lagos State"
+                          />
+                          {formErrors['address.state'] && (
+                            <p className="mt-1 text-sm text-red-600 flex items-center">
+                              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                              </svg>
+                              {formErrors['address.state']}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Postal Code */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Postal Code *
+                          </label>
+                          <input
+                            type="text"
+                            name="address.postal_code"
+                            value={formData.address.postal_code}
+                            onChange={handleInputChange}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-josseypink2 focus:border-transparent ${
+                              formErrors['address.postal_code'] ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                            }`}
+                            placeholder="100001"
+                          />
+                          {formErrors['address.postal_code'] && (
+                            <p className="mt-1 text-sm text-red-600 flex items-center">
+                              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                              </svg>
+                              {formErrors['address.postal_code']}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Country */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Country
