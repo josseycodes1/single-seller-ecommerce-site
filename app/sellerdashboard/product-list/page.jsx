@@ -12,7 +12,6 @@ const ProductList = () => {
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState({});
 
-  // Auth utility functions
   const isAuthenticated = () => {
     if (typeof window === 'undefined') return false;
     const token = localStorage.getItem('access_token');

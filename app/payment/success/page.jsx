@@ -5,7 +5,7 @@ import { useAppContext } from '@/context/AppContext'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 
-// Content component that uses useSearchParams
+
 const PaymentSuccessContent = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -18,7 +18,7 @@ const PaymentSuccessContent = () => {
     if (reference || trxref) {
       addToast('Payment completed successfully!', 'success')
       
-      // Clear cart on successful payment
+
       setTimeout(() => {
         clearCart()
       }, 1000)
@@ -75,7 +75,7 @@ const PaymentSuccessContent = () => {
   )
 }
 
-// Main component with Suspense boundary
+
 const PaymentSuccess = () => {
   return (
     <Suspense fallback={
