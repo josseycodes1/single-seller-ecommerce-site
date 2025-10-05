@@ -5,7 +5,6 @@ import { useAppContext } from '@/context/AppContext'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 
-
 const PaymentSuccessContent = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -18,12 +17,17 @@ const PaymentSuccessContent = () => {
     if (reference || trxref) {
       addToast('Payment completed successfully!', 'success')
       
-
+      // Clear cart but DON'T redirect automatically
       setTimeout(() => {
         clearCart()
       }, 1000)
     }
-  }, [searchParams, addToast, clearCart])
+  }, [searchParams, addToast, clearCart]) // Remove router from dependencies
+
+  const handleContinueShopping = () => {
+    // Use router.push for programmatic navigation if needed, but Link is better
+    router.push('/')
+  }
 
   return (
     <>
@@ -74,7 +78,6 @@ const PaymentSuccessContent = () => {
     </>
   )
 }
-
 
 const PaymentSuccess = () => {
   return (
