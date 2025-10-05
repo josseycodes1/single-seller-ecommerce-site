@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { assets } from "@/assets/assets";
 import { useAppContext } from "@/context/AppContext";
-import OrderSummary from "./OrderSummary";
+import OrderSummary from "@/components/OrderSummary";
 import { formatCurrency } from "@/lib/utils";
 
 const Cart = () => {
