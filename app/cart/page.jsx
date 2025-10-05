@@ -65,9 +65,23 @@ const Cart = () => {
   };
 
   const handleLocalInputChange = (itemId, value) => {
+    // If input is empty, set to empty string (allow clearing)
+    if (value === "") {
+      setLocalQuantities(prev => ({ ...prev, [itemId]: "" }));
+      return;
+    }
+    
     const qty = parseInt(value, 10);
+    // Only update if it's a valid positive number
     if (!isNaN(qty) && qty > 0) {
       setLocalQuantities(prev => ({ ...prev, [itemId]: qty }));
+    }
+  };
+
+  const handleLocalInputBlur = (itemId, value) => {
+    if (value === "" || value === "0") {
+      // If input is empty or zero, set to minimum quantity of 1
+      setLocalQuantities(prev => ({ ...prev, [itemId]: 1 }));
     }
   };
 
@@ -194,7 +208,7 @@ const Cart = () => {
                       const productPrice = product?.price ?? cartItem.product?.price ?? 0;
                       const productImage = product?.images?.[0]?.image_url || product?.image || '/placeholder-image.jpg';
                       const currentQuantity = localQuantities[cartItem.id] ?? cartItem.quantity;
-                      const subtotal = parseFloat(productPrice) * currentQuantity;
+                      const subtotal = parseFloat(productPrice) * (currentQuantity || 1);
 
                       return (
                         <tr key={cartItem.id} className="border-b border-gray-200 hover:bg-gray-50">
@@ -254,6 +268,7 @@ const Cart = () => {
                                 value={currentQuantity}
                                 min="1"
                                 onChange={(e) => handleLocalInputChange(cartItem.id, e.target.value)}
+                                onBlur={(e) => handleLocalInputBlur(cartItem.id, e.target.value)}
                                 className="w-12 border border-gray-300 rounded text-center py-1 focus:outline-none focus:border-josseypink2"
                               />
 
@@ -284,7 +299,7 @@ const Cart = () => {
                   const productPrice = product?.price ?? cartItem.product?.price ?? 0;
                   const productImage = product?.images?.[0]?.image_url || product?.image || '/placeholder-image.jpg';
                   const currentQuantity = localQuantities[cartItem.id] ?? cartItem.quantity;
-                  const subtotal = parseFloat(productPrice) * currentQuantity;
+                  const subtotal = parseFloat(productPrice) * (currentQuantity || 1);
 
                   return (
                     <div key={cartItem.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
@@ -349,6 +364,7 @@ const Cart = () => {
                                   value={currentQuantity}
                                   min="1"
                                   onChange={(e) => handleLocalInputChange(cartItem.id, e.target.value)}
+                                  onBlur={(e) => handleLocalInputBlur(cartItem.id, e.target.value)}
                                   className="w-10 border border-gray-300 rounded text-center py-1 text-xs focus:outline-none focus:border-josseypink2"
                                 />
 
