@@ -12,8 +12,6 @@ import React from "react";
 import FeaturedProduct from "@/components/FeaturedProduct";
 import toast from "react-hot-toast";
 
-
-
 const Product = () => {
     const { id } = useParams();
     const { router, addToCart, currency } = useAppContext();
@@ -24,11 +22,10 @@ const Product = () => {
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [imageErrors, setImageErrors] = useState({});
     const [selectedColor, setSelectedColor] = useState("");
-    const [selectedQuantity, setSelectedQuantity] = useState("");
+    const [selectedQuantity, setSelectedQuantity] = useState(1);
     const [addToCartLoading, setAddToCartLoading] = useState(false);
     const [quantityError, setQuantityError] = useState("");
     const [buyNowLoading, setBuyNowLoading] = useState(false);
-
 
     const isCloudinaryUrl = (url) => {
         return url && url.includes('cloudinary.com');
@@ -62,7 +59,6 @@ const Product = () => {
             console.log('Product data received:', data); 
             setProductData(data);
             
-        
             if (data.colors && data.colors.length > 0) {
                 setSelectedColor(data.colors[0]);
             }
@@ -105,25 +101,79 @@ const Product = () => {
         }
     }, [id]);
 
-        const handleAddToCart = async () => {
+    // QUANTITY HANDLERS - Similar to cart logic
+    const handleQuantityIncrement = () => {
+        if (productData) {
+            const newQuantity = selectedQuantity + 1;
+            if (newQuantity > productData.stock) {
+                setQuantityError(`Only ${productData.stock} items available in stock`);
+                setSelectedQuantity(productData.stock);
+            } else {
+                setSelectedQuantity(newQuantity);
+                setQuantityError("");
+            }
+        }
+    };
+
+    const handleQuantityDecrement = () => {
+        if (selectedQuantity > 1) {
+            setSelectedQuantity(selectedQuantity - 1);
+            setQuantityError("");
+        }
+    };
+
+    const handleQuantityInputChange = (e) => {
+        const value = e.target.value;
+
+        // If input is empty, set to empty string (allow clearing)
+        if (value === "") {
+            setSelectedQuantity("");
+            setQuantityError("");
+            return;
+        }
+
+        const newQuantity = parseInt(value);
+
+        if (isNaN(newQuantity) || newQuantity < 1) {
+            setQuantityError("Quantity must be at least 1");
+            setSelectedQuantity(1);
+            return;
+        }
+
+        if (newQuantity > productData.stock) {
+            setSelectedQuantity(productData.stock);
+            setQuantityError(`Only ${productData.stock} items available in stock`);
+            return;
+        }
+
+        setSelectedQuantity(newQuantity);
+        setQuantityError("");
+    };
+
+    const handleQuantityInputBlur = (value) => {
+        if (value === "" || value === "0") {
+            // If input is empty or zero, set to minimum quantity of 1
+            setSelectedQuantity(1);
+            setQuantityError("");
+        }
+    };
+
+    const handleAddToCart = async () => {
         if (!selectedColor) {
             toast.error("Please select a color");
             return;
         }
 
-        if (!selectedQuantity || selectedQuantity < 1) {
-            toast.error("Please enter a valid quantity");
-            return;
-        }
+        const finalQuantity = selectedQuantity || 1;
 
-        if (selectedQuantity > productData.stock) {
+        if (finalQuantity > productData.stock) {
             setQuantityError(`Only ${productData.stock} items available in stock`);
             return;
         }
 
         setAddToCartLoading(true);
 
-        const result = await addToCart(productData.id, selectedQuantity, selectedColor, true);
+        const result = await addToCart(productData.id, finalQuantity, selectedColor, true);
 
         setAddToCartLoading(false);
 
@@ -135,37 +185,30 @@ const Product = () => {
         }
     };
 
-
     const handleBuyNow = async () => {
         if (!selectedColor) {
             toast.error("Please select a color");
             return;
         }
-        if (!selectedQuantity || Number(selectedQuantity) < 1) {
-            toast.error("Please enter a valid quantity");
-            return;
-        }
-        if (Number(selectedQuantity) > productData.stock) {
+        
+        const finalQuantity = selectedQuantity || 1;
+        
+        if (finalQuantity > productData.stock) {
             setQuantityError(`Only ${productData.stock} items available in stock`);
             return;
         }
 
         setBuyNowLoading(true);
         try {
-            const qty = Number(selectedQuantity);
-
-            
             let cartId = localStorage.getItem('cart_id');
             let productExistsInCart = false;
 
             if (cartId) {
                 try {
-                    
                     const cartResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/cart/?cart_id=${cartId}`);
                     if (cartResponse.ok) {
                         const cartData = await cartResponse.json();
                         
-                       
                         if (cartData.items && cartData.items.length > 0) {
                             const existingItem = cartData.items.find(item => 
                                 item.product_id === productData.id && 
@@ -179,13 +222,11 @@ const Product = () => {
                     }
                 } catch (err) {
                     console.error("Error checking cart:", err);
-                    
                 }
             }
 
-            
             if (!productExistsInCart) {
-                const result = await addToCart(productData.id, qty, selectedColor, false);
+                const result = await addToCart(productData.id, finalQuantity, selectedColor, false);
                 
                 if (!result.success) {
                     const backendMsg =
@@ -201,7 +242,6 @@ const Product = () => {
                 }
             }
 
-           
             router.push("/cart");
             
         } catch (err) {
@@ -211,35 +251,6 @@ const Product = () => {
             setBuyNowLoading(false);
         }
     };
-
-    const handleQuantityInputChange = (e) => {
-    const value = e.target.value;
-
-
-    if (value === "") {
-        setSelectedQuantity("");
-        setQuantityError("");
-        return;
-    }
-
-    const newQuantity = parseInt(value);
-
-    if (isNaN(newQuantity) || newQuantity < 1) {
-        setQuantityError("Quantity must be at least 1");
-        setSelectedQuantity(1);
-        return;
-    }
-
-    if (newQuantity > productData.stock) {
-        setSelectedQuantity(productData.stock);
-        setQuantityError(`Only ${productData.stock} items available in stock`);
-        return;
-    }
-
-    setSelectedQuantity(newQuantity);
-    setQuantityError("");
-    }
-
 
     if (loading) {
         return <Loading />;
@@ -419,18 +430,33 @@ const Product = () => {
                                 <label className="block text-gray-600 font-medium mb-2">
                                     Select Quantity
                                 </label>
-                                <div className="flex items-center gap-4">
-                                    {/* Input field for manual quantity entry */}
+                                <div className="flex items-center gap-2 max-w-[140px]">
+                                    <button
+                                        onClick={handleQuantityDecrement}
+                                        disabled={selectedQuantity <= 1 || productData.stock === 0}
+                                        className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <span className="text-gray-600 font-bold">−</span>
+                                    </button>
+
                                     <input
-                                    type="number"
-                                    value={selectedQuantity}
-                                    onChange={handleQuantityInputChange}
-                                    placeholder="Enter quantity"
-                                    min="1"
-                                    max={productData.stock}
-                                    className="border border-gray-300 rounded px-3 py-2 w-24"
-                                    disabled={productData.stock === 0}
-                                />
+                                        type="number"
+                                        value={selectedQuantity}
+                                        min="1"
+                                        max={productData.stock}
+                                        onChange={handleQuantityInputChange}
+                                        onBlur={(e) => handleQuantityInputBlur(e.target.value)}
+                                        className="w-12 border border-gray-300 rounded text-center py-1 focus:outline-none focus:border-josseypink2"
+                                        disabled={productData.stock === 0}
+                                    />
+
+                                    <button
+                                        onClick={handleQuantityIncrement}
+                                        disabled={productData.stock === 0 || selectedQuantity >= productData.stock}
+                                        className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <span className="text-gray-600 font-bold">+</span>
+                                    </button>
                                 </div>
                                 {quantityError && (
                                     <p className="text-red-500 text-sm mt-2">{quantityError}</p>
@@ -442,7 +468,6 @@ const Product = () => {
                         <div className="overflow-x-auto mt-6">
                             <table className="table-auto border-collapse w-full max-w-72">
                                 <tbody>
-
                                     {/* Category */}
                                     {productData.category && (
                                         <tr>
@@ -485,28 +510,28 @@ const Product = () => {
                             </button>
                             
                             <button 
-                            onClick={handleBuyNow}
-                            disabled={productData.stock === 0 || buyNowLoading}
-                            className={`w-full py-3.5 flex items-center justify-center ${
-                                productData.stock === 0 
-                                    ? 'bg-gray-300 cursor-not-allowed' 
-                                    : buyNowLoading
-                                    ? 'bg-gray-400 cursor-wait text-white'
-                                    : 'bg-josseypink2 text-white hover:bg-josseypink1'
-                            } transition`}
-                        >
-                            {buyNowLoading ? (
-                                <>
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Processing...
-                                </>
-                            ) : (
-                                'Buy now'
-                            )}
-                        </button>
+                                onClick={handleBuyNow}
+                                disabled={productData.stock === 0 || buyNowLoading}
+                                className={`w-full py-3.5 flex items-center justify-center ${
+                                    productData.stock === 0 
+                                        ? 'bg-gray-300 cursor-not-allowed' 
+                                        : buyNowLoading
+                                        ? 'bg-gray-400 cursor-wait text-white'
+                                        : 'bg-josseypink2 text-white hover:bg-josseypink1'
+                                } transition`}
+                            >
+                                {buyNowLoading ? (
+                                    <>
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Processing...
+                                    </>
+                                ) : (
+                                    'Buy now'
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>
