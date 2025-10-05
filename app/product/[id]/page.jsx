@@ -1,522 +1,489 @@
-"use client"
-import { useEffect, useState } from "react";
+'use client'
+import React, { useEffect, useState } from "react";
 import { assets } from "@/assets/assets";
-import ProductCard from "@/components/ProductCard";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import OrderSummary from "@/components/OrderSummary";
 import Image from "next/image";
-import { useParams } from "next/navigation";
-import Loading from "@/components/Loading";
+import Navbar from "@/components/Navbar";
 import { useAppContext } from "@/context/AppContext";
-import React from "react";
-import FeaturedProduct from "@/components/FeaturedProduct";
-import toast from "react-hot-toast";
 
+const Cart = () => {
+  const {
+    products,
+    router,
+    cart,
+    removeFromCart,
+    getCartCount,
+    setCart,
+    addToast,
+  } = useAppContext();
 
+  const [loading, setLoading] = useState(true);
+  const [localQuantities, setLocalQuantities] = useState({});
+  const [colorModal, setColorModal] = useState({
+    open: false,
+    cartItem: null,
+    product: null,
+    selectedColor: null,
+    saving: false,
+  });
 
-const Product = () => {
-    const { id } = useParams();
-    const { router, addToCart, currency } = useAppContext();
-    const [mainImage, setMainImage] = useState(null);
-    const [productData, setProductData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [relatedProducts, setRelatedProducts] = useState([]);
-    const [imageErrors, setImageErrors] = useState({});
-    const [selectedColor, setSelectedColor] = useState("");
-    const [selectedQuantity, setSelectedQuantity] = useState("");
-    const [addToCartLoading, setAddToCartLoading] = useState(false);
-    const [quantityError, setQuantityError] = useState("");
-    const [buyNowLoading, setBuyNowLoading] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!cart) setLoading(false);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [cart]);
 
+  useEffect(() => {
+    if (cart !== null) setLoading(false);
+  }, [cart]);
 
-    const isCloudinaryUrl = (url) => {
-        return url && url.includes('cloudinary.com');
+  // Initialize local quantities from cart
+  useEffect(() => {
+    if (cart?.items) {
+      const initial = {};
+      cart.items.forEach(item => {
+        initial[item.id] = item.quantity;
+      });
+      setLocalQuantities(initial);
     }
+  }, [cart]);
 
-    const getOptimizedCloudinaryUrl = (url, width = 400, height = 400) => {
-        if (!url || !isCloudinaryUrl(url)) return url
-        const optimizationParams = `c_fill,w_${width},h_${height},q_auto,f_auto`
-        return url.replace('/upload/', `/upload/${optimizationParams}/`)
+  // LOCAL QUANTITY HANDLERS - No API calls
+  const handleLocalIncrement = (itemId) => {
+    setLocalQuantities(prev => ({ 
+      ...prev, 
+      [itemId]: (prev[itemId] || 1) + 1 
+    }));
+  };
+
+  const handleLocalDecrement = (itemId) => {
+    setLocalQuantities(prev => ({ 
+      ...prev, 
+      [itemId]: Math.max(1, (prev[itemId] || 1) - 1) 
+    }));
+  };
+
+  const handleLocalInputChange = (itemId, value) => {
+    // If input is empty, set to empty string (allow clearing)
+    if (value === "") {
+      setLocalQuantities(prev => ({ ...prev, [itemId]: "" }));
+      return;
     }
     
-    const handleImageError = (imageType) => {
-        setImageErrors(prev => ({ ...prev, [imageType]: true }));
+    const qty = parseInt(value, 10);
+    // Only update if it's a valid positive number
+    if (!isNaN(qty) && qty > 0) {
+      setLocalQuantities(prev => ({ ...prev, [itemId]: qty }));
     }
+  };
 
-    const fetchProductData = async () => {
-        try {
-            setLoading(true);
-            const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
-            const url = `${base}/api/products/${id}/`; 
-            
-            console.log('Fetching product from:', url); 
-            
-            const response = await fetch(url);
-            
-            if (!response.ok) {
-                throw new Error(`Failed to fetch product: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            console.log('Product data received:', data); 
-            setProductData(data);
-            
-        
-            if (data.colors && data.colors.length > 0) {
-                setSelectedColor(data.colors[0]);
-            }
-            
-            if (data.images && data.images.length > 0) {
-                setMainImage(data.images[0].image_url);
-            }
-            
-            if (data.category) {
-                fetchRelatedProducts(data.category);
-            }
-            
-        } catch (err) {
-            console.error('Error fetching product:', err);
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleLocalInputBlur = (itemId, value) => {
+    if (value === "" || value === "0") {
+      // If input is empty or zero, set to minimum quantity of 1
+      setLocalQuantities(prev => ({ ...prev, [itemId]: 1 }));
+    }
+  };
 
-    const fetchRelatedProducts = async (categoryId) => {
-        try {
-            const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
-            const url = `${base}/api/products/?category=${categoryId}&limit=5`;
-            
-            const response = await fetch(url);
-            
-            if (response.ok) {
-                const data = await response.json();
-                setRelatedProducts(Array.isArray(data) ? data : data.results || []);
-            }
-        } catch (err) {
-            console.error('Error fetching related products:', err);
-        }
-    };
+  // LOCAL Remove handler - just update local state
+  const handleLocalRemove = (itemId) => {
+    if (cart) {
+      const updatedItems = cart.items.filter(item => item.id !== itemId);
+      setCart({
+        ...cart,
+        items: updatedItems,
+        total_quantity: updatedItems.reduce((sum, item) => sum + (localQuantities[item.id] || item.quantity), 0),
+        total_price: updatedItems.reduce((sum, item) => {
+          const product = products?.find(p => p.id === item.product.id);
+          const price = product?.price ?? item.product?.price ?? 0;
+          return sum + (price * (localQuantities[item.id] || item.quantity));
+        }, 0)
+      });
+      addToast?.("Item removed from cart", "success");
+    }
+  };
 
-    useEffect(() => {
-        if (id) {
-            fetchProductData();
-        }
-    }, [id]);
+  const openColorModal = (cartItem) => {
+    const product = products?.find((p) => p.id === cartItem.product.id) || null;
+    const defaultColor = cartItem.color || product?.colors?.[0] || null;
 
-        const handleAddToCart = async () => {
-        if (!selectedColor) {
-            toast.error("Please select a color");
-            return;
-        }
+    setColorModal({
+      open: true,
+      cartItem,
+      product,
+      selectedColor: defaultColor,
+      saving: false,
+    });
+  };
 
-        if (!selectedQuantity || selectedQuantity < 1) {
-            toast.error("Please enter a valid quantity");
-            return;
-        }
+  const confirmColorChange = async () => {
+    const { cartItem, selectedColor } = colorModal;
+    if (!cartItem || !cart) return;
 
-        if (selectedQuantity > productData.stock) {
-            setQuantityError(`Only ${productData.stock} items available in stock`);
-            return;
-        }
+    setColorModal(m => ({ ...m, saving: true }));
+    try {
+      const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
+      const url = `${base}/api/cart/items/${cartItem.id}/`;
 
-        setAddToCartLoading(true);
+      const body = {
+        cart_id: cart.id,
+        quantity: localQuantities[cartItem.id] || cartItem.quantity,
+        color: selectedColor,
+      };
 
-        const result = await addToCart(productData.id, selectedQuantity, selectedColor, true);
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
 
-        setAddToCartLoading(false);
-
-        if (result.success) {
-            toast.success(result.message || "Product added to cart successfully 🎉");
-        } else {
-            toast.error(result.message || "Failed to add product to cart ❌");
-            console.error("Add to cart error:", result.error || result.message);
-        }
-    };
-
-
-    const handleBuyNow = async () => {
-        if (!selectedColor) {
-            toast.error("Please select a color");
-            return;
-        }
-        if (!selectedQuantity || Number(selectedQuantity) < 1) {
-            toast.error("Please enter a valid quantity");
-            return;
-        }
-        if (Number(selectedQuantity) > productData.stock) {
-            setQuantityError(`Only ${productData.stock} items available in stock`);
-            return;
-        }
-
-        setBuyNowLoading(true);
-        try {
-            const qty = Number(selectedQuantity);
-
-            
-            let cartId = localStorage.getItem('cart_id');
-            let productExistsInCart = false;
-
-            if (cartId) {
-                try {
-                    
-                    const cartResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/cart/?cart_id=${cartId}`);
-                    if (cartResponse.ok) {
-                        const cartData = await cartResponse.json();
-                        
-                       
-                        if (cartData.items && cartData.items.length > 0) {
-                            const existingItem = cartData.items.find(item => 
-                                item.product_id === productData.id && 
-                                item.color === selectedColor
-                            );
-                            
-                            if (existingItem) {
-                                productExistsInCart = true;
-                            }
-                        }
-                    }
-                } catch (err) {
-                    console.error("Error checking cart:", err);
-                    
-                }
-            }
-
-            
-            if (!productExistsInCart) {
-                const result = await addToCart(productData.id, qty, selectedColor, false);
-                
-                if (!result.success) {
-                    const backendMsg =
-                        result.error?.detail ||
-                        result.error?.errors ||
-                        (typeof result.error === 'string' ? result.error : null) ||
-                        JSON.stringify(result.error) ||
-                        "Failed to add product to cart";
-                    toast.error(backendMsg);
-                    console.error("BuyNow addToCart error:", result.error);
-                    setBuyNowLoading(false);
-                    return;
-                }
-            }
-
-           
-            router.push("/cart");
-            
-        } catch (err) {
-            console.error("BuyNow unexpected error:", err);
-            toast.error("Something went wrong. Please try again.");
-        } finally {
-            setBuyNowLoading(false);
-        }
-    };
-
-    const handleQuantityInputChange = (e) => {
-    const value = e.target.value;
-
-
-    if (value === "") {
-        setSelectedQuantity("");
-        setQuantityError("");
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        addToast?.(err?.detail || "Failed to update color", "error");
         return;
+      }
+
+      const updatedCart = await res.json();
+      setCart(updatedCart);
+      addToast?.("Color updated successfully", "success");
+      setColorModal({ open: false, cartItem: null, product: null, selectedColor: null, saving: false });
+
+    } catch (err) {
+      console.error("Error updating color:", err);
+      addToast?.("Network error while updating color", "error");
+    } finally {
+      setColorModal(m => ({ ...m, saving: false }));
     }
+  };
 
-    const newQuantity = parseInt(value);
+  const closeColorModal = () => {
+    setColorModal({ open: false, cartItem: null, product: null, selectedColor: null, saving: false });
+  };
 
-    if (isNaN(newQuantity) || newQuantity < 1) {
-        setQuantityError("Quantity must be at least 1");
-        setSelectedQuantity(1);
-        return;
-    }
-
-    if (newQuantity > productData.stock) {
-        setSelectedQuantity(productData.stock);
-        setQuantityError(`Only ${productData.stock} items available in stock`);
-        return;
-    }
-
-    setSelectedQuantity(newQuantity);
-    setQuantityError("");
-    }
-
-
-    if (loading) {
-        return <Loading />;
-    }
-
-    if (error || !productData) {
-        return (
-            <div className="min-h-screen flex flex-col">
-                <Navbar />
-                <div className="flex-1 flex items-center justify-center px-6">
-                    <div className="text-center">
-                        <h2 className="text-2xl font-medium text-gray-800 mb-4">
-                            Product Not Found
-                        </h2>
-                        <p className="text-gray-600 mb-6">
-                            {error || "The product you're looking for doesn't exist."}
-                        </p>
-                        <div className="mb-4">
-                            <p className="text-sm text-gray-500">
-                                Requested URL: {process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/{id}/
-                            </p>
-                        </div>
-                        <button 
-                            onClick={() => router.push('/')}
-                            className="px-6 py-2 bg-josseypink2 text-white rounded hover:bg-josseypink1 transition"
-                        >
-                            Back to Home
-                        </button>
-                    </div>
-                </div>
-                <Footer />
-            </div>
-        );
-    }
-
-    const parsePrice = (value) => {
-        if (value === null || value === undefined) return 0;
-        const num = typeof value === 'string' ? parseFloat(value) : Number(value);
-        return isNaN(num) ? 0 : num;
-    };
-
-    const productPrice = parsePrice(productData.offer_price || productData.price);
-    const originalPrice = productData.price ? parsePrice(productData.price) : null;
-
-    const productImages = productData.images?.map(img => img.image_url).filter(Boolean) || [];
-
+  if (loading && !cart) {
     return (
-        <>
-            <Navbar />
-            <div className="px-6 md:px-16 lg:px-32 pt-14 space-y-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-                    {/* Product Images */}
-                    <div className="px-5 lg:px-16 xl:px-20">
-                        <div className="rounded-lg overflow-hidden bg-gray-500/10 mb-4 h-96 flex items-center justify-center">
-                            {mainImage && !imageErrors.main ? (
-                                <Image
-                                    src={getOptimizedCloudinaryUrl(mainImage)}
-                                    alt={productData.name}
-                                    className="w-full h-full object-contain mix-blend-multiply"
-                                    width={500}
-                                    height={500}
-                                    onError={() => handleImageError('main')}
-                                    unoptimized={!isCloudinaryUrl(mainImage)}
-                                />
-                            ) : (
-                                <div className="flex items-center justify-center w-full h-full">
-                                    <span className="text-gray-400">No image available</span>
-                                </div>
-                            )}
-                        </div>
-
-                        {productImages.length > 1 && (
-                            <div className="grid grid-cols-4 gap-4">
-                                {productImages.map((imageUrl, index) => (
-                                    <div
-                                        key={index}
-                                        onClick={() => setMainImage(imageUrl)}
-                                        className="cursor-pointer rounded-lg overflow-hidden bg-gray-500/10 h-20 flex items-center justify-center"
-                                    >
-                                        <Image
-                                            src={getOptimizedCloudinaryUrl(imageUrl, 80, 80)}
-                                            alt={`${productData.name} thumbnail ${index + 1}`}
-                                            className="w-full h-full object-contain mix-blend-multiply"
-                                            width={80}
-                                            height={80}
-                                            onError={() => handleImageError(`thumb-${index}`)}
-                                            unoptimized={!isCloudinaryUrl(imageUrl)}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Product Details */}
-                    <div className="flex flex-col">
-                        <h1 className="text-3xl font-medium text-gray-800/90 mb-4">
-                            {productData.name}
-                        </h1>
-                        
-                        {/* Rating */}
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="flex items-center gap-0.5">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <Image
-                                        key={star}
-                                        className="h-4 w-4"
-                                        src={star <= (productData.rating || 4.5) ? assets.star_icon : assets.star_dull_icon}
-                                        alt={star <= (productData.rating || 4.5) ? "Filled star" : "Empty star"}
-                                        width={16}
-                                        height={16}
-                                    />
-                                ))}
-                            </div>
-                            <p>({parseFloat(productData.rating || 4.5).toFixed(1)})</p>
-                            <span className="text-xs text-gray-400 ml-2">
-                                ({productData.review_count || 0} reviews)
-                            </span>
-                        </div>
-
-                        {/* Description */}
-                        <p className="text-gray-600 mt-3">
-                            {productData.description}
-                        </p>
-                        
-                        {/* Price */}
-                        <p className="text-3xl font-medium mt-6">
-                            {currency}
-                            {productPrice.toFixed(2)}
-                            {originalPrice && productPrice < originalPrice && (
-                                <span className="text-base font-normal text-gray-800/60 line-through ml-2">
-                                    {currency}
-                                    {originalPrice.toFixed(2)}
-                                </span>
-                            )}
-                        </p>
-                        
-                        {/* Stock Status */}
-                        {productData.stock !== undefined && (
-                            <div className="mt-4">
-                                <span className={productData.stock > 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-                                    {productData.stock > 0 ? `In stock (${productData.stock} available)` : 'Out of stock'}
-                                </span>
-                            </div>
-                        )}
-                        
-                        <hr className="bg-gray-600 my-6" />
-                        
-                        {/* Product Selection Options */}
-                        <div className="space-y-4">
-                            {/* Color Selection */}
-                            {productData?.colors && productData.colors.length > 0 && (
-                                <div>
-                                    <label className="block text-gray-600 font-medium mb-2">
-                                        Select Color
-                                    </label>
-                                    <div className="flex gap-2 flex-wrap">
-                                        {productData.colors.map((color, idx) => (
-                                            <button
-                                                key={idx}
-                                                onClick={() => setSelectedColor(color)}
-                                                className={`px-4 py-2 rounded-full text-sm border transition ${
-                                                    selectedColor === color
-                                                        ? 'bg-josseypink2 text-white border-josseypink2'
-                                                        : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
-                                                }`}
-                                            >
-                                                {color}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Quantity Selection */}
-                            <div>
-                                <label className="block text-gray-600 font-medium mb-2">
-                                    Select Quantity
-                                </label>
-                                <div className="flex items-center gap-4">
-                                    {/* Input field for manual quantity entry */}
-                                    <input
-                                    type="number"
-                                    value={selectedQuantity}
-                                    onChange={handleQuantityInputChange}
-                                    placeholder="Enter quantity"
-                                    min="1"
-                                    max={productData.stock}
-                                    className="border border-gray-300 rounded px-3 py-2 w-24"
-                                    disabled={productData.stock === 0}
-                                />
-                                </div>
-                                {quantityError && (
-                                    <p className="text-red-500 text-sm mt-2">{quantityError}</p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Product Details Table */}
-                        <div className="overflow-x-auto mt-6">
-                            <table className="table-auto border-collapse w-full max-w-72">
-                                <tbody>
-
-                                    {/* Category */}
-                                    {productData.category && (
-                                        <tr>
-                                            <td className="text-gray-600 font-medium py-2">Category</td>
-                                            <td className="text-gray-800/50 py-2 capitalize">
-                                                <span className="font-medium">{productData.category.name}</span>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Add to Cart Buttons */}
-                        <div className="flex items-center mt-10 gap-4">
-                            <button 
-                                onClick={handleAddToCart} 
-                                disabled={productData.stock === 0 || addToCartLoading}
-                                className={`w-full py-3.5 flex items-center justify-center ${
-                                    productData.stock === 0 
-                                        ? 'bg-gray-300 cursor-not-allowed' 
-                                        : addToCartLoading
-                                        ? 'bg-gray-400 cursor-wait'
-                                        : 'bg-gray-100 text-gray-800/80 hover:bg-gray-200'
-                                } transition`}
-                            >
-                                {addToCartLoading ? (
-                                    <>
-                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Adding...
-                                    </>
-                                ) : productData.stock === 0 ? (
-                                    'Out of Stock'
-                                ) : (
-                                    'Add to Cart'
-                                )}
-                            </button>
-                            
-                            <button 
-                            onClick={handleBuyNow}
-                            disabled={productData.stock === 0 || buyNowLoading}
-                            className={`w-full py-3.5 flex items-center justify-center ${
-                                productData.stock === 0 
-                                    ? 'bg-gray-300 cursor-not-allowed' 
-                                    : buyNowLoading
-                                    ? 'bg-gray-400 cursor-wait text-white'
-                                    : 'bg-josseypink2 text-white hover:bg-josseypink1'
-                            } transition`}
-                        >
-                            {buyNowLoading ? (
-                                <>
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Processing...
-                                </>
-                            ) : (
-                                'Buy now'
-                            )}
-                        </button>
-                        </div>
-                    </div>
-                </div>
-                
-                {/* Related Products */}
-                <FeaturedProduct />
-            </div>
-            <Footer />
-        </>
+      <>
+        <Navbar />
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-center">
+            <p className="text-gray-500 text-lg">Loading cart...</p>
+          </div>
+        </div>
+      </>
     );
+  }
+
+  const displayCart = cart || { items: [], total_price: 0, total_quantity: 0 };
+
+  return (
+    <>
+      <Navbar />
+      <div className="flex flex-col lg:flex-row gap-8 px-4 sm:px-6 md:px-8 lg:px-16 xl:px-32 pt-14 mb-20">
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-6 border-b border-gray-300 pb-4">
+            <p className="text-xl sm:text-2xl md:text-3xl text-gray-700">
+              Your <span className="font-semibold text-josseypink2">Cart</span>
+            </p>
+            <p className="text-base sm:text-lg text-gray-600">{getCartCount()} Items</p>
+          </div>
+
+          {displayCart.items && displayCart.items.length > 0 ? (
+            <div className="space-y-4">
+              {/* Desktop Table */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead className="text-left bg-gray-50">
+                    <tr>
+                      <th className="py-4 px-4 text-gray-600 font-semibold">Product Details</th>
+                      <th className="py-4 px-4 text-gray-600 font-semibold">Price</th>
+                      <th className="py-4 px-4 text-gray-600 font-semibold">Color</th>
+                      <th className="py-4 px-4 text-gray-600 font-semibold">Quantity</th>
+                      <th className="py-4 px-4 text-gray-600 font-semibold">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {displayCart.items.map((cartItem) => {
+                      const product = products?.find(p => p.id === cartItem.product.id);
+                      const productName = product?.name || cartItem.product?.name || "Product";
+                      const productPrice = product?.price ?? cartItem.product?.price ?? 0;
+                      const productImage = product?.images?.[0]?.image_url || product?.image || '/placeholder-image.jpg';
+                      const currentQuantity = localQuantities[cartItem.id] ?? cartItem.quantity;
+                      const subtotal = parseFloat(productPrice) * (currentQuantity || 1);
+
+                      return (
+                        <tr key={cartItem.id} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="py-6 px-4">
+                            <div className="flex items-center gap-4">
+                              <div className="rounded-lg overflow-hidden bg-gray-100 p-2 flex-shrink-0">
+                                <Image
+                                  src={productImage}
+                                  alt={productName}
+                                  className="w-16 h-16 object-cover"
+                                  width={64}
+                                  height={64}
+                                />
+                              </div>
+                              <div>
+                                <p className="text-gray-800 font-medium">{productName}</p>
+                                <button
+                                  className="text-sm text-josseypink2 hover:text-josseypink1 mt-1 transition-colors"
+                                  onClick={() => handleLocalRemove(cartItem.id)}
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="py-6 px-4 text-gray-700 font-medium">
+                            ${parseFloat(productPrice).toFixed(2)}
+                          </td>
+
+                          <td className="py-6 px-4">
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-700 bg-gray-100 px-3 py-1 rounded-full text-sm">
+                                {cartItem.color || "Not set"}
+                              </span>
+                              <button
+                                onClick={() => openColorModal(cartItem)}
+                                className="text-xs px-3 py-1 border border-josseypink2 text-josseypink2 rounded-full hover:bg-josseypink1 hover:text-white transition-colors"
+                              >
+                                Change
+                              </button>
+                            </div>
+                          </td>
+
+                          <td className="py-6 px-4">
+                            <div className="flex items-center gap-2 max-w-[140px]">
+                              <button
+                                onClick={() => handleLocalDecrement(cartItem.id)}
+                                disabled={currentQuantity <= 1}
+                                className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              >
+                                <span className="text-gray-600 font-bold">−</span>
+                              </button>
+
+                              <input
+                                type="number"
+                                value={currentQuantity}
+                                min="1"
+                                onChange={(e) => handleLocalInputChange(cartItem.id, e.target.value)}
+                                onBlur={(e) => handleLocalInputBlur(cartItem.id, e.target.value)}
+                                className="w-12 border border-gray-300 rounded text-center py-1 focus:outline-none focus:border-josseypink2"
+                              />
+
+                              <button
+                                onClick={() => handleLocalIncrement(cartItem.id)}
+                                className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+                              >
+                                <span className="text-gray-600 font-bold">+</span>
+                              </button>
+                            </div>
+                          </td>
+
+                          <td className="py-6 px-4 text-gray-700 font-medium">
+                            ${subtotal.toFixed(2)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="lg:hidden space-y-4">
+                {displayCart.items.map((cartItem) => {
+                  const product = products?.find(p => p.id === cartItem.product.id);
+                  const productName = product?.name || cartItem.product?.name || "Product";
+                  const productPrice = product?.price ?? cartItem.product?.price ?? 0;
+                  const productImage = product?.images?.[0]?.image_url || product?.image || '/placeholder-image.jpg';
+                  const currentQuantity = localQuantities[cartItem.id] ?? cartItem.quantity;
+                  const subtotal = parseFloat(productPrice) * (currentQuantity || 1);
+
+                  return (
+                    <div key={cartItem.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                      <div className="flex gap-4">
+                        <div className="flex-shrink-0">
+                          <div className="rounded-lg overflow-hidden bg-gray-100 p-2">
+                            <Image
+                              src={productImage}
+                              alt={productName}
+                              className="w-16 h-16 object-cover"
+                              width={64}
+                              height={64}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="text-gray-800 font-medium truncate">{productName}</h3>
+                            <button
+                              onClick={() => handleLocalRemove(cartItem.id)}
+                              className="text-josseypink2 hover:text-josseypink1 text-sm transition-colors"
+                            >
+                              Remove
+                            </button>
+                          </div>
+
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Price:</span>
+                              <span className="text-gray-800 font-medium">${parseFloat(productPrice).toFixed(2)}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-gray-600">Color:</span>
+                              <div className="flex items-center gap-2">
+                                <span className="bg-gray-100 px-2 py-1 rounded text-xs">
+                                  {cartItem.color || "Not set"}
+                                </span>
+                                <button
+                                  onClick={() => openColorModal(cartItem)}
+                                  className="text-xs px-2 py-1 border border-josseypink1 text-josseypink2 rounded hover:bg-josseypink1 hover:text-white transition-colors"
+                                >
+                                  Change
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-gray-600">Quantity:</span>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleLocalDecrement(cartItem.id)}
+                                  disabled={currentQuantity <= 1}
+                                  className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 text-xs"
+                                >
+                                  −
+                                </button>
+
+                                <input
+                                  type="number"
+                                  value={currentQuantity}
+                                  min="1"
+                                  onChange={(e) => handleLocalInputChange(cartItem.id, e.target.value)}
+                                  onBlur={(e) => handleLocalInputBlur(cartItem.id, e.target.value)}
+                                  className="w-10 border border-gray-300 rounded text-center py-1 text-xs focus:outline-none focus:border-josseypink2"
+                                />
+
+                                <button
+                                  onClick={() => handleLocalIncrement(cartItem.id)}
+                                  className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 text-xs"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="flex justify-between text-sm font-medium pt-2 border-t border-gray-200">
+                              <span className="text-gray-600">Subtotal:</span>
+                              <span className="text-gray-800">${subtotal.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <p className="text-gray-500 text-lg mb-4">Your cart is empty</p>
+              <button
+                onClick={() => router.push('/all-products')}
+                className="bg-josseypink2 text-white px-6 py-3 rounded-lg hover:bg-josseypink1 transition-colors"
+              >
+                Start Shopping
+              </button>
+            </div>
+          )}
+
+          <button 
+            onClick={() => router.push('/all-products')} 
+            className="group flex items-center mt-8 gap-2 text-josseypink2 hover:text-josseypink1 transition-colors"
+          >
+            <Image 
+              className="group-hover:-translate-x-1 transition-transform" 
+              src={assets.arrow_right_icon_colored} 
+              alt="arrow_right_icon_colored" 
+              width={20}
+              height={20}
+            />
+            Continue Shopping
+          </button>
+        </div>
+
+        {displayCart.items && displayCart.items.length > 0 && (
+          <div className="lg:w-96">
+            <OrderSummary 
+              localQuantities={localQuantities}
+              onProceedToCheckout={() => {
+                // This is where you'll call the API to sync all quantities
+                console.log('Proceeding to checkout with quantities:', localQuantities);
+                // Add your API sync logic here
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Color Modal */}
+      {colorModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={closeColorModal} />
+
+          <div className="relative bg-white rounded-lg p-6 w-full max-w-md z-60 shadow-xl">
+            <h3 className="text-lg font-semibold mb-3 text-gray-800">Choose Color</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Select a color for <strong>{colorModal.product?.name || colorModal.cartItem?.product?.name}</strong>
+            </p>
+
+            <div className="flex flex-wrap gap-2 mb-6">
+              {(colorModal.product?.colors && colorModal.product.colors.length > 0)
+                ? colorModal.product.colors.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setColorModal(m => ({ ...m, selectedColor: c }))}
+                    className={`px-4 py-2 rounded-full border transition-colors ${
+                      colorModal.selectedColor === c 
+                        ? 'bg-josseypink2 text-white border-josseypink1' 
+                        : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))
+                : (
+                  <div className="text-sm text-gray-500 w-full text-center py-2">
+                    No color options available for this product.
+                  </div>
+                )
+              }
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={closeColorModal} 
+                className="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmColorChange}
+                disabled={colorModal.saving || !colorModal.selectedColor}
+                className="px-4 py-2 rounded bg-josseypink2 text-white hover:bg-josseypink1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {colorModal.saving ? "Saving..." : "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 };
 
-export default Product;
+export default Cart;
