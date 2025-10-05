@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, Suspense } from 'react'
+import React, { useEffect, Suspense, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAppContext } from '@/context/AppContext'
 import Navbar from '@/components/Navbar'
@@ -9,25 +9,25 @@ const PaymentSuccessContent = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { addToast, clearCart } = useAppContext()
+  const hasProcessedPayment = useRef(false) // Add this ref
 
   useEffect(() => {
+    // Only process payment once
+    if (hasProcessedPayment.current) return
+
     const reference = searchParams.get('reference')
     const trxref = searchParams.get('trxref')
     
     if (reference || trxref) {
+      hasProcessedPayment.current = true // Mark as processed
       addToast('Payment completed successfully!', 'success')
       
-     
+      // Clear cart but DON'T redirect automatically
       setTimeout(() => {
         clearCart()
       }, 1000)
     }
-  }, [searchParams, addToast, clearCart]) 
-
-  const handleContinueShopping = () => {
-    
-    router.push('/')
-  }
+  }, [searchParams, addToast, clearCart])
 
   return (
     <>
