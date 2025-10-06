@@ -57,7 +57,7 @@ const Banner = () => {
       {/* Left image */}
       {banner?.secondary_image && (
         <div className="hidden md:flex items-center justify-center w-1/4">
-          <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white  shadow-lg">
+          <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white shadow-lg">
             <Image
               src={banner.secondary_image}
               alt="Banner secondary image"
@@ -71,8 +71,14 @@ const Banner = () => {
 
       {/* Center content */}
       <div className="flex flex-col items-center justify-center text-center w-full md:w-2/4 z-10 space-y-4">
+        {banner?.discount_text && (
+          <p className="text-white text-base pb-1">
+            {banner.discount_text}
+          </p>
+        )}
+
         {banner?.title && (
-          <h2 className="text-white text-2xl md:text-3xl font-bold max-w-md">
+          <h2 className="text-white max-w-lg md:text-[40px] md:leading-[48px] text-2xl font-semibold">
             {banner.title}
           </h2>
         )}
@@ -83,32 +89,27 @@ const Banner = () => {
           </p>
         )}
 
-        {banner?.discount_text && (
-          <p className="text-white font-bold text-xl p-3">
-            {banner.discount_text}
-          </p>
-        )}
-
-        <button className="group flex items-center justify-center gap-2 px-6 py-3 bg-white rounded-full text-josseypink2
-         font-semibold hover:bg-gray-50 transition-all shadow-md hover:shadow-lg">
-          {banner?.button_text || "View Our Products"}
-          <svg
-            className="group-hover:translate-x-1 transition-transform"
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M1 8H15M15 8L8 1M15 8L8 15"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+        <div className="flex items-center mt-4 md:mt-6">
+          <button className="group flex items-center justify-center gap-2 px-6 py-3 bg-white rounded-full text-josseypink2 font-semibold hover:bg-gray-50 transition-all shadow-md hover:shadow-lg">
+            {banner?.button_text || "View Our Products"}
+            <svg
+              className="group-hover:translate-x-1 transition-transform"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M1 8H15M15 8L8 1M15 8L8 15"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Right image */}
