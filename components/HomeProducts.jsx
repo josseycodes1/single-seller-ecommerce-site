@@ -16,7 +16,7 @@ const HomeProducts = () => {
         setError(null);
         
         const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
-        const url = `${base}/products/recent/?limit=6`;
+        const url = `${base}/api/products/recent/?limit=6`;
         
         const response = await fetch(url);
         
