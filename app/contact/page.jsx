@@ -42,36 +42,46 @@ const ContactUs = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+      e.preventDefault();
+      setIsSubmitting(true);
 
-    try {
-      
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+      try {
+        // Use the correct environment variable name
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+        
+        // Send data to your backend API
+        const response = await fetch(`${API_BASE_URL}/api/contact/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
 
-      const response = await fetch(`${API_BASE_URL}/api/contact/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+        const data = await response.json();
 
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success(data.message || "Message sent successfully! We'll get back to you soon.");
-        setFormData({ name: "", email: "", subject: "", message: "" });
-      } else {
-        throw new Error(data.details || data.error || 'Failed to send message');
+        if (response.ok) {
+          toast.success(data.message || "Message sent successfully! We'll get back to you soon.");
+          setFormData({ name: "", email: "", subject: "", message: "" });
+        } else {
+          // Add detailed error logging
+          console.error('Backend error response:', {
+            status: response.status,
+            statusText: response.statusText,
+            data: data
+          });
+          throw new Error(data.details || data.error || `Failed to send message: ${response.status}`);
+        }
+      } catch (error) {
+        console.error('Contact form error:', {
+          message: error.message,
+          stack: error.stack
+        });
+        toast.error(error.message || "Failed to send message. Please try again.");
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error) {
-      console.error('Contact form error:', error);
-      toast.error(error.message || "Failed to send message. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    };
 
   return (
     <>
