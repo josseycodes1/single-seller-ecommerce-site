@@ -20,7 +20,7 @@ const Footer = () => {
             <h2 className="font-medium text-josseypink2 mb-5">Company</h2>
             <ul className="text-sm space-y-2">
               <li>
-                <a className="hover:underline transition" href="#">Home</a>
+                <a className="hover:underline transition" href="/">Home</a>
               </li>
               <li>
                 <a className="hover:underline transition" href="/about">About us</a>
