@@ -46,10 +46,7 @@ const ContactUs = () => {
       setIsSubmitting(true);
 
       try {
-        // Use the correct environment variable name
         const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-        
-        // Send data to your backend API
         const response = await fetch(`${API_BASE_URL}/api/contact/`, {
           method: 'POST',
           headers: {
@@ -60,24 +57,22 @@ const ContactUs = () => {
 
         const data = await response.json();
 
-        if (response.ok) {
-          toast.success(data.message || "Message sent successfully! We'll get back to you soon.");
+        if (response.ok && data.success) {
+          toast.success(data.message);
           setFormData({ name: "", email: "", subject: "", message: "" });
         } else {
-          // Add detailed error logging
-          console.error('Backend error response:', {
-            status: response.status,
-            statusText: response.statusText,
-            data: data
-          });
-          throw new Error(data.details || data.error || `Failed to send message: ${response.status}`);
+          
+          const error = data.error;
+          toast.error(`${error.message} (Code: ${error.code})`);
+          
+         
+          if (error.details && error.details.missing_fields) {
+            console.log('Missing fields:', error.details.missing_fields);
+          }
         }
       } catch (error) {
-        console.error('Contact form error:', {
-          message: error.message,
-          stack: error.stack
-        });
-        toast.error(error.message || "Failed to send message. Please try again.");
+        console.error('Network error:', error);
+        toast.error("Network error. Please check your connection.");
       } finally {
         setIsSubmitting(false);
       }
