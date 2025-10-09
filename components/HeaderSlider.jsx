@@ -68,7 +68,7 @@ const HeaderSlider = () => {
                 {/* button 1 routes to /products */}
                 <button
                   onClick={() => router.push("/all-products")}
-                  className="md:px-10 px-7 md:py-2.5 py-2 bg-white hover:bg-josseypink3 rounded-full text-josseypink2 font-medium"
+                  className="md:px-10 px-7 md:py-2.5 py-2 bg-white hover:bg-josseypink3 text-josseypink2 font-medium"
                 >
                   {slide.buttonText1}
                 </button>
@@ -76,7 +76,7 @@ const HeaderSlider = () => {
                 {/* button 2 also routes to /products */}
                 <button
                   onClick={() => router.push("/all-products")}
-                  className="group flex items-center gap-2 px-6 py-2.5 font-medium text-white rounded-full hover:bg-white hover:text-josseypink2"
+                  className="group flex items-center gap-2 px-2 py-2.5 font-medium text-white hover:text-gray-700"
                 >
                   {slide.buttonText2}
                   <Image

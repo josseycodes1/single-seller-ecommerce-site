@@ -209,7 +209,7 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
         <button
           disabled={addingToCart}
           onClick={handleAddToCart}
-          className="px-3 py-1.5 text-white border border-gray-500/20 rounded-full text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200 whitespace-nowrap flex-shrink-0"
+          className="px-3 py-1.5 text-white border border-gray-500/20 text-xs hover:bg-josseypink2 bg-josseypink2 transition-colors duration-200 whitespace-nowrap flex-shrink-0"
         >
           {addingToCart ? "Adding..." : "Add to Cart"}
         </button>
