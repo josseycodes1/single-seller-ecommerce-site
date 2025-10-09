@@ -6,12 +6,12 @@ const NewsLetter = () => {
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
 
-  // Auto-dismiss message after 5 seconds
+  
   useEffect(() => {
     if (message) {
       const timer = setTimeout(() => {
         setMessage("");
-      }, 5000); // 5 seconds
+      }, 5000); 
 
       return () => clearTimeout(timer);
     }
@@ -42,7 +42,7 @@ const NewsLetter = () => {
         body: JSON.stringify({ email }),
       });
 
-      // Check if response is JSON
+     
       const contentType = response.headers.get('content-type');
       let data;
       
@@ -55,9 +55,9 @@ const NewsLetter = () => {
       if (response.ok) {
         setMessage("Successfully subscribed to our newsletter! 🎉");
         setIsError(false);
-        setEmail(""); // Clear the input
+        setEmail(""); 
       } else {
-        // Handle different error response formats
+       
         const errorMessage = data.detail || data.email || data.message || data.error || 
                             (typeof data === 'string' ? data : "Failed to subscribe. Please try again.");
         setMessage(errorMessage);
