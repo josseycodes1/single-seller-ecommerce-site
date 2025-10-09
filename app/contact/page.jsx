@@ -46,8 +46,10 @@ const ContactUs = () => {
     setIsSubmitting(true);
 
     try {
-      // Send data to your backend API
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact/`, {
+      
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+      const response = await fetch(`${API_BASE_URL}/api/contact/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
