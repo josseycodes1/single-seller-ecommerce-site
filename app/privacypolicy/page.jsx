@@ -3,6 +3,7 @@ import React from "react";
 import Navbar from "@/components/Navbar";
 import FeaturedProduct from "@/components/FeaturedProduct";
 import Footer from "@/components/Footer";
+import Image from 'next/image'
 
 const PrivacyPolicy = () => {
     return (
@@ -10,12 +11,26 @@ const PrivacyPolicy = () => {
             <Navbar />
             <div className="px-6 md:px-16 lg:px-32 pt-14">
                 {/* Hero Section */}
-                <div className="bg-gradient-to-r from-josseypink2 to-josseypink1 text-white py-16 rounded-lg mb-12">
-                    <div className="max-w-4xl mx-auto text-center">
-                        <h1 className="text-4xl md:text-5xl font-bold mb-4">Privacy Policy</h1>
-                        <p className="text-xl opacity-90">How we protect and use your information</p>
-                    </div>
-                </div>
+                <div className="absolute inset-0">
+                          <Image
+                            src="/diffuser11.png"
+                            alt="JosseyCart background"
+                            fill
+                            className="object-cover"
+                            priority
+                          />
+                          {/* Dark overlay */}
+                          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+                        </div>
+                        
+                        <div className="relative max-w-4xl mx-auto text-center z-10">
+                          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+                            Privacy Policy
+                          </h1>
+                          <p className="text-xl opacity-90 text-white">
+                            How we protect and use your information
+                          </p>
+                        </div>
 
                 <div className="max-w-4xl mx-auto mb-16">
                     <div className="prose prose-lg max-w-none">

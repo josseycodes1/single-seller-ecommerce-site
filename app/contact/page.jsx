@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import toast from "react-hot-toast";
 import Image from 'next/image'
 
-// ✅ Safe static FAQ array
+
 const faqs = [
   {
     question: "How long does shipping take?",
@@ -63,7 +63,7 @@ const ContactUs = () => {
       <div className="px-6 md:px-16 lg:px-32 pt-14">
         {/* Hero Section */}
         <div className="relative py-16 rounded-lg mb-12 overflow-hidden">
-      {/* Background Image with Next.js Image component */}
+      {/* Background Image*/}
       <div className="absolute inset-0">
         <Image
           src="/diffuser12.png"
@@ -72,7 +72,7 @@ const ContactUs = () => {
           className="object-cover"
           priority
         />
-        {/* Dark overlay for better text readability */}
+        {/* Dark overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
       </div>
       
@@ -139,9 +139,16 @@ const ContactUs = () => {
                     <span className="text-white text-xl">💬</span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg mb-1">Live Chat</h3>
+                    <h3 className="font-semibold text-lg mb-1">WhatsApp Live Chat</h3>
                     <p className="text-gray-600">Available 24/7</p>
-                    <p className="text-gray-500 text-sm">Click the chat icon in the bottom right</p>
+                    <a 
+                      href="https://wa.me/08132037553" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-gray-600 hover:text-green-600 text-sm font-medium inline-block mt-1"
+                    >
+                      Chat with us on WhatsApp →
+                    </a>
                   </div>
                 </div>
               </div>

@@ -17,11 +17,11 @@ const AboutUs = () => {
         );
         const data = await res.json();
 
-        // Ensure data is an array before setting
+       
         setProducts(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Failed to fetch products:", err);
-        setProducts([]); // fallback to empty
+        setProducts([]); 
       } finally {
         setLoading(false);
       }
@@ -44,7 +44,7 @@ const AboutUs = () => {
             className="object-cover"
             priority
           />
-          {/* Dark overlay for better text readability */}
+          {/* Dark overlay */}
           <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         </div>
         
