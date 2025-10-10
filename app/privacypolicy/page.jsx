@@ -10,9 +10,9 @@ const PrivacyPolicy = () => {
         <>
             <Navbar />
             <div className="px-6 md:px-16 lg:px-32 pt-14">
-                {/* Hero Section */}
+                {/* hero section */}
                 <div className="relative py-16 rounded-lg mb-12 overflow-hidden">
-                      {/* Background Image*/}
+                      {/* background image*/}
                       <div className="absolute inset-0">
                         <Image
                           src="/diffuser12.png"
@@ -21,7 +21,7 @@ const PrivacyPolicy = () => {
                           className="object-cover"
                           priority
                         />
-                        {/* Dark overlay */}
+                        {/* dark overlay */}
                         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
                       </div>
                     <div className="relative max-w-4xl mx-auto text-center z-10">
@@ -36,14 +36,14 @@ const PrivacyPolicy = () => {
 
                 <div className="max-w-4xl mx-auto mb-16">
                     <div className="prose prose-lg max-w-none">
-                        {/* Last Updated */}
+                        {/* last updated */}
                         <div className="bg-josseypink3 border-l-4 border-josseypink2 p-4 mb-8">
                             <p className="text-josseypink2">
                                 <strong>Last Updated:</strong> January 1, 2025
                             </p>
                         </div>
 
-                        {/* Introduction */}
+                        {/* introduction */}
                         <section className="mb-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">1. Introduction</h2>
                             <p className="text-gray-600 mb-4">
@@ -54,7 +54,7 @@ const PrivacyPolicy = () => {
                             </p>
                         </section>
 
-                        {/* Information We Collect */}
+                        {/* information we collect */}
                         <section className="mb-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">2. Information We Collect</h2>
                             <h3 className="text-xl font-semibold mb-3">Personal Information</h3>
@@ -74,7 +74,7 @@ const PrivacyPolicy = () => {
                             </ul>
                         </section>
 
-                        {/* How We Use Your Information */}
+                        {/* how we use your information */}
                         <section className="mb-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">3. How We Use Your Information</h2>
                             <ul className="list-disc list-inside text-gray-600 space-y-2">
@@ -89,7 +89,7 @@ const PrivacyPolicy = () => {
                             </ul>
                         </section>
 
-                        {/* Information Sharing */}
+                        {/* information sharing */}
                         <section className="mb-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">4. Information Sharing</h2>
                             <p className="text-gray-600 mb-4">
@@ -104,7 +104,7 @@ const PrivacyPolicy = () => {
                             </ul>
                         </section>
 
-                        {/* Cookies */}
+                        {/* cookies */}
                         <section className="mb-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">5. Cookies and Tracking Technologies</h2>
                             <p className="text-gray-600 mb-4">
@@ -114,7 +114,7 @@ const PrivacyPolicy = () => {
                             </p>
                         </section>
 
-                        {/* Data Security */}
+                        {/* data security */}
                         <section className="mb-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">6. Data Security</h2>
                             <p className="text-gray-600 mb-4">
@@ -124,7 +124,7 @@ const PrivacyPolicy = () => {
                             </p>
                         </section>
 
-                        {/* Your Rights */}
+                        {/* your rights */}
                         <section className="mb-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">7. Your Rights</h2>
                             <p className="text-gray-600 mb-4">
@@ -139,7 +139,7 @@ const PrivacyPolicy = () => {
                             </ul>
                         </section>
 
-                        {/* Contact Information */}
+                        {/* contact information */}
                         <section className="mb-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">8. Contact Us</h2>
                             <p className="text-gray-600 mb-2">
@@ -157,7 +157,7 @@ const PrivacyPolicy = () => {
                     </div>
                 </div>
 
-                {/* Featured Products */}
+                {/* featured products */}
                 <FeaturedProduct />
             </div>
             <Footer />

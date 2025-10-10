@@ -5,7 +5,7 @@ import { useAppContext } from '@/context/AppContext'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 
-// Create a component that uses useSearchParams
+
 const PaymentFailedContent = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -64,7 +64,7 @@ const PaymentFailedContent = () => {
   )
 }
 
-// Main component with Suspense boundary
+
 const PaymentFailed = () => {
   return (
     <Suspense fallback={

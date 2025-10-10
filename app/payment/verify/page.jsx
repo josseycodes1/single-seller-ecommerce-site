@@ -4,20 +4,20 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAppContext } from '@/context/AppContext'
 import Navbar from '@/components/Navbar'
 
-// Content component that uses useSearchParams
+
 const PaymentVerifyContent = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { addToast, clearCart } = useAppContext()
   
-  const [status, setStatus] = useState('verifying') // verifying, success, failed
+  const [status, setStatus] = useState('verifying') 
   const [paymentData, setPaymentData] = useState(null)
 
-   //Separate useEffect to handle email storage when paymentData is available
+   
   useEffect(() => {
     if (paymentData && paymentData.email) {
       console.log('🔍 DEBUG: Storing email from payment verification:', paymentData.email)
-      // Store in both localStorage and sessionStorage for redundancy
+      
       localStorage.setItem('guestOrderEmail', paymentData.email)
       sessionStorage.setItem('guestOrderEmail', paymentData.email)
     }
@@ -50,10 +50,10 @@ const PaymentVerifyContent = () => {
 
           
           
-          // Clear cart using your existing clearCart method
+        
           clearCart()
           
-          // Optional: Redirect to success page after delay
+         
           setTimeout(() => {
             router.push('/payment/success')
           }, 3000)
@@ -61,7 +61,7 @@ const PaymentVerifyContent = () => {
           setStatus('failed')
           addToast(data.message || 'Payment verification failed', 'error')
           
-          // Redirect to failed page after delay
+         
           setTimeout(() => {
             router.push('/payment/failed')
           }, 2000)
@@ -71,7 +71,7 @@ const PaymentVerifyContent = () => {
         setStatus('failed')
         addToast('Payment verification failed', 'error')
         
-        // Redirect to failed page after delay
+        
         setTimeout(() => {
           router.push('/payment/failed')
         }, 2000)
@@ -144,7 +144,7 @@ const PaymentVerifyContent = () => {
   )
 }
 
-// Main component with Suspense boundary
+
 const PaymentVerify = () => {
   return (
     <Suspense fallback={

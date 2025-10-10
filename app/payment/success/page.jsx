@@ -9,20 +9,20 @@ const PaymentSuccessContent = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { addToast, clearCart } = useAppContext()
-  const hasProcessedPayment = useRef(false) // Add this ref
+  const hasProcessedPayment = useRef(false)
 
   useEffect(() => {
-    // Only process payment once
+ 
     if (hasProcessedPayment.current) return
 
     const reference = searchParams.get('reference')
     const trxref = searchParams.get('trxref')
     
     if (reference || trxref) {
-      hasProcessedPayment.current = true // Mark as processed
+      hasProcessedPayment.current = true 
       addToast('Payment completed successfully!', 'success')
       
-      // Clear cart but DON'T redirect automatically
+    
       setTimeout(() => {
         clearCart()
       }, 1000)

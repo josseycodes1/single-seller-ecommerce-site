@@ -495,7 +495,7 @@ const Cart = () => {
           >
             <Image 
               className="group-hover:-translate-x-1 transition-transform" 
-              src={assets.arrow_right_icon_colored} 
+              src={assets.cart_icon} 
               alt="assets.cart_icon" 
               width={20}
               height={20}
