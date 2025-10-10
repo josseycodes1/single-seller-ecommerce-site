@@ -5,12 +5,12 @@ import Link from "next/link";
 import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
 import SearchBar from "@/components/SearchBar";
-import MobileSearchBar from "@/components/MobileSearchBar"; // Import the new component
+import MobileSearchBar from "@/components/MobileSearchBar"; 
 
 const Navbar = () => {
   const { isSeller, router, cart } = useAppContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false); // New state for mobile search
+  const [isSearchOpen, setIsSearchOpen] = useState(false); 
 
   const cartCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
@@ -33,9 +33,9 @@ const Navbar = () => {
   return (
     <>
       <nav className="flex items-center justify-between px-4 md:px-8 lg:px-16 py-3 border-b border-gray-300 text-gray-700 bg-white relative z-50">
-        {/* Left Side - Hamburger + Logo */}
+        {/* left side - hamburger + logo */}
         <div className="flex items-center gap-4">
-          {/* Hamburger Menu - Mobile - Pink */}
+          {/* hamburger menu for mobile*/}
           <button
             onClick={toggleMenu}
             className="lg:hidden flex flex-col items-center justify-center w-8 h-8 space-y-1 transition"
@@ -45,7 +45,7 @@ const Navbar = () => {
             <span className={`block w-6 h-0.5 bg-josseypink2 transition-transform ${isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
           </button>
 
-          {/* Logo */}
+          {/* logo */}
           <h1 className="text-josseypink2 text-xl font-bold">
             <Link href="/" className="hover:underline">
               JOSSEYCART
@@ -53,7 +53,7 @@ const Navbar = () => {
           </h1>
         </div>
 
-        {/* Middle Links - Desktop */}
+        {/* middle links for desktop */}
         <div className="hidden lg:flex items-center gap-8">
           <Link href="/" className="hover:text-josseypink2 transition font-medium">
             Home
@@ -78,14 +78,14 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Right Side - Search + Cart */}
+        {/* right side - search + cart */}
         <div className="flex items-center gap-4 md:gap-6">
-          {/* Search Bar - Visible on medium screens and up */}
+          {/* search bar - visible on medium screens and up */}
           <div className="hidden md:block w-48">
             <SearchBar />
           </div>
 
-          {/* Search Icon - Mobile - Now opens dedicated search */}
+          {/* search icon for mobile*/}
           <button 
             onClick={openSearch}
             className="md:hidden flex items-center justify-center w-8 h-8 hover:text-josseypink2 transition"
@@ -93,7 +93,7 @@ const Navbar = () => {
             <Image src={assets.search_icon} alt="search icon" className="w-5 h-5" />
           </button>
 
-          {/* Cart Icon - Always visible */}
+          {/* cart icon */}
           <button
             onClick={() => router.push("/cart")}
             className="relative flex items-center justify-center w-8 h-8 hover:text-josseypink2 transition"
@@ -107,14 +107,14 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Mobile Menu Overlay */}
+        {/* mobile menu overlay */}
         {isMenuOpen && (
           <div className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40" onClick={closeMenu}></div>
         )}
 
-        {/* Mobile Menu Slide-in from LEFT */}
+        {/* Mmobile menu slide-in from lEFT */}
         <div className={`lg:hidden fixed top-0 left-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          {/* Menu Header */}
+          {/* menu header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-josseypink2 text-white">
             <h2 className="text-lg font-semibold">Menu</h2>
             <button
@@ -127,9 +127,9 @@ const Navbar = () => {
             </button>
           </div>
 
-          {/* Menu Content */}
+          {/* menu content */}
           <div className="p-6">
-            {/* Navigation Links */}
+            {/* navigation links */}
             <div className="space-y-2 mb-8">
               <Link 
                 href="/" 
@@ -173,7 +173,7 @@ const Navbar = () => {
               </Link>
             </div>
 
-            {/* Quick Search Button in Menu */}
+            {/* quick search button in menu */}
             <button
               onClick={() => {
                 closeMenu();
@@ -185,7 +185,7 @@ const Navbar = () => {
               Search Products
             </button>
 
-            {/* Seller Dashboard Button */}
+            {/* seller dashboard button */}
             {isSeller && (
               <button
                 onClick={() => {
@@ -201,7 +201,7 @@ const Navbar = () => {
               </button>
             )}
 
-            {/* Additional Info */}
+            {/* additional info */}
             <div className="pt-6 border-t border-gray-200">
               <div className="text-center text-sm text-gray-600">
                 <p>Need help?</p>
@@ -214,7 +214,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mobile Search Overlay */}
+      {/* mobile search overlay */}
       <MobileSearchBar isOpen={isSearchOpen} onClose={closeSearch} />
     </>
   );

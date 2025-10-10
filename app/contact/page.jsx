@@ -82,9 +82,9 @@ const ContactUs = () => {
     <>
       <Navbar />
       <div className="px-6 md:px-16 lg:px-32 pt-14">
-        {/* Hero Section */}
+        {/* hero section */}
         <div className="relative py-16 rounded-lg mb-12 overflow-hidden">
-          {/* Background Image*/}
+          {/* background image*/}
           <div className="absolute inset-0">
             <Image
               src="/diffuser12.png"
@@ -93,7 +93,7 @@ const ContactUs = () => {
               className="object-cover"
               priority
             />
-            {/* Dark overlay */}
+            {/* dark overlay */}
             <div className="absolute inset-0 bg-black bg-opacity-50"></div>
           </div>
           
@@ -109,14 +109,14 @@ const ContactUs = () => {
 
         <div className="max-w-6xl mx-auto mb-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Contact Information */}
+            {/* contact information */}
             <div>
               <h2 className="text-3xl font-bold text-gray-800 mb-6">Get In Touch</h2>
               <p className="text-gray-600 mb-8">
                 Have questions about our products or need assistance with your order? Our team is here to help you. Reach out to us through any of the following channels.
               </p>
               <div className="space-y-6">
-                {/* Phone */}
+                {/* phone */}
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-josseypink2 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-xl">📞</span>
@@ -127,7 +127,7 @@ const ContactUs = () => {
                     <p className="text-gray-500 text-sm">Mon-Fri: 9AM-6PM WAT</p>
                   </div>
                 </div>
-                {/* Email */}
+                {/* email */}
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-josseypink2 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-xl">✉️</span>
@@ -138,7 +138,7 @@ const ContactUs = () => {
                     <p className="text-gray-500 text-sm">We respond within 24 hours</p>
                   </div>
                 </div>
-                {/* Address */}
+                {/* address */}
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-josseypink2 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-xl">📍</span>
@@ -154,7 +154,7 @@ const ContactUs = () => {
                     </p>
                   </div>
                 </div>
-                {/* Live Chat */}
+                {/* live chat */}
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-josseypink2 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-xl">💬</span>
@@ -175,11 +175,11 @@ const ContactUs = () => {
               </div>
             </div>
 
-            {/* Contact Form */}
+            {/* contact form */}
             <div className="bg-white rounded-lg shadow-sm border p-8">
               <h3 className="text-2xl font-bold text-gray-800 mb-6">Send us a Message</h3>
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Inputs */}
+                {/* inputs */}
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                   <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-josseypink2 focus:border-transparent" placeholder="Your full name"/>
@@ -204,7 +204,7 @@ const ContactUs = () => {
           </div>
         </div>
 
-        {/* FAQ Section */}
+        {/* FAQ section */}
         <div className="max-w-4xl mx-auto mb-16">
           <h2 className="text-3xl font-bold text-gray-800 text-center mb-8">Frequently Asked Questions</h2>
           <div className="space-y-4">
@@ -218,7 +218,7 @@ const ContactUs = () => {
           </div>
         </div>
 
-        {/* Featured Products (safe render) */}
+        {/* featured products*/}
         <div>
           <FeaturedProduct safe />
         </div>
