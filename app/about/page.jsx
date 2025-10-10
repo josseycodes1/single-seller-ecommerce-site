@@ -33,9 +33,9 @@ const AboutUs = () => {
     <>
       <Navbar />
       <div className="px-6 md:px-16 lg:px-32 pt-14">
-        {/* Hero Section */}
+        {/* hero section */}
               <div className="relative py-16 rounded-lg mb-12 overflow-hidden">
-        {/* Background Image with Next.js Image component */}
+        {/* background image*/}
         <div className="absolute inset-0">
           <Image
             src="/diffuser12.png"
@@ -44,7 +44,7 @@ const AboutUs = () => {
             className="object-cover"
             priority
           />
-          {/* Dark overlay */}
+          {/* dark overlay */}
           <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         </div>
         
@@ -58,7 +58,7 @@ const AboutUs = () => {
         </div>
       </div>
 
-        {/* Our Story */}
+        {/* our story */}
         <div className="max-w-6xl mx-auto mb-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -96,7 +96,7 @@ const AboutUs = () => {
           </div>
         </div>
 
-        {/* Our Values */}
+        {/* our values */}
         <div className="max-w-6xl mx-auto mb-16">
           <h2 className="text-3xl font-bold text-gray-800 text-center mb-12">
             Our Values
@@ -135,7 +135,7 @@ const AboutUs = () => {
           </div>
         </div>
 
-        {/* Stats Section */}
+        {/* stats section */}
         <div className="bg-gray-50 rounded-lg py-12 mb-16">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold text-gray-800 text-center mb-12">
@@ -170,7 +170,7 @@ const AboutUs = () => {
           </div>
         </div>
 
-        {/* Featured Products */}
+        {/* featured products */}
         {!loading && products.length > 0 ? (
           <FeaturedProduct products={products} />
         ) : (

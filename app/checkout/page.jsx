@@ -26,7 +26,7 @@ const Checkout = () => {
     order_notes: ''
   })
 
-  // Redirect if cart is empty
+ 
   useEffect(() => {
     if (!cart || cart.items.length === 0) {
       addToast('Your cart is empty', 'error')
@@ -34,7 +34,7 @@ const Checkout = () => {
     }
   }, [cart, router, addToast])
 
-  // Populate form with user data if available
+  
   useEffect(() => {
     if (userData) {
       setFormData(prev => ({
@@ -56,7 +56,7 @@ const Checkout = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target
     
-    // Clear error when user starts typing
+   
     if (formErrors[name]) {
       setFormErrors(prev => ({
         ...prev,
@@ -84,28 +84,28 @@ const Checkout = () => {
   const validateStep1 = () => {
     const errors = {}
     
-    // Validate email
+   
     if (!formData.email.trim()) {
       errors.email = 'Email is required'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Please enter a valid email address'
     }
     
-    // Validate name
+  
     if (!formData.customer_name.trim()) {
       errors.customer_name = 'Full name is required'
     } else if (formData.customer_name.trim().length < 2) {
       errors.customer_name = 'Name must be at least 2 characters'
     }
     
-    // Validate phone
+    
     if (!formData.customer_phone.trim()) {
       errors.customer_phone = 'Phone number is required'
     } else if (!/^[\+]?[0-9\s\-\(\)]{10,}$/.test(formData.customer_phone.replace(/\s/g, ''))) {
       errors.customer_phone = 'Please enter a valid phone number'
     }
     
-    // Validate address fields
+ 
     if (!formData.address.street_address.trim()) {
       errors['address.street_address'] = 'Street address is required'
     }
@@ -144,7 +144,7 @@ const Checkout = () => {
 
     setLoading(true)
     try {
-      // 1. Create order
+     
       const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/checkout/`, {
         method: 'POST',
         headers: {
@@ -162,12 +162,12 @@ const Checkout = () => {
         throw new Error(orderData.error || orderData.details || 'Failed to create order')
       }
 
-      // ✅ STORE EMAIL IN LOCALSTORAGE FOR MYORDERS PAGE
+    
       localStorage.setItem('guestOrderEmail', formData.email)
       sessionStorage.setItem('guestOrderEmail', formData.email)
       console.log('🔍 DEBUG: Stored email for MyOrders:', formData.email)
 
-      // 2. Initialize payment WITH order_id
+     
       const paymentResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/payment/initialize/`, {
         method: 'POST',
         headers: {
@@ -187,7 +187,7 @@ const Checkout = () => {
         throw new Error(paymentData.error || paymentData.details || 'Failed to initialize payment')
       }
 
-      // 3. Redirect to Paystack
+     
       if (paymentData.authorization_url) {
         window.location.href = paymentData.authorization_url
       } else {
@@ -202,7 +202,7 @@ const Checkout = () => {
     }
   }
 
-  // If cart is empty, show proper empty state
+  
   if (!cart || cart.items.length === 0) {
     return (
       <>
@@ -243,14 +243,14 @@ const Checkout = () => {
       <Navbar />
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
+          {/* header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
             <p className="text-gray-600 mt-2">Complete your purchase</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column - Forms */}
+            {/* left column - forms */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               {/* Progress Steps */}
               <div className="flex justify-between mb-8">
@@ -272,13 +272,13 @@ const Checkout = () => {
                 </div>
               </div>
 
-              {/* Step 1: Customer Information */}
+              {/* step 1: customer information */}
               {step === 1 && (
                 <div className="space-y-6">
                   <h2 className="text-xl font-semibold text-gray-800">Contact Information</h2>
                   
                   <div className="grid grid-cols-1 gap-4">
-                    {/* Email Field */}
+                    {/* email field */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Email Address *
@@ -304,7 +304,7 @@ const Checkout = () => {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Name Field */}
+                      {/* name field */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Full Name *
@@ -329,7 +329,7 @@ const Checkout = () => {
                         )}
                       </div>
 
-                      {/* Phone Field */}
+                      {/* phone field */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Phone Number *
@@ -360,7 +360,7 @@ const Checkout = () => {
                     <h2 className="text-xl font-semibold text-gray-800 mb-4">Shipping Address</h2>
                     
                     <div className="space-y-4">
-                      {/* Street Address */}
+                      {/* street address */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Street Address *
@@ -386,7 +386,7 @@ const Checkout = () => {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Town/City */}
+                        {/* town/city */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Town/City *
@@ -411,7 +411,7 @@ const Checkout = () => {
                           )}
                         </div>
 
-                        {/* State */}
+                        {/* state */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             State *
@@ -438,7 +438,7 @@ const Checkout = () => {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Postal Code */}
+                        {/* postal code */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Postal Code *
@@ -463,7 +463,7 @@ const Checkout = () => {
                           )}
                         </div>
 
-                        {/* Country */}
+                        {/* country */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Country
@@ -507,7 +507,7 @@ const Checkout = () => {
                 </div>
               )}
 
-              {/* Step 2: Payment */}
+              {/* step2: payment */}
               {step === 2 && (
                 <div className="space-y-6">
                   <h2 className="text-xl font-semibold text-gray-800">Payment Method</h2>
@@ -532,7 +532,7 @@ const Checkout = () => {
                     </p>
                   </div>
 
-                  {/* Order Review */}
+                  {/* order review */}
                   <div className="border-t pt-4">
                     <h3 className="text-lg font-medium text-gray-900 mb-4">Order Review</h3>
                     <div className="space-y-2 text-sm">
@@ -587,7 +587,7 @@ const Checkout = () => {
               )}
             </div>
 
-            {/* Right Column - Order Summary */}
+            {/* right column - order summary */}
             <div className="bg-white rounded-lg shadow-sm p-6 h-fit">
               <h2 className="text-xl font-semibold text-gray-800 mb-6">Order Summary</h2>
               

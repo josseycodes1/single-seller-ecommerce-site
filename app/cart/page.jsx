@@ -56,6 +56,11 @@ const Cart = () => {
     return product?.stock || cartItem.product?.stock || 0;
   };
 
+  // Navigate to product page
+  const navigateToProduct = (productId) => {
+    router.push(`/product/${productId}`);
+  };
+
   // LOCAL QUANTITY HANDLERS - No API calls
   const handleLocalIncrement = (itemId, cartItem) => {
     const currentQuantity = localQuantities[itemId] || 1;
@@ -251,7 +256,10 @@ const Cart = () => {
                         <tr key={cartItem.id} className="border-b border-gray-200 hover:bg-gray-50">
                           <td className="py-6 px-4">
                             <div className="flex items-center gap-4">
-                              <div className="rounded-lg overflow-hidden bg-gray-100 p-2 flex-shrink-0">
+                              <div 
+                                className="rounded-lg overflow-hidden bg-gray-100 p-2 flex-shrink-0 cursor-pointer"
+                                onClick={() => navigateToProduct(cartItem.product.id)}
+                              >
                                 <Image
                                   src={productImage}
                                   alt={productName}
@@ -261,7 +269,12 @@ const Cart = () => {
                                 />
                               </div>
                               <div>
-                                <p className="text-gray-800 font-medium">{productName}</p>
+                                <button
+                                  onClick={() => navigateToProduct(cartItem.product.id)}
+                                  className="text-gray-800 font-medium hover:text-josseypink2 transition-colors text-left"
+                                >
+                                  {productName}
+                                </button>
                                 {productStock > 0 && (
                                   <p className="text-xs text-green-600 mt-1">
                                     {productStock} in stock
@@ -356,7 +369,10 @@ const Cart = () => {
                   return (
                     <div key={cartItem.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                       <div className="flex gap-4">
-                        <div className="flex-shrink-0">
+                        <div 
+                          className="flex-shrink-0 cursor-pointer"
+                          onClick={() => navigateToProduct(cartItem.product.id)}
+                        >
                           <div className="rounded-lg overflow-hidden bg-gray-100 p-2">
                             <Image
                               src={productImage}
@@ -371,7 +387,12 @@ const Cart = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-start mb-2">
                             <div>
-                              <h3 className="text-gray-800 font-medium truncate">{productName}</h3>
+                              <button
+                                onClick={() => navigateToProduct(cartItem.product.id)}
+                                className="text-gray-800 font-medium hover:text-josseypink2 transition-colors text-left"
+                              >
+                                {productName}
+                              </button>
                               {productStock > 0 && (
                                 <p className="text-xs text-green-600 mt-1">
                                   {productStock} in stock
@@ -556,7 +577,6 @@ const Cart = () => {
 export default Cart;
 
 
-
 // 'use client'
 // import React, { useEffect, useState } from "react";
 // import { assets } from "@/assets/assets";
@@ -578,6 +598,7 @@ export default Cart;
 
 //   const [loading, setLoading] = useState(true);
 //   const [localQuantities, setLocalQuantities] = useState({});
+//   const [quantityErrors, setQuantityErrors] = useState({});
 //   const [colorModal, setColorModal] = useState({
 //     open: false,
 //     cartItem: null,
@@ -608,39 +629,73 @@ export default Cart;
 //     }
 //   }, [cart]);
 
+//   // Get product stock for a cart item
+//   const getProductStock = (cartItem) => {
+//     const product = products?.find(p => p.id === cartItem.product.id);
+//     return product?.stock || cartItem.product?.stock || 0;
+//   };
+
 //   // LOCAL QUANTITY HANDLERS - No API calls
-//   const handleLocalIncrement = (itemId) => {
-//     setLocalQuantities(prev => ({ 
-//       ...prev, 
-//       [itemId]: (prev[itemId] || 1) + 1 
-//     }));
+//   const handleLocalIncrement = (itemId, cartItem) => {
+//     const currentQuantity = localQuantities[itemId] || 1;
+//     const productStock = getProductStock(cartItem);
+//     const newQuantity = currentQuantity + 1;
+
+//     if (newQuantity > productStock) {
+//       setQuantityErrors(prev => ({ 
+//         ...prev, 
+//         [itemId]: `Only ${productStock} items available in stock` 
+//       }));
+//       setLocalQuantities(prev => ({ ...prev, [itemId]: productStock }));
+//     } else {
+//       setLocalQuantities(prev => ({ ...prev, [itemId]: newQuantity }));
+//       setQuantityErrors(prev => ({ ...prev, [itemId]: "" }));
+//     }
 //   };
 
 //   const handleLocalDecrement = (itemId) => {
-//     setLocalQuantities(prev => ({ 
-//       ...prev, 
-//       [itemId]: Math.max(1, (prev[itemId] || 1) - 1) 
-//     }));
+//     const currentQuantity = localQuantities[itemId] || 1;
+//     if (currentQuantity > 1) {
+//       setLocalQuantities(prev => ({ ...prev, [itemId]: currentQuantity - 1 }));
+//       setQuantityErrors(prev => ({ ...prev, [itemId]: "" }));
+//     }
 //   };
 
-//   const handleLocalInputChange = (itemId, value) => {
+//   const handleLocalInputChange = (itemId, value, cartItem) => {
 //     // If input is empty, set to empty string (allow clearing)
 //     if (value === "") {
 //       setLocalQuantities(prev => ({ ...prev, [itemId]: "" }));
+//       setQuantityErrors(prev => ({ ...prev, [itemId]: "" }));
 //       return;
 //     }
     
-//     const qty = parseInt(value, 10);
-//     // Only update if it's a valid positive number
-//     if (!isNaN(qty) && qty > 0) {
-//       setLocalQuantities(prev => ({ ...prev, [itemId]: qty }));
+//     const newQuantity = parseInt(value, 10);
+//     const productStock = getProductStock(cartItem);
+
+//     if (isNaN(newQuantity) || newQuantity < 1) {
+//       setQuantityErrors(prev => ({ ...prev, [itemId]: "Quantity must be at least 1" }));
+//       setLocalQuantities(prev => ({ ...prev, [itemId]: 1 }));
+//       return;
 //     }
+
+//     if (newQuantity > productStock) {
+//       setQuantityErrors(prev => ({ 
+//         ...prev, 
+//         [itemId]: `Only ${productStock} items available in stock` 
+//       }));
+//       setLocalQuantities(prev => ({ ...prev, [itemId]: productStock }));
+//       return;
+//     }
+
+//     setLocalQuantities(prev => ({ ...prev, [itemId]: newQuantity }));
+//     setQuantityErrors(prev => ({ ...prev, [itemId]: "" }));
 //   };
 
 //   const handleLocalInputBlur = (itemId, value) => {
 //     if (value === "" || value === "0") {
 //       // If input is empty or zero, set to minimum quantity of 1
 //       setLocalQuantities(prev => ({ ...prev, [itemId]: 1 }));
+//       setQuantityErrors(prev => ({ ...prev, [itemId]: "" }));
 //     }
 //   };
 
@@ -767,7 +822,9 @@ export default Cart;
 //                       const productPrice = product?.price ?? cartItem.product?.price ?? 0;
 //                       const productImage = product?.images?.[0]?.image_url || product?.image || '/placeholder-image.jpg';
 //                       const currentQuantity = localQuantities[cartItem.id] ?? cartItem.quantity;
+//                       const productStock = getProductStock(cartItem);
 //                       const subtotal = parseFloat(productPrice) * (currentQuantity || 1);
+//                       const quantityError = quantityErrors[cartItem.id];
 
 //                       return (
 //                         <tr key={cartItem.id} className="border-b border-gray-200 hover:bg-gray-50">
@@ -784,6 +841,11 @@ export default Cart;
 //                               </div>
 //                               <div>
 //                                 <p className="text-gray-800 font-medium">{productName}</p>
+//                                 {productStock > 0 && (
+//                                   <p className="text-xs text-green-600 mt-1">
+//                                     {productStock} in stock
+//                                   </p>
+//                                 )}
 //                                 <button
 //                                   className="text-sm text-josseypink2 hover:text-josseypink1 mt-1 transition-colors"
 //                                   onClick={() => handleLocalRemove(cartItem.id)}
@@ -813,30 +875,38 @@ export default Cart;
 //                           </td>
 
 //                           <td className="py-6 px-4">
-//                             <div className="flex items-center gap-2 max-w-[140px]">
-//                               <button
-//                                 onClick={() => handleLocalDecrement(cartItem.id)}
-//                                 disabled={currentQuantity <= 1}
-//                                 className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-//                               >
-//                                 <span className="text-gray-600 font-bold">−</span>
-//                               </button>
+//                             <div className="flex flex-col gap-2 max-w-[140px]">
+//                               <div className="flex items-center gap-2">
+//                                 <button
+//                                   onClick={() => handleLocalDecrement(cartItem.id)}
+//                                   disabled={currentQuantity <= 1 || productStock === 0}
+//                                   className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+//                                 >
+//                                   <span className="text-gray-600 font-bold">−</span>
+//                                 </button>
 
-//                               <input
-//                                 type="number"
-//                                 value={currentQuantity}
-//                                 min="1"
-//                                 onChange={(e) => handleLocalInputChange(cartItem.id, e.target.value)}
-//                                 onBlur={(e) => handleLocalInputBlur(cartItem.id, e.target.value)}
-//                                 className="w-12 border border-gray-300 rounded text-center py-1 focus:outline-none focus:border-josseypink2"
-//                               />
+//                                 <input
+//                                   type="number"
+//                                   value={currentQuantity}
+//                                   min="1"
+//                                   max={productStock}
+//                                   onChange={(e) => handleLocalInputChange(cartItem.id, e.target.value, cartItem)}
+//                                   onBlur={(e) => handleLocalInputBlur(cartItem.id, e.target.value)}
+//                                   className="w-12 border border-gray-300 rounded text-center py-1 focus:outline-none focus:border-josseypink2"
+//                                   disabled={productStock === 0}
+//                                 />
 
-//                               <button
-//                                 onClick={() => handleLocalIncrement(cartItem.id)}
-//                                 className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 transition-colors"
-//                               >
-//                                 <span className="text-gray-600 font-bold">+</span>
-//                               </button>
+//                                 <button
+//                                   onClick={() => handleLocalIncrement(cartItem.id, cartItem)}
+//                                   disabled={productStock === 0 || currentQuantity >= productStock}
+//                                   className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+//                                 >
+//                                   <span className="text-gray-600 font-bold">+</span>
+//                                 </button>
+//                               </div>
+//                               {quantityError && (
+//                                 <p className="text-red-500 text-xs">{quantityError}</p>
+//                               )}
 //                             </div>
 //                           </td>
 
@@ -858,7 +928,9 @@ export default Cart;
 //                   const productPrice = product?.price ?? cartItem.product?.price ?? 0;
 //                   const productImage = product?.images?.[0]?.image_url || product?.image || '/placeholder-image.jpg';
 //                   const currentQuantity = localQuantities[cartItem.id] ?? cartItem.quantity;
+//                   const productStock = getProductStock(cartItem);
 //                   const subtotal = parseFloat(productPrice) * (currentQuantity || 1);
+//                   const quantityError = quantityErrors[cartItem.id];
 
 //                   return (
 //                     <div key={cartItem.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
@@ -877,7 +949,14 @@ export default Cart;
                         
 //                         <div className="flex-1 min-w-0">
 //                           <div className="flex justify-between items-start mb-2">
-//                             <h3 className="text-gray-800 font-medium truncate">{productName}</h3>
+//                             <div>
+//                               <h3 className="text-gray-800 font-medium truncate">{productName}</h3>
+//                               {productStock > 0 && (
+//                                 <p className="text-xs text-green-600 mt-1">
+//                                   {productStock} in stock
+//                                 </p>
+//                               )}
+//                             </div>
 //                             <button
 //                               onClick={() => handleLocalRemove(cartItem.id)}
 //                               className="text-josseypink2 hover:text-josseypink1 text-sm transition-colors"
@@ -909,30 +988,38 @@ export default Cart;
 
 //                             <div className="flex justify-between items-center text-sm">
 //                               <span className="text-gray-600">Quantity:</span>
-//                               <div className="flex items-center gap-2">
-//                                 <button
-//                                   onClick={() => handleLocalDecrement(cartItem.id)}
-//                                   disabled={currentQuantity <= 1}
-//                                   className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 text-xs"
-//                                 >
-//                                   −
-//                                 </button>
+//                               <div className="flex flex-col items-end gap-1">
+//                                 <div className="flex items-center gap-2">
+//                                   <button
+//                                     onClick={() => handleLocalDecrement(cartItem.id)}
+//                                     disabled={currentQuantity <= 1 || productStock === 0}
+//                                     className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 text-xs"
+//                                   >
+//                                     −
+//                                   </button>
 
-//                                 <input
-//                                   type="number"
-//                                   value={currentQuantity}
-//                                   min="1"
-//                                   onChange={(e) => handleLocalInputChange(cartItem.id, e.target.value)}
-//                                   onBlur={(e) => handleLocalInputBlur(cartItem.id, e.target.value)}
-//                                   className="w-10 border border-gray-300 rounded text-center py-1 text-xs focus:outline-none focus:border-josseypink2"
-//                                 />
+//                                   <input
+//                                     type="number"
+//                                     value={currentQuantity}
+//                                     min="1"
+//                                     max={productStock}
+//                                     onChange={(e) => handleLocalInputChange(cartItem.id, e.target.value, cartItem)}
+//                                     onBlur={(e) => handleLocalInputBlur(cartItem.id, e.target.value)}
+//                                     className="w-10 border border-gray-300 rounded text-center py-1 text-xs focus:outline-none focus:border-josseypink2"
+//                                     disabled={productStock === 0}
+//                                   />
 
-//                                 <button
-//                                   onClick={() => handleLocalIncrement(cartItem.id)}
-//                                   className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 text-xs"
-//                                 >
-//                                   +
-//                                 </button>
+//                                   <button
+//                                     onClick={() => handleLocalIncrement(cartItem.id, cartItem)}
+//                                     disabled={productStock === 0 || currentQuantity >= productStock}
+//                                     className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 text-xs"
+//                                   >
+//                                     +
+//                                   </button>
+//                                 </div>
+//                                 {quantityError && (
+//                                   <p className="text-red-500 text-xs text-right">{quantityError}</p>
+//                                 )}
 //                               </div>
 //                             </div>
 
