@@ -491,7 +491,7 @@ const Cart = () => {
 
           <button 
             onClick={() => router.push('/all-products')} 
-            className="group flex items-center mt-8 gap-2 text-josseypink2 hover:text-josseypink1 transition-colors"
+            className="group flex items-center mt-8 gap-2  hover:text-josseypink2 transition-colors"
           >
             <Image 
               className="group-hover:-translate-x-1 transition-transform" 
