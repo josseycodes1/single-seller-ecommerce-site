@@ -173,7 +173,7 @@ const Orders = () => {
           <div className="max-w-6xl rounded-md">
             {orders.map((order) => (
               <div key={order.id} className="flex flex-col md:flex-row gap-5 justify-between p-5 border-t border-gray-300">
-                {/* Order Items */}
+                {/* order items */}
                 <div className="flex-1 flex gap-5 max-w-80">
                   <Image
                     className="max-w-16 max-h-16 object-cover"
@@ -195,7 +195,7 @@ const Orders = () => {
                   </div>
                 </div>
 
-                {/* Customer Information */}
+                {/* customer information */}
                 <div className="flex-1">
                   <p className="font-medium">{order.customer_name}</p>
                   <p>{order.customer_email}</p>
@@ -203,7 +203,7 @@ const Orders = () => {
                   <p className="mt-2 whitespace-pre-line">{order.customer_address}</p>
                 </div>
 
-                {/* Order Amount */}
+                {/* order amount */}
                 <div className="flex flex-col items-end">
                   <p className="font-medium text-lg">
                     {currency}
@@ -214,7 +214,7 @@ const Orders = () => {
                   </p>
                 </div>
 
-                {/* Order Actions */}
+                {/* order actions */}
                 <div className="flex flex-col gap-2">
                   <select
                     value={order.status}

@@ -41,7 +41,7 @@ const ProductList = () => {
 
       if (response.ok) {
         const data = await response.json();
-        // Create a mapping of category IDs to names
+       
         const categoryMap = {};
         data.forEach(category => {
           categoryMap[category.id] = category.name;
@@ -62,7 +62,7 @@ const ProductList = () => {
         throw new Error('No authentication token found');
       }
 
-      // Fetch categories first
+      
       await fetchCategories();
 
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
@@ -78,7 +78,7 @@ const ProductList = () => {
 
       if (!response.ok) {
         if (response.status === 401) {
-          // Token expired or invalid
+          
           localStorage.removeItem('access_token');
           localStorage.removeItem('user_data');
           router.push('/seller/login');
@@ -122,7 +122,7 @@ const ProductList = () => {
       });
 
       if (response.ok) {
-        // Remove the product from the local state
+       
         setProducts(products.filter(product => product.id !== productId));
         alert('Product deleted successfully!');
       } else {
@@ -134,7 +134,7 @@ const ProductList = () => {
     }
   };
 
-  // Helper function to get category name
+ 
   const getCategoryName = (product) => {
     if (typeof product.category === 'object' && product.category !== null) {
       return product.category.name;
@@ -145,7 +145,7 @@ const ProductList = () => {
   };
 
   useEffect(() => {
-    // Check authentication first
+   
     if (!isAuthenticated()) {
       router.push('/seller/login');
       return;
@@ -154,7 +154,7 @@ const ProductList = () => {
     fetchSellerProducts();
   }, [router]);
 
-  // Redirect to login if not authenticated
+ 
   if (!isAuthenticated()) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -219,7 +219,7 @@ const ProductList = () => {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            {/* Mobile Cards View */}
+            {/* mobile cards view */}
             <div className="md:hidden">
               {products.map((product) => (
                 <div key={product.id} className="border-b border-gray-200 p-4">
@@ -298,7 +298,7 @@ const ProductList = () => {
               ))}
             </div>
             
-            {/* Desktop Table View */}
+            {/* desktop table view */}
             <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">

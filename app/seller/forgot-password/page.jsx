@@ -30,7 +30,7 @@ export default function ForgotPassword() {
 
       if (response.ok) {
         setMessage("Password reset code sent to your email. Redirecting...");
-        // Redirect to verification page after 2 seconds
+       
         setTimeout(() => {
           router.push(`/seller/verify-forgot-password?email=${encodeURIComponent(email.trim())}`);
         }, 2000);
@@ -46,7 +46,7 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen flex bg-white">
-      {/* Left side - form */}
+      {/* left side - form */}
       <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-md">
           <div className="text-center mb-8">
@@ -101,7 +101,7 @@ export default function ForgotPassword() {
         </div>
       </div>
 
-      {/* Right side */}
+      {/* right side */}
       <div className="hidden lg:block relative w-1/2">
         <div className="absolute inset-0 bg-gradient-to-br from-[#FC46AA] to-[#F699CD] opacity-90"></div>
         <div className="absolute inset-0 flex items-center justify-center p-12">

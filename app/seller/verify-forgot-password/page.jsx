@@ -19,7 +19,7 @@ function VerifyForgotPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  //pre-fill email from query params if available
+
   useEffect(() => {
     const emailParam = searchParams.get('email');
     if (emailParam && !formData.email) {
@@ -144,7 +144,7 @@ function VerifyForgotPasswordContent() {
 
   return (
     <div className="min-h-screen flex bg-white">
-      {/* Left side - form */}
+      {/* left side - form */}
       <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-md">
           <div className="text-center mb-8">
@@ -301,7 +301,7 @@ function VerifyForgotPasswordContent() {
         </div>
       </div>
 
-      {/* Right side */}
+      {/* right side */}
       <div className="hidden lg:block relative w-1/2">
         <div className="absolute inset-0 bg-gradient-to-br from-[#FC46AA] to-[#F699CD] opacity-90"></div>
         <div className="absolute inset-0 flex items-center justify-center p-12">
