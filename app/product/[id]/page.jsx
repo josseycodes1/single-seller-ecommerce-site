@@ -101,7 +101,7 @@ const Product = () => {
         }
     }, [id]);
 
-    // QUANTITY HANDLERS - Similar to cart logic
+    
     const handleQuantityIncrement = () => {
         if (productData) {
             const newQuantity = selectedQuantity + 1;
@@ -125,7 +125,7 @@ const Product = () => {
     const handleQuantityInputChange = (e) => {
         const value = e.target.value;
 
-        // If input is empty, set to empty string (allow clearing)
+      
         if (value === "") {
             setSelectedQuantity("");
             setQuantityError("");
@@ -152,7 +152,7 @@ const Product = () => {
 
     const handleQuantityInputBlur = (value) => {
         if (value === "" || value === "0") {
-            // If input is empty or zero, set to minimum quantity of 1
+            
             setSelectedQuantity(1);
             setQuantityError("");
         }
@@ -302,7 +302,7 @@ const Product = () => {
             <Navbar />
             <div className="px-6 md:px-16 lg:px-32 pt-14 space-y-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-                    {/* Product Images */}
+                    {/* product images */}
                     <div className="px-5 lg:px-16 xl:px-20">
                         <div className="rounded-lg overflow-hidden bg-gray-500/10 mb-4 h-96 flex items-center justify-center">
                             {mainImage && !imageErrors.main ? (
@@ -345,13 +345,13 @@ const Product = () => {
                         )}
                     </div>
 
-                    {/* Product Details */}
+                    {/* product details */}
                     <div className="flex flex-col">
                         <h1 className="text-3xl font-medium text-gray-800/90 mb-4">
                             {productData.name}
                         </h1>
                         
-                        {/* Rating */}
+                        {/* rating */}
                         <div className="flex items-center gap-2 mb-4">
                             <div className="flex items-center gap-0.5">
                                 {[1, 2, 3, 4, 5].map((star) => (
@@ -371,12 +371,12 @@ const Product = () => {
                             </span>
                         </div>
 
-                        {/* Description */}
+                        {/* description */}
                         <p className="text-gray-600 mt-3">
                             {productData.description}
                         </p>
                         
-                        {/* Price */}
+                        {/* price */}
                         <p className="text-3xl font-medium mt-6">
                             {currency}
                             {productPrice.toFixed(2)}
@@ -388,7 +388,7 @@ const Product = () => {
                             )}
                         </p>
                         
-                        {/* Stock Status */}
+                        {/* stock status */}
                         {productData.stock !== undefined && (
                             <div className="mt-4">
                                 <span className={productData.stock > 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
@@ -399,9 +399,9 @@ const Product = () => {
                         
                         <hr className="bg-gray-600 my-6" />
                         
-                        {/* Product Selection Options */}
+                        {/* product selection options */}
                         <div className="space-y-4">
-                            {/* Color Selection */}
+                            {/* color selection */}
                             {productData?.colors && productData.colors.length > 0 && (
                                 <div>
                                     <label className="block text-gray-600 font-medium mb-2">
@@ -425,7 +425,7 @@ const Product = () => {
                                 </div>
                             )}
 
-                            {/* Quantity Selection */}
+                            {/* quantity selection */}
                             <div>
                                 <label className="block text-gray-600 font-medium mb-2">
                                     Select Quantity
@@ -464,11 +464,11 @@ const Product = () => {
                             </div>
                         </div>
 
-                        {/* Product Details Table */}
+                        {/* product details table */}
                         <div className="overflow-x-auto mt-6">
                             <table className="table-auto border-collapse w-full max-w-72">
                                 <tbody>
-                                    {/* Category */}
+                                    {/* category */}
                                     {productData.category && (
                                         <tr>
                                             <td className="text-gray-600 font-medium py-2">Category</td>
@@ -481,7 +481,7 @@ const Product = () => {
                             </table>
                         </div>
 
-                        {/* Add to Cart Buttons */}
+                        {/* add to cart buttons */}
                         <div className="flex items-center mt-10 gap-4">
                             <button 
                                 onClick={handleAddToCart} 
@@ -536,7 +536,7 @@ const Product = () => {
                     </div>
                 </div>
                 
-                {/* Related Products */}
+                {/* related products */}
                 <FeaturedProduct />
             </div>
             <Footer />

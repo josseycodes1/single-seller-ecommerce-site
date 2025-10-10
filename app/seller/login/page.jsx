@@ -16,7 +16,7 @@ export default function SellerLogin() {
   const router = useRouter();
 
   useEffect(() => {
-    //check if there's a success message from registration
+    
     const urlParams = new URLSearchParams(window.location.search);
     const successMessage = urlParams.get('message');
     if (successMessage) {
@@ -41,7 +41,7 @@ export default function SellerLogin() {
     setError('');
 
     try {
-      //get the tokens
+     
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/token/`, {
         method: 'POST',
         headers: {
@@ -53,19 +53,17 @@ export default function SellerLogin() {
       const data = await response.json();
 
       if (response.ok) {
-        // Store tokens in localStorage
+        
         localStorage.setItem('access_token', data.access);
         localStorage.setItem('refresh_token', data.refresh);
         
-        //since all users registering through seller endpoint are sellers,
-        // we can assume successful login means they're a seller
-        // Store basic user data from the login form
+       
         localStorage.setItem('user_data', JSON.stringify({
           email: formData.email,
-          is_seller: true // Assume seller since they're logging into seller portal
+          is_seller: true 
         }));
         
-        //redirect to seller dashboard
+        
         router.push('/sellerdashboard');
       } else {
         setError(data.detail || 'Login failed. Please check your credentials.');

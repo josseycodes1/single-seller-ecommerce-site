@@ -16,7 +16,7 @@ export default function SellerSignUp() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState([]); // just an array, no types
+  const [errors, setErrors] = useState([]); 
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -50,24 +50,24 @@ export default function SellerSignUp() {
     } = formData;
     const newErrors = [];
 
-    // required fields
+  
     if (!first_name.trim()) newErrors.push("First name is required.");
     if (!last_name.trim()) newErrors.push("Last name is required.");
     if (!business_name.trim()) newErrors.push("Business name is required.");
     if (!email.trim()) newErrors.push("Email is required.");
 
-    // email format
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email && !emailRegex.test(email.trim())) {
       newErrors.push("Please enter a valid email address.");
     }
 
-    // password match
+  
     if (password.trim() !== confirmPassword.trim()) {
       newErrors.push("Passwords do not match.");
     }
 
-    // password strength
+   
     const strongPassword =
       /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
     if (password && !strongPassword.test(password.trim())) {
