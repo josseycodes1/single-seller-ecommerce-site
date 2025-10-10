@@ -42,6 +42,8 @@ const EditProduct = () => {
   const [addingCategory, setAddingCategory] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [colors, setColors] = useState([]);
+  const [input, setInput] = useState("");
   
   const router = useRouter();
   const params = useParams();
@@ -119,6 +121,11 @@ const EditProduct = () => {
         setRating(productData.rating);
         setIsFeatured(productData.is_featured);
         setExistingImages(productData.images || []);
+        
+        // Set colors from product data
+        if (productData.colors && Array.isArray(productData.colors)) {
+          setColors(productData.colors);
+        }
       } else if (response.status === 404) {
         setError('Product not found. It may have been deleted or does not exist.');
       } else {
@@ -238,14 +245,20 @@ const EditProduct = () => {
       formData.append('price', price);
       formData.append('stock', stock);
       formData.append('rating', rating || '0');
-      formData.append('is_featured', isFeatured ? true : false);
-      
+      formData.append('is_featured', isFeatured);
+      formData.append('colors', JSON.stringify(colors)); // Add colors to form data
+
       // Add new images
       files.forEach((file, index) => {
         if (file) {
           formData.append('images', file);
         }
       });
+
+      console.log("FormData payload:");
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
 
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
       const response = await fetch(`${base}/api/products/${productId}/`, {
@@ -297,6 +310,18 @@ const EditProduct = () => {
 
   const removeExistingImage = (imageId) => {
     setExistingImages(existingImages.filter(img => img.id !== imageId));
+  };
+
+  // Color management functions
+  const addColor = () => {
+    if (input.trim() && !colors.includes(input.trim())) {
+      setColors([...colors, input.trim()]);
+      setInput("");
+    }
+  };
+
+  const removeColor = (color) => {
+    setColors(colors.filter((c) => c !== color));
   };
 
   if (!isAuthenticated()) {
@@ -632,6 +657,48 @@ const EditProduct = () => {
                   value={rating}
                   disabled={loading}
                 />
+              </div>
+            </div>
+
+            {/* Available Colors */}
+            <div>
+              <label className="block font-medium text-gray-700 mb-2">Available Colors</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Enter a color and press Add"
+                  className="border px-2 py-1 rounded flex-1"
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={addColor}
+                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
+                  disabled={loading}
+                >
+                  Add
+                </button>
+              </div>
+
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {colors.map((color, idx) => (
+                  <span
+                    key={idx}
+                    className="bg-gray-200 px-3 py-1 rounded-full flex items-center gap-1"
+                  >
+                    {color}
+                    <button
+                      type="button"
+                      onClick={() => removeColor(color)}
+                      className="text-red-500 hover:text-red-700"
+                      disabled={loading}
+                    >
+                      ✕
+                    </button>
+                  </span>
+                ))}
               </div>
             </div>
 

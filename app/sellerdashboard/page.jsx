@@ -275,7 +275,7 @@ const AddProduct = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
+      {/* header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
@@ -293,7 +293,7 @@ const AddProduct = () => {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* main content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-6">Add New Product</h2>
@@ -313,7 +313,7 @@ const AddProduct = () => {
           )}
           
           <form onSubmit={handleSubmit} className="space-y-6" encType="multipart/form-data">
-            {/* Product Images */}
+            {/* product images */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Product Images (Up to 4) *
@@ -372,7 +372,7 @@ const AddProduct = () => {
               <p className="text-xs text-gray-500 mt-2">At least one image is required</p>
             </div>
 
-            {/* Product Name */}
+            {/* product name */}
             <div>
               <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-2">
                 Product Name *
@@ -395,7 +395,7 @@ const AddProduct = () => {
               )}
             </div>
 
-            {/* Product Description */}
+            {/* product description */}
             <div>
               <label htmlFor="product-description" className="block text-sm font-medium text-gray-700 mb-2">
                 Product Description *
@@ -418,7 +418,7 @@ const AddProduct = () => {
               )}
             </div>
 
-            {/* Category, Price, Stock, Rating */}
+            {/* category, price, stock, rating */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* category */}
                 <div>
@@ -431,7 +431,7 @@ const AddProduct = () => {
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2">
-                      {/* Category Select */}
+                      {/* category select */}
                       <select
                         id="category"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC46AA] focus:border-transparent"
@@ -451,7 +451,7 @@ const AddProduct = () => {
                         )}
                       </select>
 
-                      {/* Add New Category Toggle */}
+                      {/* add new category toggle */}
                       <button
                         type="button"
                         onClick={() => setShowAddCategory(!showAddCategory)}
@@ -460,7 +460,7 @@ const AddProduct = () => {
                         <span className="mr-1">+</span> Add New Category
                       </button>
 
-                      {/* Add New Category Input */}
+                      {/* add new category input */}
                       {showAddCategory && (
                         <div className="flex gap-2 mt-2">
                           <input
@@ -482,7 +482,7 @@ const AddProduct = () => {
                         </div>
                       )}
 
-                      {/* List of Categories with Delete */}
+                      {/* list of categories with delete */}
                       <div className="flex flex-col gap-1 mt-3">
                         {categories.map((cat) => (
                           <div key={cat.id} className="flex justify-between items-center text-sm border rounded px-2 py-1">
@@ -502,7 +502,7 @@ const AddProduct = () => {
                   )}
                 </div>
 
-              {/* Product Price */}
+              {/* product price */}
               <div>
                 <label htmlFor="product-price" className="block text-sm font-medium text-gray-700 mb-2">
                   Price *
@@ -527,7 +527,7 @@ const AddProduct = () => {
                 )}
               </div>
 
-              {/* Stock */}
+              {/* stock */}
               <div>
                 <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">
                   Stock *
@@ -551,7 +551,7 @@ const AddProduct = () => {
                 )}
               </div>
 
-              {/* Rating */}
+              {/* rating */}
               <div>
                 <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-2">
                   Rating
@@ -610,7 +610,7 @@ const AddProduct = () => {
                 </div>
               </div>
 
-            {/* Featured Product Checkbox */}
+            {/* featured product checkbox */}
             <div className="flex items-center">
               <input
                 id="is-featured"
@@ -625,7 +625,7 @@ const AddProduct = () => {
               </label>
             </div>
 
-            {/* Submit Button */}
+            {/* submit button */}
             <div className="pt-4">
               <button 
                 type="submit" 
