@@ -9,10 +9,10 @@ const FeaturedProduct = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { addToCart, router } = useAppContext(); // Make sure to destructure router
+  const { addToCart, router } = useAppContext(); 
   const [addingToCart, setAddingToCart] = useState({});
 
-  // fetch featured products
+  
   const fetchFeaturedProducts = async () => {
     try {
       setLoading(true);
@@ -41,20 +41,20 @@ const FeaturedProduct = () => {
     fetchFeaturedProducts();
   }, []);
 
-  // check if url is from cloudinary
+ 
   const isCloudinaryUrl = (url) => url && url.includes("cloudinary.com");
 
-  // optimize cloudinary images
+ 
   const getOptimizedCloudinaryUrl = (url, width = 400, height = 400) => {
     if (!url || !isCloudinaryUrl(url)) return url;
     const optimizationParams = `c_fill,w_${width},h_${height},q_auto,f_auto`;
     return url.replace("/upload/", `/upload/${optimizationParams}/`);
   };
 
-  // add to cart handler
+ 
   const handleAddToCart = async (product, e) => {
-    e.stopPropagation(); // prevent triggering the card navigation
-    e.preventDefault(); // prevent Link navigation
+    e.stopPropagation(); 
+    e.preventDefault();
 
     const color = product.colors?.[0] || "default";
     setAddingToCart((prev) => ({ ...prev, [product.id]: true }));
@@ -133,7 +133,7 @@ const FeaturedProduct = () => {
         })}
       </div>
 
-      {/* "See more products" button */}
+      {/* see more products button */}
       <div className="flex justify-center mt-12">
         <button 
           onClick={() => { router.push('/all-products') }} 

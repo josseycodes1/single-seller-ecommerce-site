@@ -65,7 +65,7 @@ const HeaderSlider = () => {
                 {slide.title}
               </h1>
               <div className="flex items-center mt-4 md:mt-6 ">
-                {/* button 1 routes to /products */}
+                {/* button 1 */}
                 <button
                   onClick={() => router.push("/all-products")}
                   className="md:px-10 px-7 md:py-2.5 py-2 bg-white hover:bg-josseypink3 text-josseypink2 font-medium"
@@ -73,7 +73,7 @@ const HeaderSlider = () => {
                   {slide.buttonText1}
                 </button>
 
-                {/* button 2 also routes to /products */}
+                {/* button 2 */}
                 <button
                   onClick={() => router.push("/all-products")}
                   className="group flex items-center gap-2 px-2 py-2.5 font-medium text-white hover:text-gray-700"
@@ -100,7 +100,7 @@ const HeaderSlider = () => {
         ))}
       </div>
 
-      {/* Dots Navigation */}
+      {/* dots navigation */}
       <div className="flex items-center justify-center gap-2 mt-8">
         {sliderData.map((_, index) => (
           <div
