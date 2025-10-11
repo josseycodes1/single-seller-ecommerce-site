@@ -27,7 +27,7 @@ const SideBar = ({ onItemClick }) => {
             
             {/* Desktop Header */}
             <div className="px-4 py-4 border-b border-gray-200 hidden md:block">
-                <h2 className="text-lg font-semibold text-josseypink2">Seller Dashboard</h2>
+                <h2 className="text-lg font-semibold text-gray-700">Seller Dashboard</h2>
             </div>
             
             {menuItems.map((item) => {
