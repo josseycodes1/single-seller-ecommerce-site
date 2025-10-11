@@ -275,7 +275,7 @@ const ProductList = () => {
                     </button>
                     
                     <button
-                      onClick={() => router.push(`/sellerdashboard/edit-product`)}
+                      onClick={() => router.push(`/sellerdashboard/edit-product/${product.id}`)}
                       className="text-yellow-600 hover:text-yellow-900 p-2 rounded-md hover:bg-yellow-50 transition-colors flex items-center gap-1 text-xs"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
