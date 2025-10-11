@@ -678,7 +678,7 @@ const EditProduct = () => {
                 <button
                   type="button"
                   onClick={addColor}
-                  className="bg-josseypink2 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
+                  className="bg-josseypink2 text-white px-3 py-1 rounded hover:bg-josseypink1 transition-colors"
                   disabled={loading}
                 >
                   Add

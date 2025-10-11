@@ -68,7 +68,7 @@ const HeaderSlider = () => {
                 {/* button 1 */}
                 <button
                   onClick={() => router.push("/all-products")}
-                  className="md:px-10 px-7 md:py-2.5 py-2 bg-white hover:bg-josseypink3 text-josseypink2 font-medium"
+                  className="md:px-10 px-7 md:py-2.5 py-2 bg-white hover:bg-josseypink3 rounded text-josseypink2 font-medium"
                 >
                   {slide.buttonText1}
                 </button>
