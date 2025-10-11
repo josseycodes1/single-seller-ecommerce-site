@@ -20,7 +20,7 @@ const Footer = () => {
           {/* Dashboard Links */}
           <div>
             <h2 className="font-semibold text-josseypink2 mb-3 md:mb-4 text-sm md:text-base">Dashboard</h2>
-            <ul className="text-xs md:text-sm space-y-1 md:space-y-2">
+            <ul className="text-xs md:text-sm space-y-1 md:space-y-2 text-gray-600">
               <li>
                 <a className="hover:text-josseypink2 transition-colors duration-200 block py-1" href="/sellerdashboard">
                   Add Products
@@ -42,7 +42,7 @@ const Footer = () => {
           {/* Support Links */}
           <div>
             <h2 className="font-semibold text-josseypink2 mb-3 md:mb-4 text-sm md:text-base">Support</h2>
-            <ul className="text-xs md:text-sm space-y-1 md:space-y-2">
+            <ul className="text-xs md:text-sm space-y-1 md:space-y-2 text-gray-600">
               <li>
                 <a className="hover:text-josseypink2 transition-colors duration-200 block py-1" href="/help">
                   Help Center
@@ -64,7 +64,7 @@ const Footer = () => {
           {/* Contact Info */}
           <div className="sm:col-span-2 lg:col-span-1">
             <h2 className="font-semibold text-josseypink2 mb-3 md:mb-4 text-sm md:text-base">Get in touch</h2>
-            <div className="text-xs md:text-sm space-y-1 md:space-y-2">
+            <div className="text-xs md:text-sm space-y-1 md:space-y-2 text-gray-600">
               <p className="flex items-start gap-2">
                 <svg className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
@@ -107,4 +107,4 @@ const Footer = () => {
   );
 };
 
-export default Footer;
+export default Footer
