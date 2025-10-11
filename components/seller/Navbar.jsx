@@ -11,7 +11,7 @@ const Navbar = ({ onToggleSidebar, isMobile, sidebarOpen }) => {
   return (
     <div className='flex items-center px-4 md:px-6 py-3 justify-between border-b bg-white shadow-sm sticky top-0 z-30'>
       <div className="flex items-center gap-3 md:gap-4">
-        {/* Hamburger Menu Button for Mobile - PINK with 3 dashes */}
+        {/* Hamburger Menu Button for Mobile */}
         {isMobile && (
           <button 
             onClick={onToggleSidebar}

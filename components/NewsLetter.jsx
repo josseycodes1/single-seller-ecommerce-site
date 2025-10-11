@@ -20,7 +20,7 @@ const NewsLetter = () => {
   const handleSubscribe = async (e) => {
     e.preventDefault();
     
-    // Basic email validation
+   
     if (!email || !email.includes('@')) {
       setMessage("Please enter a valid email address");
       setIsError(true);

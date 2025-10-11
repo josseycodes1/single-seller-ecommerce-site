@@ -12,7 +12,7 @@ const MobileSearchBar = ({ isOpen, onClose }) => {
   const containerRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Auto-focus when opened and handle clicks outside
+
   useEffect(() => {
     if (isOpen && inputRef.current) {
       setTimeout(() => {
@@ -35,7 +35,7 @@ const MobileSearchBar = ({ isOpen, onClose }) => {
     };
   }, [isOpen, onClose]);
 
-  // Search logic
+  
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);

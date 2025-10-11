@@ -20,7 +20,7 @@ export const AppContextProvider = (props) => {
     const [cartLoading, setCartLoading] = useState(false);
     const [toasts, setToasts] = useState([]);
 
-    //toast
+  
     const addToast = (message, type = 'success', duration = 3000) => {
         const id = Date.now() + Math.random();
         setToasts(prev => [...prev, { id, message, type, duration }]);

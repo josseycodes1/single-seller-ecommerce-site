@@ -135,7 +135,7 @@ const OrderSummary = () => {
       <hr className="border-gray-500/30 my-5" />
       
       <div className="space-y-6">
-        {/* Address Section with Error State */}
+        {/* Address */}
         <div id="address-section" className="address-dropdown-container">
           <div className="flex items-center justify-between mb-2">
             <label className="text-base font-medium uppercase text-gray-600">
