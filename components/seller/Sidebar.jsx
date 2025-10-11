@@ -20,10 +20,16 @@ const SideBar = ({ onItemClick }) => {
     };
 
     return (
-        <div className='md:w-64 w-64 bg-white border-r min-h-screen text-base border-gray-300 py-2 flex flex-col shadow-lg md:shadow-none'>
+        <div className='w-64 bg-white border-r min-h-screen text-base border-gray-300 py-2 flex flex-col'>
             <div className="px-4 py-4 border-b border-gray-200 md:hidden">
                 <h2 className="text-lg font-semibold text-gray-800">Seller Menu</h2>
             </div>
+            
+            {/* Desktop Header */}
+            <div className="px-4 py-4 border-b border-gray-200 hidden md:block">
+                <h2 className="text-lg font-semibold text-josseypink2">Seller Dashboard</h2>
+            </div>
+            
             {menuItems.map((item) => {
                 const isActive = pathname === item.path;
 

@@ -40,7 +40,7 @@ const Layout = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar onToggleSidebar={toggleSidebar} isMobile={isMobile} sidebarOpen={sidebarOpen} />
-      <div className='flex flex-1 relative'>
+      <div className='flex flex-1'>
         {/* Mobile Overlay */}
         {isMobile && sidebarOpen && (
           <div 
@@ -53,18 +53,18 @@ const Layout = ({ children }) => {
         <div className={`
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
           md:translate-x-0 transition-transform duration-300 ease-in-out
-          fixed md:static z-40 h-full
+          fixed md:relative z-40 h-full md:h-auto
         `}>
           <Sidebar onItemClick={closeSidebar} />
         </div>
         
         {/* Main Content */}
         <main 
-          className={`flex-1 w-full min-h-screen transition-all duration-300 ${
-            sidebarOpen && !isMobile ? 'md:ml-64' : 'ml-0'
+          className={`flex-1 w-full transition-all duration-300 ${
+            sidebarOpen && !isMobile ? 'md:ml-0' : 'ml-0'
           }`}
         >
-          <div className="p-4 md:p-6">
+          <div className="p-4 md:p-6 w-full">
             {children}
           </div>
         </main>
