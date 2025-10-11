@@ -585,7 +585,7 @@ const AddProduct = () => {
                   <button
                     type="button"
                     onClick={addColor}
-                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                    className="bg-josseypink2 hover:bg-josseypink2 text-white px-3 py-1 rounded"
                   >
                     Add
                   </button>
