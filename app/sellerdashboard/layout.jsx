@@ -10,8 +10,9 @@ const Layout = ({ children }) => {
 
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768)
-      if (window.innerWidth >= 768) {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      if (!mobile) {
         setSidebarOpen(true)
       } else {
         setSidebarOpen(false)
@@ -37,28 +38,35 @@ const Layout = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar onToggleSidebar={toggleSidebar} isMobile={isMobile} sidebarOpen={sidebarOpen} />
       <div className='flex flex-1 relative'>
-        {/* Sidebar with overlay for mobile */}
+        {/* Mobile Overlay */}
         {isMobile && sidebarOpen && (
           <div 
             className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
             onClick={closeSidebar}
           />
         )}
+        
+        {/* Sidebar */}
         <div className={`
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
           md:translate-x-0 transition-transform duration-300 ease-in-out
-          fixed md:static z-50 h-full
+          fixed md:static z-40 h-full
         `}>
           <Sidebar onItemClick={closeSidebar} />
         </div>
+        
+        {/* Main Content */}
         <main 
-          className={`flex-1 transition-all duration-300 ${sidebarOpen && isMobile ? 'ml-0' : 'ml-0'} md:ml-0`}
-          onClick={closeSidebar}
+          className={`flex-1 w-full min-h-screen transition-all duration-300 ${
+            sidebarOpen && !isMobile ? 'md:ml-64' : 'ml-0'
+          }`}
         >
-          {children}
+          <div className="p-4 md:p-6">
+            {children}
+          </div>
         </main>
       </div>
       <Footer />
