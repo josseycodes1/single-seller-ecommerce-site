@@ -11,14 +11,14 @@ const Navbar = ({ onToggleSidebar, isMobile, sidebarOpen }) => {
   return (
     <div className='flex items-center px-4 md:px-6 py-3 justify-between border-b bg-white shadow-sm sticky top-0 z-30'>
       <div className="flex items-center gap-3 md:gap-4">
-        {/* Hamburger Menu Button for Mobile - NOW PINK */}
+        {/* Hamburger Menu Button for Mobile - PINK with 3 dashes */}
         {isMobile && (
           <button 
             onClick={onToggleSidebar}
             className="p-2 rounded-md text-josseypink2 hover:bg-josseypink2/10 transition-colors"
             aria-label="Toggle menu"
           >
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {sidebarOpen ? (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               ) : (
