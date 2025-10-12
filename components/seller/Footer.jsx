@@ -44,7 +44,7 @@ const Footer = () => {
             <h2 className="font-semibold text-josseypink2 mb-3 md:mb-4 text-sm md:text-base">Support</h2>
             <ul className="text-xs md:text-sm space-y-1 md:space-y-2 text-gray-600">
               <li>
-                <a className="hover:text-josseypink2 transition-colors duration-200 block py-1" href="/help">
+                <a className="hover:text-josseypink2 transition-colors duration-200 block py-1" href="/contact">
                   Help Center
                 </a>
               </li>
@@ -54,7 +54,7 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a className="hover:text-josseypink2 transition-colors duration-200 block py-1" href="/seller-guide">
+                <a className="hover:text-josseypink2 transition-colors duration-200 block py-1" href="/privacypolicy">
                   Seller Guide
                 </a>
               </li>
