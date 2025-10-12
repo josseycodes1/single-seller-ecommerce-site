@@ -82,7 +82,7 @@ const Footer = () => {
             {/* Social Media Links */}
             <div className="flex items-center gap-3 mt-4">
               <a href="https://www.linkedin.com/in/josseycodes" className="text-gray-400 hover:text-josseypink2 transition-colors duration-200">
-                <Image src={assets.lonkedin_icon} alt="linkedin_icon" width={16} height={16} className="w-4 h-4 md:w-5 md:h-5" />
+                <Image src={assets.linkedin_icon} alt="linkedin_icon" width={16} height={16} className="w-4 h-4 md:w-5 md:h-5" />
               </a>
               <a href="https://www.twitter.com/in/josseycodes" className="text-gray-400 hover:text-josseypink2 transition-colors duration-200">
                 <Image src={assets.twitter_icon} alt="twitter_icon" width={16} height={16} className="w-4 h-4 md:w-5 md:h-5" />
