@@ -319,7 +319,7 @@ const OrderSummary = () => {
           onClick={handleProceedToCheckout}
           className="w-full bg-josseypink2 text-white py-3 hover:bg-josseypink1 transition-colors font-medium text-lg relative group"
         >
-          <span className="flex items-center justify-center">
+          <span className="flex items-center justify-center rounded">
             Proceed to Checkout
             <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -329,7 +329,7 @@ const OrderSummary = () => {
         
         <button 
           onClick={handleClearCart}
-          className="w-full border border-gray-300 text-gray-600 py-3 hover:bg-gray-100 hover:border-gray-400 transition-colors font-medium"
+          className="w-full border border-gray-300 rounded text-gray-600 py-3 hover:bg-gray-100 hover:border-gray-400 transition-colors font-medium"
         >
           Clear Cart
         </button>
