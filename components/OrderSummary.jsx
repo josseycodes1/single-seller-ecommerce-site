@@ -1,6 +1,7 @@
 import { addressDummyData } from "@/assets/assets";
 import { useAppContext } from "@/context/AppContext";
 import React, { useEffect, useState } from "react";
+import { formatPrice, formatPriceWithoutSymbol } from "@/utils/priceFormatter";
 
 const OrderSummary = () => {
   const { currency, router, cart, getCartCount, getCartAmount, clearCart, addToast } = useAppContext()
@@ -23,10 +24,11 @@ const OrderSummary = () => {
 
   const handleApplyPromo = () => {
     if (promoCode.trim()) {
-      const validPromos = {
-        "SAVE10": { discount: 0.1, type: "percentage" },
-        "FREESHIP": { discount: 5, type: "fixed" }
-      };
+      {appliedPromo.type === 'percentage' 
+        ? ` ${appliedPromo.discount * 100}% discount`
+        : ` ${formatPrice(appliedPromo.discount)} off`  // Changed this line
+      }
+
       
       if (validPromos[promoCode.toUpperCase()]) {
         setAppliedPromo(validPromos[promoCode.toUpperCase()]);
@@ -284,7 +286,7 @@ const OrderSummary = () => {
         <div className="space-y-4">
           <div className="flex justify-between text-base font-medium">
             <p className="uppercase text-gray-600">Items ({getCartCount()})</p>
-            <p className="text-gray-800">{currency}{getCartAmount().toFixed(2)}</p>
+            <p className="text-gray-800">{formatPrice(getCartAmount())}</p>
           </div>
           
           <div className="flex justify-between">
@@ -294,19 +296,19 @@ const OrderSummary = () => {
           
           <div className="flex justify-between">
             <p className="text-gray-600">Tax (2%)</p>
-            <p className="font-medium text-gray-800">{currency}{calculateTax().toFixed(2)}</p>
+            <p className="font-medium text-gray-800">{formatPrice(calculateTax())}</p>
           </div>
           
           {appliedPromo && (
             <div className="flex justify-between text-green-600">
               <p className="text-gray-600">Discount</p>
-              <p className="font-medium">-{currency}{calculateDiscount().toFixed(2)}</p>
+              <p className="font-medium">-{formatPrice(calculateDiscount())}</p>
             </div>
           )}
           
           <div className="flex justify-between text-lg md:text-xl font-medium border-t pt-3">
             <p>Total</p>
-            <p className="text-josseypink2">{currency}{calculateTotal().toFixed(2)}</p>
+            <p className="text-josseypink2">{formatPrice(calculateTotal())}</p>
           </div>
         </div>
       </div>
