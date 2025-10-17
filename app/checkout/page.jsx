@@ -6,11 +6,6 @@ import Image from 'next/image'
 import Navbar from '@/components/Navbar'
 import { formatPrice } from '@/utils/priceFormatter'
 
-const TAX_RATE = 0.02;
-const subtotal = cart.total_price || 0;
-const tax = subtotal * TAX_RATE;
-const total = subtotal + tax;
-
 const Checkout = () => {
   const { cart, userData, addToast, clearCart } = useAppContext()
   const router = useRouter()
@@ -32,7 +27,12 @@ const Checkout = () => {
     order_notes: ''
   })
 
- 
+  // Calculate totals with tax
+  const TAX_RATE = 0.02;
+  const subtotal = cart?.total_price || 0;
+  const tax = subtotal * TAX_RATE;
+  const total = subtotal + tax;
+
   useEffect(() => {
     if (!cart || cart.items.length === 0) {
       addToast('Your cart is empty', 'error')
@@ -40,7 +40,6 @@ const Checkout = () => {
     }
   }, [cart, router, addToast])
 
-  
   useEffect(() => {
     if (userData) {
       setFormData(prev => ({
@@ -62,7 +61,6 @@ const Checkout = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target
     
-   
     if (formErrors[name]) {
       setFormErrors(prev => ({
         ...prev,
@@ -90,20 +88,17 @@ const Checkout = () => {
   const validateStep1 = () => {
     const errors = {}
     
-   
     if (!formData.email.trim()) {
       errors.email = 'Email is required'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Please enter a valid email address'
     }
     
-  
     if (!formData.customer_name.trim()) {
       errors.customer_name = 'Full name is required'
     } else if (formData.customer_name.trim().length < 2) {
       errors.customer_name = 'Name must be at least 2 characters'
     }
-    
     
     if (!formData.customer_phone.trim()) {
       errors.customer_phone = 'Phone number is required'
@@ -111,7 +106,6 @@ const Checkout = () => {
       errors.customer_phone = 'Please enter a valid phone number'
     }
     
- 
     if (!formData.address.street_address.trim()) {
       errors['address.street_address'] = 'Street address is required'
     }
@@ -150,7 +144,10 @@ const Checkout = () => {
 
     setLoading(true)
     try {
-     
+      console.log('Starting checkout process...')
+      console.log('Cart total calculations:', { subtotal, tax, total })
+      
+      // Create order
       const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/checkout/`, {
         method: 'POST',
         headers: {
@@ -162,25 +159,19 @@ const Checkout = () => {
         })
       })
 
-      const TAX_RATE = 0.02;
-      const subtotal = cart.total_price || 0;
-      const tax = subtotal * TAX_RATE;
-      const total = subtotal + tax;
-
-      console.log('Payment amounts:', { subtotal, tax, total });
-
       const orderData = await orderResponse.json()
+      console.log('Order creation response:', orderData)
 
       if (!orderResponse.ok) {
         throw new Error(orderData.error || orderData.details || 'Failed to create order')
       }
 
-    
+      // Store email for guest orders
       localStorage.setItem('guestOrderEmail', formData.email)
       sessionStorage.setItem('guestOrderEmail', formData.email)
-      console.log('DEBUG: Stored email for MyOrders:', formData.email)
+      console.log('🔍 DEBUG: Stored email for MyOrders:', formData.email)
 
-     
+      // Initialize payment with the correct total amount
       const paymentResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/payment/initialize/`, {
         method: 'POST',
         headers: {
@@ -195,13 +186,15 @@ const Checkout = () => {
       })
 
       const paymentData = await paymentResponse.json()
+      console.log('Payment initialization response:', paymentData)
 
       if (!paymentResponse.ok) {
         throw new Error(paymentData.error || paymentData.details || 'Failed to initialize payment')
       }
 
-     
+      // Redirect to Paystack
       if (paymentData.authorization_url) {
+        console.log('Redirecting to Paystack with amount:', paymentData.amount)
         window.location.href = paymentData.authorization_url
       } else {
         throw new Error('No authorization URL received from payment service')
@@ -215,7 +208,6 @@ const Checkout = () => {
     }
   }
 
-  
   if (!cart || cart.items.length === 0) {
     return (
       <>
