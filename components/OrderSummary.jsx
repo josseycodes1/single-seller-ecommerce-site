@@ -12,6 +12,12 @@ const OrderSummary = () => {
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [showAddressError, setShowAddressError] = useState(false);
 
+
+  const TAX_RATE = 0.02;
+  const subtotal = cart.total_price || 0;
+  const tax = subtotal * TAX_RATE;
+  const total = subtotal + tax;
+
   const fetchUserAddresses = async () => {
     setUserAddresses(addressDummyData);
   }

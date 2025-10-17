@@ -6,6 +6,11 @@ import Image from 'next/image'
 import Navbar from '@/components/Navbar'
 import { formatPrice } from '@/utils/priceFormatter'
 
+const TAX_RATE = 0.02;
+const subtotal = cart.total_price || 0;
+const tax = subtotal * TAX_RATE;
+const total = subtotal + tax;
+
 const Checkout = () => {
   const { cart, userData, addToast, clearCart } = useAppContext()
   const router = useRouter()
@@ -157,6 +162,13 @@ const Checkout = () => {
         })
       })
 
+      const TAX_RATE = 0.02;
+      const subtotal = cart.total_price || 0;
+      const tax = subtotal * TAX_RATE;
+      const total = subtotal + tax;
+
+      console.log('Payment amounts:', { subtotal, tax, total });
+
       const orderData = await orderResponse.json()
 
       if (!orderResponse.ok) {
@@ -166,7 +178,7 @@ const Checkout = () => {
     
       localStorage.setItem('guestOrderEmail', formData.email)
       sessionStorage.setItem('guestOrderEmail', formData.email)
-      console.log('🔍 DEBUG: Stored email for MyOrders:', formData.email)
+      console.log('DEBUG: Stored email for MyOrders:', formData.email)
 
      
       const paymentResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/payment/initialize/`, {
@@ -622,15 +634,15 @@ const Checkout = () => {
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="text-gray-900">{formatPrice(cart.total_price || 0)}</span>
+                  <span className="text-gray-900">{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Shipping</span>
-                  <span className="text-gray-900">₦0.00</span>
+                  <span className="text-gray-600">Tax (2%)</span>
+                  <span className="text-gray-900">{formatPrice(tax)}</span>
                 </div>
                 <div className="flex justify-between text-lg font-semibold border-t pt-2">
                   <span className="text-gray-900">Total</span>
-                  <span className="text-josseypink2">{formatPrice(cart.total_price || 0)}</span>
+                  <span className="text-josseypink2">{formatPrice(total)}</span>
                 </div>
               </div>
             </div>
