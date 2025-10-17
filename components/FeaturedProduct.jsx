@@ -61,7 +61,6 @@ const FeaturedProduct = () => {
     setAddingToCart((prev) => ({ ...prev, [product.id]: false }));
   };
 
-  // Skeleton Loading State
   if (loading) {
     return (
       <div className="mt-14">
@@ -96,7 +95,7 @@ const FeaturedProduct = () => {
     );
   }
 
-  // Error State
+
   if (error && featuredProducts.length === 0) {
     return (
       <div className="mt-14">

@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react'
 import { assets } from '@/assets/assets'
 import Image from 'next/image'
 import { useAppContext } from '@/context/AppContext'
+import { formatPrice, CURRENCY_SYMBOL } from '@/utils/priceFormatter'
 
 const ProductCard = ({ product: initialProduct = null, productId: propProductId = null }) => {
-  const { currency, router, addToCart } = useAppContext()
+  const { router, addToCart } = useAppContext()
   const [product, setProduct] = useState(initialProduct)
   const [loading, setLoading] = useState(!initialProduct && !!propProductId)
   const [error, setError] = useState(null)
@@ -193,17 +194,17 @@ const ProductCard = ({ product: initialProduct = null, productId: propProductId 
 
       {/* Price + Add to Cart - FIXED FOR MOBILE */}
       <div className="flex items-center justify-between w-full mt-2 min-h-[40px]">
-        {/* Price Section with fixed width */}
-        <div className="flex flex-col min-w-0 flex-1 mr-2">
-          <p className="text-base font-medium text-gray-700 truncate">
-            {currency}{productPrice.toFixed(2)}
-          </p>
-          {originalPrice && productPrice < originalPrice && (
-            <p className="text-xs text-gray-400 line-through truncate">
-              {currency}{originalPrice.toFixed(2)}
+         {/* Price Section with fixed width */}
+          <div className="flex flex-col min-w-0 flex-1 mr-2">
+            <p className="text-base font-medium text-gray-700 truncate">
+              {formatPrice(productPrice)}
             </p>
-          )}
-        </div>
+            {originalPrice && productPrice < originalPrice && (
+              <p className="text-xs text-gray-400 line-through truncate">
+                {formatPrice(originalPrice)}
+              </p>
+            )}
+          </div>
         
         {/* Add to Cart Button with fixed width */}
         <button

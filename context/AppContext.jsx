@@ -9,7 +9,7 @@ export const useAppContext = () => useContext(AppContext);
 export const AppContextProvider = (props) => {
     const router = useRouter();
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-    const currency = process.env.NEXT_PUBLIC_CURRENCY;
+    const currency = '₦';
 
     const [products, setProducts] = useState([]);
     const [userData, setUserData] = useState(null);

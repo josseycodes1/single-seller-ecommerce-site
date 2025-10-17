@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useAppContext } from '@/context/AppContext'
 import Image from 'next/image'
 import Navbar from '@/components/Navbar'
+import { formatPrice } from '@/utils/priceFormatter'
 
 const Checkout = () => {
   const { cart, userData, addToast, clearCart } = useAppContext()
@@ -612,7 +613,7 @@ const Checkout = () => {
                       </p>
                     </div>
                     <div className="text-sm font-medium text-gray-900">
-                      ₦{(item.product.price * item.quantity).toFixed(2)}
+                      {formatPrice(item.product.price * item.quantity)}
                     </div>
                   </div>
                 ))}
@@ -621,7 +622,7 @@ const Checkout = () => {
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="text-gray-900">₦{cart.total_price || '0.00'}</span>
+                  <span className="text-gray-900">{formatPrice(cart.total_price || 0)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Shipping</span>
@@ -629,7 +630,7 @@ const Checkout = () => {
                 </div>
                 <div className="flex justify-between text-lg font-semibold border-t pt-2">
                   <span className="text-gray-900">Total</span>
-                  <span className="text-josseypink2">₦{cart.total_price || '0.00'}</span>
+                  <span className="text-josseypink2">{formatPrice(cart.total_price || 0)}</span>
                 </div>
               </div>
             </div>

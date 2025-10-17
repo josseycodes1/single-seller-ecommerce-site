@@ -5,6 +5,8 @@ import OrderSummary from "@/components/OrderSummary";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import { useAppContext } from "@/context/AppContext";
+import { formatPrice, formatPriceWithoutSymbol } from '@/utils/priceFormatter'
+
 
 const Cart = () => {
   const {
@@ -291,8 +293,8 @@ const Cart = () => {
                           </td>
 
                           <td className="py-6 px-4 text-gray-700 font-medium">
-                            ${parseFloat(productPrice).toFixed(2)}
-                          </td>
+                              {formatPrice(parseFloat(productPrice))}
+                            </td>
 
                           <td className="py-6 px-4">
                             <div className="flex items-center gap-2">
@@ -345,7 +347,7 @@ const Cart = () => {
                           </td>
 
                           <td className="py-6 px-4 text-gray-700 font-medium">
-                            ${subtotal.toFixed(2)}
+                            {formatPrice(subtotal)}
                           </td>
                         </tr>
                       );
@@ -410,7 +412,7 @@ const Cart = () => {
                           <div className="space-y-2">
                             <div className="flex justify-between text-sm">
                               <span className="text-gray-600">Price:</span>
-                              <span className="text-gray-800 font-medium">${parseFloat(productPrice).toFixed(2)}</span>
+                              <span className="text-gray-800 font-medium">{formatPrice(parseFloat(productPrice))}</span>
                             </div>
 
                             <div className="flex justify-between items-center text-sm">
@@ -467,7 +469,7 @@ const Cart = () => {
 
                             <div className="flex justify-between text-sm font-medium pt-2 border-t border-gray-200">
                               <span className="text-gray-600">Subtotal:</span>
-                              <span className="text-gray-800">${subtotal.toFixed(2)}</span>
+                              <span className="text-gray-800">{formatPrice(subtotal)}</span>
                             </div>
                           </div>
                         </div>
